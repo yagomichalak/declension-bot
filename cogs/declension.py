@@ -22,9 +22,13 @@ class Declension(commands.Cog):
     self.session = aiohttp.ClientSession(loop=client.loop)
     self.pdf_token = getenv('PDF_API_TOKEN')
   
-  @commands.command()
+  @commands.command(aliases=['polish', 'pl', 'pol'])
   @commands.cooldown(1, 10, commands.BucketType.user)
-  async def pl(self, ctx, word: str = None):
+  async def polski(self, ctx, word: str = None):
+    '''
+    Declines a Polish word; showing a table with its full declension forms.
+    :param word: The word to decline.
+    '''
     me = ctx.author
     if not word:
       return await ctx.send(f"**Please {me.mention}, inform a word to search!**")
@@ -93,14 +97,11 @@ class Declension(commands.Cog):
       os.remove(f"files/{me.id}.png")
 
 
-  @commands.command()
-  @commands.has_permissions(administrator=True)
-  async def test(self, ctx):
-    pass
-
-
   @staticmethod
   async def database():
+    '''
+    A database entry, in case I need some in the future.
+    '''
     loop = asyncio.get_event_loop()
     db = await aiomysql.connect(
       host=getenv('DB_HOST'), 
@@ -114,61 +115,15 @@ class Declension(commands.Cog):
     return mycursor, db
 
 
-  # @commands.command()
-  # @commands.has_permissions(administrator=True)
-  # async def aa(self, ctx, word: str = None, type: str = None):
-  #   if not word:
-  #     return await ctx.send("**Inform a word to decline!**")
-  #   if not type:
-  #     type = 'noun'
-
-  #   root = 'https://www.verbformen.com/declension/'
-
-  #   async with self.session.get(f"{root}/{type}/?w={word}") as response:
-  #     if not response.status == 200:
-  #       return await ctx.send("**Something went wrong with that search!**")
-
-  #     embed_table = discord.Embed(
-  #       title=f"__Declination Table__",
-  #       description=f'''
-  #       **Word:** {word.title()}
-  #       **Type of word:** {type}
-  #       ''',
-  #       color=ctx.author.color
-  #     )
-
-  #     html = BeautifulSoup(await response.read(), 'html.parser')
-  #     for case in html.select('.vTbl'):
-  #       category_name = case.select_one('h3').text
-  #       #print(category_name)
-  #       #table_block = []
-  #       case_dict = {}
-  #       case_dict[category_name] = []
-  #       for row in case.select('tr'):
-  #         case_name = row.select_one('th').text
-  #         case_decl = [line.text for line in row.select('td')]
-  #         case_decl.insert(0, case_name)
-  #         case_dict[category_name].append(case_decl.copy())
-  #         case_decl.clear()
-          
-              
-  #       for key, values in case_dict.items():
-  #         print(key)
-  #         row_text = ''
-  #         for row_list in values:
-  #           row_text += f"{' '.join(row_list)}\n"
-
-  #         embed_table.add_field(
-  #           name=key,
-  #           value=f"```apache\n{row_text}```",
-  #           inline=True
-  #         )
-
-  #     await ctx.send(embed=embed_table)
+  
 
   @commands.command(aliases=['german', 'ger', 'de'])
   @commands.has_permissions(administrator=True)
   async def deutsch(self, ctx, word: str = None, type: str = None):
+    '''
+    Declines a German word; showing an embedded message with its full declension forms.
+    :param word: The word to decline.
+    ''''
     if not word:
       return await ctx.send("**Inform a word to decline!**")
     if not type:

@@ -51,7 +51,7 @@ class Declension(commands.Cog):
         #response = requests.get(url)
         if response.status == 200:
           try:
-            with open(f'pf/{me.id}.pdf', 'wb') as f:
+            with open(f'files/{me.id}.pdf', 'wb') as f:
               f.write(await response.read())
           except Exception:
             return await ctx.send("**I couldn't find anything for that word!**")
@@ -63,11 +63,11 @@ class Declension(commands.Cog):
     
       convertapi.api_secret = self.pdf_token
       convertapi.convert('png', {
-      'File': f'./pf/{me.id}.pdf',  
-  }, from_format = 'pdf').save_files('./pf')
+      'File': f'./files/{me.id}.pdf',  
+  }, from_format = 'pdf').save_files('./files')
 
       # Opens a image in RGB mode 
-      im = Image.open(rf"pf/{me.id}.png") 
+      im = Image.open(rf"files/{me.id}.png") 
         
       # Size of the image in pixels (size of orginal image) 
       # (This is not mandatory) 
@@ -84,13 +84,13 @@ class Declension(commands.Cog):
       im1 = im.crop((left, top, right, bottom))  
           
       # Shows the image in image viewer 
-      im1.save(f'pf/{me.id}.png')
+      im1.save(f'files/{me.id}.png')
 
 
 
-      await ctx.send(file=discord.File(f'pf/{me.id}.png'))
-      os.remove(f"pf/{me.id}.pdf")
-      os.remove(f"pf/{me.id}.png")
+      await ctx.send(file=discord.File(f'files/{me.id}.png'))
+      os.remove(f"files/{me.id}.pdf")
+      os.remove(f"files/{me.id}.png")
 
 
   @commands.command()
@@ -114,57 +114,57 @@ class Declension(commands.Cog):
     return mycursor, db
 
 
-  @commands.command()
-  @commands.has_permissions(administrator=True)
-  async def aa(self, ctx, word: str = None, type: str = None):
-    if not word:
-      return await ctx.send("**Inform a word to decline!**")
-    if not type:
-      type = 'noun'
+  # @commands.command()
+  # @commands.has_permissions(administrator=True)
+  # async def aa(self, ctx, word: str = None, type: str = None):
+  #   if not word:
+  #     return await ctx.send("**Inform a word to decline!**")
+  #   if not type:
+  #     type = 'noun'
 
-    root = 'https://www.verbformen.com/declension/'
+  #   root = 'https://www.verbformen.com/declension/'
 
-    async with self.session.get(f"{root}/{type}/?w={word}") as response:
-      if not response.status == 200:
-        return await ctx.send("**Something went wrong with that search!**")
+  #   async with self.session.get(f"{root}/{type}/?w={word}") as response:
+  #     if not response.status == 200:
+  #       return await ctx.send("**Something went wrong with that search!**")
 
-      embed_table = discord.Embed(
-        title=f"__Declination Table__",
-        description=f'''
-        **Word:** {word.title()}
-        **Type of word:** {type}
-        ''',
-        color=ctx.author.color
-      )
+  #     embed_table = discord.Embed(
+  #       title=f"__Declination Table__",
+  #       description=f'''
+  #       **Word:** {word.title()}
+  #       **Type of word:** {type}
+  #       ''',
+  #       color=ctx.author.color
+  #     )
 
-      html = BeautifulSoup(await response.read(), 'html.parser')
-      for case in html.select('.vTbl'):
-        category_name = case.select_one('h3').text
-        #print(category_name)
-        #table_block = []
-        case_dict = {}
-        case_dict[category_name] = []
-        for row in case.select('tr'):
-          case_name = row.select_one('th').text
-          case_decl = [line.text for line in row.select('td')]
-          case_decl.insert(0, case_name)
-          case_dict[category_name].append(case_decl.copy())
-          case_decl.clear()
+  #     html = BeautifulSoup(await response.read(), 'html.parser')
+  #     for case in html.select('.vTbl'):
+  #       category_name = case.select_one('h3').text
+  #       #print(category_name)
+  #       #table_block = []
+  #       case_dict = {}
+  #       case_dict[category_name] = []
+  #       for row in case.select('tr'):
+  #         case_name = row.select_one('th').text
+  #         case_decl = [line.text for line in row.select('td')]
+  #         case_decl.insert(0, case_name)
+  #         case_dict[category_name].append(case_decl.copy())
+  #         case_decl.clear()
           
               
-        for key, values in case_dict.items():
-          print(key)
-          row_text = ''
-          for row_list in values:
-            row_text += f"{' '.join(row_list)}\n"
+  #       for key, values in case_dict.items():
+  #         print(key)
+  #         row_text = ''
+  #         for row_list in values:
+  #           row_text += f"{' '.join(row_list)}\n"
 
-          embed_table.add_field(
-            name=key,
-            value=f"```apache\n{row_text}```",
-            inline=True
-          )
+  #         embed_table.add_field(
+  #           name=key,
+  #           value=f"```apache\n{row_text}```",
+  #           inline=True
+  #         )
 
-      await ctx.send(embed=embed_table)
+  #     await ctx.send(embed=embed_table)
 
   @commands.command(aliases=['german', 'ger', 'de'])
   @commands.has_permissions(administrator=True)

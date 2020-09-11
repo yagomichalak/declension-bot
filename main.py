@@ -31,6 +31,7 @@ async def on_message(message):
 
 
 @client.command(hidden=True)
+@commands.is_owner()
 async def load(ctx, extension: str):
   '''
   (Owner) loads a cog.
@@ -49,6 +50,7 @@ async def load(ctx, extension: str):
 
 
 @client.command(hidden=True)
+@commands.is_owner()
 async def unload(ctx, extension: str):
   '''
   (Owner) unloads a cog.
@@ -67,6 +69,7 @@ async def unload(ctx, extension: str):
 
 
 @client.command(hidden=True)
+@commands.is_owner()
 async def reload(ctx, extension: str):
   '''
   (Owner) reloads a cog.
@@ -87,6 +90,7 @@ async def reload(ctx, extension: str):
 
 
 @client.command(hidden=True)
+@commands.is_owner()
 async def reload_all(ctx):
   '''
   (Owner) reloads all cogs.

@@ -44,13 +44,14 @@ class Declension(commands.Cog):
           start = 'https://e-polish.eu/dictionary/en/'
           end = '.pdf'
           s = data.find(start)
+          print(data)
           e = data.find(end)
+          #print(data)
           url = data[s:e+4]
-          #print(url)
 
         else:
           return await ctx.send("**For some reason I couldn't process it!**")
-
+      print('krl')
       async with self.session.get(url) as response:
         #response = requests.get(url)
         if response.status == 200:
@@ -97,6 +98,61 @@ class Declension(commands.Cog):
       os.remove(f"files/{me.id}.png")
 
 
+  @commands.command()
+  #@commands.cooldown(1, 10, commands.BucketType.user)
+  async def pl2(self, ctx, word: str = None):
+    '''
+    (PS) This command might not work, in fact, it hardly will.
+
+    Declines a Polish word; showing a table with its full declension forms.
+    :param word: The word to decline.
+    '''
+    me = ctx.author
+    if not word:
+      return await ctx.send(f"**Please {me.mention}, inform a word to search!**")
+
+    #root2 = 'https://www.declinator.com/?word'
+
+    #root = 'http://online-polish-dictionary.com/word'
+    root3 = f'http://aztekium.pl/przypadki.py?szukaj={word}&lang=en'
+
+    # Request part
+    async with self.session.get(root3) as response:
+      if response.status == 200:
+
+
+        # Embed
+        embed = discord.Embed(
+          title=f"Polish Declension",
+          description=f"**Word:** {word}",
+          color=ctx.author.color,
+          timestamp=ctx.message.created_at
+        )
+
+        # Scraping part
+        html = BeautifulSoup(await response.read(), 'html.parser')
+        #div = html.select('body center:nth-child(1) form:nth-child(1) table:nth-child(3) tbody:nth-child(1) tr')
+        div = html.select(
+        'body center:nth-child(1) form:nth-child(1) table:nth-child(3) tbody:nth-child(1) tr:nth-child(1) td:nth-child(2)')
+        text = ''
+        for sub in div:
+          for i, tr in enumerate(sub.select('table:nth-child(9) tr')):
+            #text2 += f'{i+1} "{tr.text}"\n'
+            tds = tr.select('td')
+            tds = tds[:3:2]
+            beginning, ending = tds[0].select('b')
+            text += f'{beginning.text} = "{ending.text}"\n'
+
+
+        #print(text)
+        if text:
+          embed.add_field(
+            name="All cases",
+            value=f"```apache\n{text}```")
+          await ctx.send(embed=embed)
+
+            
+
   @staticmethod
   async def database():
     '''
@@ -119,29 +175,26 @@ class Declension(commands.Cog):
 
   @commands.command(aliases=['german', 'ger', 'de'])
   @commands.has_permissions(administrator=True)
-  async def deutsch(self, ctx, word: str = None, type: str = None):
+  async def deutsch(self, ctx, word: str = None):
     '''
     Declines a German word; showing an embedded message with its full declension forms.
     :param word: The word to decline.
-    ''''
+    '''
     if not word:
       return await ctx.send("**Inform a word to decline!**")
-    if not type:
-      type = 'noun'
 
     root = 'https://www.verbformen.com/declension/'
-
-    async with self.session.get(f"{root}/{type}/?w={word}") as response:
+    req = f"{root}/?w={word}"
+    async with self.session.get(req) as response:
       if not response.status == 200:
         return await ctx.send("**Something went wrong with that search!**")
 
       embed_table = discord.Embed(
         title=f"__Declension Table__",
         description=f'''
-        **Word:** {word.title()}
-        **Type of word:** {type}
-        ''',
-        color=ctx.author.color
+        **Word:** {word.title()}''',
+        color=ctx.author.color,
+        url = req
       )
 
       html = BeautifulSoup(await response.read(), 'html.parser')
@@ -209,9 +262,10 @@ class Declension(commands.Cog):
       title = template[0]
       new_embed = discord.Embed(
         title=f"Declension table - ({title})",
-        description=f"**Word:** {word}\n**Type:** {type}",
+        description=f"**Word:** {word}",
         color=ctx.author.color,
-        timestamp=ctx.message.created_at)
+        timestamp=ctx.message.created_at,
+        url=req)
       for gender_dict in template[1]:
         for key, values in gender_dict.items():
           text = ''

@@ -35,7 +35,8 @@ class Declension(commands.Cog):
     await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name=f"{next(status)} declensions!"))
     
   
-  @commands.command(aliases=['polish', 'pl', 'pol'])
+  @commands.command(hidden=True, aliases=['polish', 'pl', 'pol'])
+  @commands.is_owner()
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def polski(self, ctx, word: str = None):
     '''
@@ -111,7 +112,8 @@ class Declension(commands.Cog):
       os.remove(f"files/{me.id}.png")
 
 
-  @commands.command()
+  @commands.command()  
+  @commands.is_owner(hidden=True)
   #@commands.cooldown(1, 10, commands.BucketType.user)
   async def pl2(self, ctx, word: str = None):
     '''

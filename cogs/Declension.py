@@ -65,7 +65,6 @@ class Declension(commands.Cog):
 
         else:
           return await ctx.send("**For some reason I couldn't process it!**")
-      print('krl')
       async with self.session.get(url) as response:
         #response = requests.get(url)
         if response.status == 200:
@@ -146,13 +145,11 @@ class Declension(commands.Cog):
 
         # Scraping part
         html = BeautifulSoup(await response.read(), 'html.parser')
-        #div = html.select('body center:nth-child(1) form:nth-child(1) table:nth-child(3) tbody:nth-child(1) tr')
         div = html.select(
         'body center:nth-child(1) form:nth-child(1) table:nth-child(3) tbody:nth-child(1) tr:nth-child(1) td:nth-child(2)')
         text = ''
         for sub in div:
           for i, tr in enumerate(sub.select('table:nth-child(9) tr')):
-            #text2 += f'{i+1} "{tr.text}"\n'
             tds = tr.select('td')
             tds = tds[:3:2]
             beginning, ending = tds[0].select('b')
@@ -165,23 +162,6 @@ class Declension(commands.Cog):
             name="All cases",
             value=f"```apache\n{text}```")
           await ctx.send(embed=embed)
-
-  @commands.command()
-  async def bla(self, ctx, word: str = None):
-    '''
-    bla
-    '''
-    if not word:
-      return await ctx.send("Inform a word, asshole")
-
-    root1 = 'http://online-polish-dictionary.com/word'
-    root = 'http://online-polish-dictionary.com/system/ajax/dictionary/search-html/en'
-    req2 = f'{root}/{word}'
-    req ='https://hasteb.in/dufamoda.http'
-    async with self.session.get(req) as response:
-      if response.status == 200:
-        data = await response.text()
-        print(data)
     
   
   @commands.command(aliases=['russian', 'ru', 'rus'])
@@ -254,49 +234,7 @@ class Declension(commands.Cog):
             value=f"```apache\n{temp_text}```",
             inline=True
           )
-          #print(values)
-          #print()
-          #print()
         await ctx.send(embed=embed)
-        #all_decl = [decl['data-default'] for decl in div.select('.conjugation-cell.conjugation-cell-four') if decl.get('data-default')]
-        #print()
-        #print(all_decl)
-
-        '''
-        plu_decl = all_decl[:8]
-        sing_decl = all_decl[8:]
-
-        sing_text = ''
-        plu_text = ''
-
-        sing_list = list(zip_longest(case_names, sing_decl, fillvalue=''))
-        plu_list = list(zip_longest(case_names, plu_decl, fillvalue=''))
-
-        for sing in sing_list:
-          sing_text += f"{' '.join(sing)}\n"
-        for plu in plu_list:
-          plu_text += f"{' '.join(plu)}\n"
-
-        # Embed part
-        embed = discord.Embed(
-          title=f"Russian Declension",
-          description=f"**Word:** {word}",
-          color=ctx.author.color,
-          timestamp=ctx.message.created_at,
-          url=req
-        )
-        embed.add_field(
-          name='__Singular__',
-          value=f"```apache\n{sing_text}```",
-          inline=True
-        )
-        embed.add_field(
-          name='__Plural__',
-          value=f"```apache\n{plu_text}```",
-          inline=True
-        )
-        await ctx.send(embed=embed)
-        '''
 
 
 
@@ -321,7 +259,6 @@ class Declension(commands.Cog):
   
 
   @commands.command(aliases=['german', 'ger', 'de'])
-  @commands.has_permissions(administrator=True)
   async def deutsch(self, ctx, word: str = None):
     '''
     Declines a German word; showing an embedded message with its full declension forms.

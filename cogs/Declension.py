@@ -112,8 +112,8 @@ class Declension(commands.Cog):
       os.remove(f"files/{me.id}.png")
 
 
-  @commands.command()  
-  @commands.is_owner(hidden=True)
+  @commands.command(hidden=True)  
+  @commands.is_owner()
   #@commands.cooldown(1, 10, commands.BucketType.user)
   async def pl2(self, ctx, word: str = None):
     '''

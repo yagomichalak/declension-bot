@@ -4,7 +4,7 @@ import os
 import asyncio
 from re import match
 
-client = commands.Bot(command_prefix='!dec')
+client = commands.Bot(command_prefix='dec!')
 client.remove_command('help')
 token = os.getenv('TOKEN')
 on_guild_log_id = os.getenv('ON_GUILD_LOG_ID')
@@ -40,6 +40,7 @@ async def on_command_error(ctx, error):
     await ctx.send('**Make sure to inform all parameters!**')
 
   print(error)
+
 
 @client.event
 async def on_message(message):
@@ -100,7 +101,7 @@ async def info(ctx):
   '''
   Shows some information about the bot itself.
   '''
-  embed = discord.Embed(title='Declinator Bot', description="__**WHAT IS IT?:**__```Hello, the Declinator bot is an open source bot based on word declensions, in other words, it shows you all forms of a particular word of a given language containing a grammatical case system.```", colour=ctx.author.color, url="https://theartemisbot.herokuapp.com", timestamp=ctx.message.created_at)
+  embed = discord.Embed(title='Declinator Bot', description="__**WHAT IS IT?:**__```Hello, the Declinator bot is an open source bot based on word declensions, in other words, it shows you all forms of a particular word of a given language that contains a grammatical case system.```", colour=ctx.author.color, url="https://theartemisbot.herokuapp.com", timestamp=ctx.message.created_at)
   embed.add_field(name="📚 __**Language declinators**__",
                 value="`2` different languages to decline so far.",
                 inline=True)

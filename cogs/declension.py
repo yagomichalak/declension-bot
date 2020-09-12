@@ -14,6 +14,7 @@ from PIL import Image
 import time
 from bs4 import BeautifulSoup
 import copy
+from itertools import zip_longest
 
 class Declension(commands.Cog):
 
@@ -152,6 +153,65 @@ class Declension(commands.Cog):
           await ctx.send(embed=embed)
 
             
+  @commands.command(aliases=['russian', 'ru', 'rus'])
+  #@commands.cooldown(1, 10, commands.BucketType.user)
+  async def ruski(self, ctx, word: str = None):
+    '''
+    Declines a Russian word; showing a table with its full declension forms.
+    :param word: The word to decline.
+    '''
+    me = ctx.author
+    if not word:
+      return await ctx.send(f"**Please {me.mention}, inform a word to search!**")
+
+    root = 'https://cooljugator.com/run'
+
+    # Request part
+    async with self.session.get(f"{root}/{word}") as response:
+      if response.status == 200:
+        
+        # Scraping part
+        html = BeautifulSoup(await response.read(), 'html.parser')
+        main_div = html.select('#conjugationDivs')
+        div = html.select_one('.conjugation-table.collapsable')
+        case_names = [case.text for case in div.select('.conjugation-cell.conjugation-cell-four.conjugation-cell-pronouns.pronounColumn') if case.text]
+        all_decl = [decl['data-default'] for decl in div.select('.conjugation-cell.conjugation-cell-four') if decl.get('data-default')]
+
+      plu_decl = all_decl[:8]
+      sing_decl = all_decl[8:]
+
+      sing_text = ''
+      plu_text = ''
+
+      sing_list = list(zip_longest(case_names, sing_decl, fillvalue=''))
+      plu_list = list(zip_longest(case_names, plu_decl, fillvalue=''))
+
+      for sing in sing_list:
+        sing_text += f"{' '.join(sing)}\n"
+      for plu in plu_list:
+        plu_text += f"{' '.join(plu)}\n"
+
+      # Embed part
+      embed = discord.Embed(
+        title=f"Russian Declension",
+        description=f"**Word:** {word}",
+        color=ctx.author.color,
+        timestamp=ctx.message.created_at
+      )
+      embed.add_field(
+        name='__Singular__',
+        value=f"```apache\n{sing_text}```",
+        inline=True
+      )
+      embed.add_field(
+        name='__Plural__',
+        value=f"```apache\n{plu_text}```",
+        inline=True
+      )
+      await ctx.send(embed=embed)
+      
+
+
 
   @staticmethod
   async def database():

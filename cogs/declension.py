@@ -30,7 +30,7 @@ class Declension(commands.Cog):
     self.change_stauts.start()
     print('Declension cog is online!')
 
-  @tasks.loop
+  @tasks.loop(seconds=30)
   async def change_status(self):
     await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name=f"{next(status)} declensions!"))
     

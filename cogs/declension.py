@@ -1,5 +1,5 @@
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 import aiohttp
 import aiomysql
 from os import getenv
@@ -14,7 +14,9 @@ from PIL import Image
 import time
 from bs4 import BeautifulSoup
 import copy
-from itertools import zip_longest
+from itertools import zip_longest, cycle
+
+status = cycle(['Russian', 'German'])
 
 class Declension(commands.Cog):
 
@@ -22,6 +24,16 @@ class Declension(commands.Cog):
     self.client = client
     self.session = aiohttp.ClientSession(loop=client.loop)
     self.pdf_token = getenv('PDF_API_TOKEN')
+
+  @commands.Cog.listener()
+  async def on_ready(self):
+    self.change_stauts.start()
+    print('Declension cog is online!')
+
+  @tasks.loop
+  async def change_status(self):
+    await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name=f"{next(status)} declensions!"))
+    
   
   @commands.command(aliases=['polish', 'pl', 'pol'])
   @commands.cooldown(1, 10, commands.BucketType.user)

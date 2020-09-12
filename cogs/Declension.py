@@ -27,7 +27,7 @@ class Declension(commands.Cog):
 
   @commands.Cog.listener()
   async def on_ready(self):
-    self.change_stauts.start()
+    self.change_status.start()
     print('Declension cog is online!')
 
   @tasks.loop(seconds=30)

@@ -152,10 +152,27 @@ class Declension(commands.Cog):
             value=f"```apache\n{text}```")
           await ctx.send(embed=embed)
 
-            
+  @commands.command()
+  async def bla(self, ctx, word: str = None):
+    '''
+    bla
+    '''
+    if not word:
+      return await ctx.send("Inform a word, asshole")
+
+    root1 = 'http://online-polish-dictionary.com/word'
+    root = 'http://online-polish-dictionary.com/system/ajax/dictionary/search-html/en'
+    req2 = f'{root}/{word}'
+    req ='https://hasteb.in/dufamoda.http'
+    async with self.session.get(req) as response:
+      if response.status == 200:
+        data = await response.text()
+        print(data)
+    
+  
   @commands.command(aliases=['russian', 'ru', 'rus'])
-  #@commands.cooldown(1, 10, commands.BucketType.user)
-  async def ruski(self, ctx, word: str = None):
+  @commands.cooldown(1, 10, commands.BucketType.user)
+  async def ruski(self, ctx, word: str = None, word_type: str = None):
     '''
     Declines a Russian word; showing a table with its full declension forms.
     :param word: The word to decline.
@@ -163,53 +180,109 @@ class Declension(commands.Cog):
     me = ctx.author
     if not word:
       return await ctx.send(f"**Please {me.mention}, inform a word to search!**")
+    if not word_type:
+      return await ctx.send("**Inform the word type!**")
 
-    root = 'https://cooljugator.com/run'
+    if word_type.lower() in ['noun', 'n']:
+      root = 'https://cooljugator.com/run'
+    elif word_type.lower() in ['adjective', 'adj']:
+      root = 'https://cooljugator.com/rua'
+    else:
+      return await ctx.send("**Invalid word type!**")    
 
     # Request part
-    async with self.session.get(f"{root}/{word}") as response:
+    req = f"{root}/{word.lower()}"
+    async with self.session.get(req) as response:
       if response.status == 200:
-        
-        # Scraping part
-        html = BeautifulSoup(await response.read(), 'html.parser')
-        main_div = html.select('#conjugationDivs')
-        div = html.select_one('.conjugation-table.collapsable')
-        case_names = [case.text for case in div.select('.conjugation-cell.conjugation-cell-four.conjugation-cell-pronouns.pronounColumn') if case.text]
-        all_decl = [decl['data-default'] for decl in div.select('.conjugation-cell.conjugation-cell-four') if decl.get('data-default')]
 
-      plu_decl = all_decl[:8]
-      sing_decl = all_decl[8:]
+        try:
+          # Scraping part
+          html = BeautifulSoup(await response.read(), 'html.parser')
+          main_div = html.select('#conjugationDivs')
+          div = html.select_one('.conjugation-table.collapsable')
+          case_titles = {title.text: [] for title in div.select('.conjugation-cell.conjugation-cell-four.tense-title') if title.text}
+          print(f"{case_titles=}")
+          case_names = [case.text for case in div.select('.conjugation-cell.conjugation-cell-four.conjugation-cell-pronouns.pronounColumn') if case.text]
+          indexes = list(case_titles)
+          index = indexes[0]
+          for decl in div.select('.conjugation-cell.conjugation-cell-four'):
+            if decl.text:
+              try:
+                if new_i := indexes.index(decl.text):
+                  index = indexes[new_i]
+              except ValueError:
+                pass
+            
+              try:
+                case_titles[index].append(decl['data-default'])
+              except Exception:
+                pass
+        except AttributeError:
+          return await ctx.send("**Nothing found! Make sure to type correct parameters!**")
 
-      sing_text = ''
-      plu_text = ''
+        # Embed part
+        embed = discord.Embed(
+          title=f"Russian Declension",
+          description=f"**Word:** {word}",
+          color=ctx.author.color,
+          timestamp=ctx.message.created_at,
+          url=req
+        )
+        for key, values in case_titles.items():
+          print(key)
+          temp_list = zip_longest(case_names, values, fillvalue='')
+          temp_text = ''
+          for tl in temp_list:
+            temp_text += f"{' '.join(tl)}\n"
 
-      sing_list = list(zip_longest(case_names, sing_decl, fillvalue=''))
-      plu_list = list(zip_longest(case_names, plu_decl, fillvalue=''))
+          embed.add_field(
+            name=key,
+            value=f"```apache\n{temp_text}```",
+            inline=True
+          )
+          #print(values)
+          #print()
+          #print()
+        await ctx.send(embed=embed)
+        #all_decl = [decl['data-default'] for decl in div.select('.conjugation-cell.conjugation-cell-four') if decl.get('data-default')]
+        #print()
+        #print(all_decl)
 
-      for sing in sing_list:
-        sing_text += f"{' '.join(sing)}\n"
-      for plu in plu_list:
-        plu_text += f"{' '.join(plu)}\n"
+        '''
+        plu_decl = all_decl[:8]
+        sing_decl = all_decl[8:]
 
-      # Embed part
-      embed = discord.Embed(
-        title=f"Russian Declension",
-        description=f"**Word:** {word}",
-        color=ctx.author.color,
-        timestamp=ctx.message.created_at
-      )
-      embed.add_field(
-        name='__Singular__',
-        value=f"```apache\n{sing_text}```",
-        inline=True
-      )
-      embed.add_field(
-        name='__Plural__',
-        value=f"```apache\n{plu_text}```",
-        inline=True
-      )
-      await ctx.send(embed=embed)
-      
+        sing_text = ''
+        plu_text = ''
+
+        sing_list = list(zip_longest(case_names, sing_decl, fillvalue=''))
+        plu_list = list(zip_longest(case_names, plu_decl, fillvalue=''))
+
+        for sing in sing_list:
+          sing_text += f"{' '.join(sing)}\n"
+        for plu in plu_list:
+          plu_text += f"{' '.join(plu)}\n"
+
+        # Embed part
+        embed = discord.Embed(
+          title=f"Russian Declension",
+          description=f"**Word:** {word}",
+          color=ctx.author.color,
+          timestamp=ctx.message.created_at,
+          url=req
+        )
+        embed.add_field(
+          name='__Singular__',
+          value=f"```apache\n{sing_text}```",
+          inline=True
+        )
+        embed.add_field(
+          name='__Plural__',
+          value=f"```apache\n{plu_text}```",
+          inline=True
+        )
+        await ctx.send(embed=embed)
+        '''
 
 
 

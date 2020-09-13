@@ -16,9 +16,12 @@ from bs4 import BeautifulSoup
 import copy
 from itertools import zip_longest, cycle
 
-status = cycle(['Russian', 'German'])
+status = cycle(['Russian', 'German', 'Finnish'])
 
 class Declension(commands.Cog):
+  '''
+  A category for word declensions.
+  '''
 
   def __init__(self, client):
     self.client = client
@@ -270,14 +273,14 @@ class Declension(commands.Cog):
           for d in div:
             case_titles.update({title.text: [] for title in d.select('.conjugation-cell.conjugation-cell-four.tense-title') if title.text})
             
-          print(f"{case_titles=}")
+          #print(f"{case_titles=}")
           case_names = []
           for dd in div:
             case_names.append([case.text for case in dd.select('.conjugation-cell.conjugation-cell-four.conjugation-cell-pronouns.pronounColumn') if case.text])
-            print()
-            print(f"{case_names=}")
-            print()
-          print()
+          #   print()
+          #   print(f"{case_names=}")
+          #   print()
+          # print()
           indexes = list(case_titles)
           index = indexes[0]
           for dd in div:
@@ -293,32 +296,33 @@ class Declension(commands.Cog):
                   case_titles[index].append(decl['data-default'])
                 except Exception:
                   pass
-          print()
-          print(f"{case_titles=}")
+          #print()
+          #print(f"{case_titles=}")
         except AttributeError:
           return await ctx.send("**Nothing found! Make sure to type correct parameters!**")
 
         # Embed part
         embed = discord.Embed(
           title=f"Finnish Declension",
-          description=f"**Word:** {word}",
+          description=f"**Word:** {word}\n**Type:** {word_type}",
           color=ctx.author.color,
           timestamp=ctx.message.created_at,
           url=req
         )
+        count = 0
         for key, values in case_titles.items():
-          print(key)
-          for i, case_name_list in enumerate(case_names):
-            temp_list = zip_longest(case_names[i], values, fillvalue='')
-            temp_text = ''
-            for tl in temp_list:
-              temp_text += f"{' '.join(tl)}\n"
+          #print(key)
+          temp_list = zip_longest(case_names[count], values, fillvalue='')
+          temp_text = ''
+          for tl in temp_list:
+            temp_text += f"{' '.join(tl)}\n"
 
-            embed.add_field(
-              name=key,
-              value=f"```apache\n{temp_text}```",
-              inline=True
-            )
+          embed.add_field(
+            name=key,
+            value=f"```apache\n{temp_text}```",
+            inline=True
+          )
+          count += 1
         await ctx.send(embed=embed)
 
 

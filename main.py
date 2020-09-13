@@ -6,7 +6,7 @@ from re import match
 
 client = commands.Bot(command_prefix='dec!')
 client.remove_command('help')
-token = os.getenv('TOKEN')
+token = os.getenv('TOKEN2')
 on_guild_log_id = os.getenv('ON_GUILD_LOG_ID')
 
 @client.event

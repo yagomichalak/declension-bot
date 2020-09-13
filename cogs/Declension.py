@@ -236,6 +236,90 @@ class Declension(commands.Cog):
           )
         await ctx.send(embed=embed)
 
+  @commands.command(aliases=['fi', 'fin'])
+  @commands.cooldown(1, 10, commands.BucketType.user)
+  async def finnish(self, ctx, word: str = None, word_type: str = None):
+    '''
+    Declines a Finnish word; showing a table with its full declension forms.
+    :param word: The word to decline.
+    '''
+    me = ctx.author
+    if not word:
+      return await ctx.send(f"**Please {me.mention}, inform a word to search!**")
+    if not word_type:
+      return await ctx.send("**Inform the word type!**")
+
+    if word_type.lower() in ['noun', 'n']:
+      root = 'https://cooljugator.com/fin'
+    elif word_type.lower() in ['adjective', 'adj']:
+      root = 'https://cooljugator.com/fia'
+    else:
+      return await ctx.send("**Invalid word type!**")    
+
+    # Request part
+    req = f"{root}/{word.lower()}"
+    async with self.session.get(req) as response:
+      if response.status == 200:
+
+        try:
+          # Scraping part
+          html = BeautifulSoup(await response.read(), 'html.parser')
+          main_div = html.select('#conjugationDivs')
+          div = html.select('.conjugation-table.collapsable')
+          case_titles = {}
+          for d in div:
+            case_titles.update({title.text: [] for title in d.select('.conjugation-cell.conjugation-cell-four.tense-title') if title.text})
+            
+          print(f"{case_titles=}")
+          case_names = []
+          for dd in div:
+            case_names.append([case.text for case in dd.select('.conjugation-cell.conjugation-cell-four.conjugation-cell-pronouns.pronounColumn') if case.text])
+            print()
+            print(f"{case_names=}")
+            print()
+          print()
+          indexes = list(case_titles)
+          index = indexes[0]
+          for dd in div:
+            for decl in dd.select('.conjugation-cell.conjugation-cell-four'):
+              if decl.text:
+                try:
+                  if new_i := indexes.index(decl.text):
+                    index = indexes[new_i]
+                except ValueError:
+                  pass
+              
+                try:
+                  case_titles[index].append(decl['data-default'])
+                except Exception:
+                  pass
+          print()
+          print(f"{case_titles=}")
+        except AttributeError:
+          return await ctx.send("**Nothing found! Make sure to type correct parameters!**")
+
+        # Embed part
+        embed = discord.Embed(
+          title=f"Finnish Declension",
+          description=f"**Word:** {word}",
+          color=ctx.author.color,
+          timestamp=ctx.message.created_at,
+          url=req
+        )
+        for key, values in case_titles.items():
+          print(key)
+          for i, case_name_list in enumerate(case_names):
+            temp_list = zip_longest(case_names[i], values, fillvalue='')
+            temp_text = ''
+            for tl in temp_list:
+              temp_text += f"{' '.join(tl)}\n"
+
+            embed.add_field(
+              name=key,
+              value=f"```apache\n{temp_text}```",
+              inline=True
+            )
+        await ctx.send(embed=embed)
 
 
   @staticmethod

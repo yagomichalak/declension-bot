@@ -8,7 +8,6 @@ import json
 from datetime import datetime
 import re
 import requests
-#from wand.image import Image as wi
 import convertapi
 from PIL import Image
 import time

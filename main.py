@@ -103,7 +103,7 @@ async def info(ctx):
   '''
   embed = discord.Embed(title='Declinator Bot', description="__**WHAT IS IT?:**__```Hello, the Declinator bot is an open source bot based on word declensions, in other words, it shows you all forms of a particular word of a given language that contains a grammatical case system.```", colour=ctx.author.color, url="https://theartemisbot.herokuapp.com", timestamp=ctx.message.created_at)
   embed.add_field(name="📚 __**Language declinators**__",
-                value="`2` different languages to decline so far.",
+                value="`3` different languages to decline so far.",
                 inline=True)
   embed.add_field(name="💻 __**Programmed in**__",
                 value="The Declinator bot was built in Python, and you can find its GitHub repository [here](https://github.com/yagomichalak/declension-bot).",
@@ -188,7 +188,7 @@ async def servers(ctx):
   '''
   Shows how many servers the bot is in.
   '''
-  await ctx.send(f"**I'm currently in {len(client.guilds)} servers!**")
+  await ctx.send(f"**I'm currently declining in {len(client.guilds)} servers!**")
 
 @client.command(hidden=True)
 @commands.is_owner()

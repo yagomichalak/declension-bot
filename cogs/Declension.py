@@ -35,12 +35,41 @@ class Declension(commands.Cog):
   @tasks.loop(seconds=30)
   async def change_status(self):
     await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name=f"{next(status)} declensions!"))
+
+  @commands.command(aliases=['ex', 'ie', 'eg'])
+  async def example(self, ctx):
+    '''
+    A command for showing example commands.
+    '''
+    embed = discord.Embed(
+      title="Examples",
+      description="Some example commands for you to get started, but remember that declensions won't work with verbs.",
+      color=ctx.author.color,
+      timestamp=ctx.message.created_at
+    )
+    embed.add_field(
+      name="Русский",
+      value=f'''```ini\n[1] dec!russian год noun\n[2] dec!ruski люди n\n[3] dec!ru разный adjective\n[4] dec!rus эмоциональный adj```''',
+      inline=False
+    )
+    embed.add_field(
+      name="Deutsch",
+      value=f'''```ini\n[1] dec!german mann\n[2] dec!de groß n\n[3] dec!deutsch lecker\n[4] dec!ger frau```''',
+      inline=False
+    )
+    embed.add_field(
+      name="Suomi",
+      value=f'''```ini\n[1] dec!finnish erilainen adjective\n[2] dec!suomi kallis adjn\n[3] dec!fi aika noun\n[4] dec!fin kansa n```''',
+      inline=False
+    )
+    await ctx.send(embed=embed)
+    
     
   
-  @commands.command(hidden=True, aliases=['polish', 'pl', 'pol'])
+  @commands.command(hidden=True, aliases=['polski', 'pl', 'pol'])
   @commands.is_owner()
   @commands.cooldown(1, 10, commands.BucketType.user)
-  async def polski(self, ctx, word: str = None):
+  async def polish(self, ctx, word: str = None):
     '''
     Declines a Polish word; showing a table with its full declension forms.
     :param word: The word to decline.
@@ -166,9 +195,9 @@ class Declension(commands.Cog):
           await ctx.send(embed=embed)
     
   
-  @commands.command(aliases=['russian', 'ru', 'rus'])
+  @commands.command(aliases=['ruski', 'ru', 'rus', 'русский'])
   @commands.cooldown(1, 10, commands.BucketType.user)
-  async def ruski(self, ctx, word: str = None, word_type: str = None):
+  async def russian(self, ctx, word: str = None, word_type: str = None):
     '''
     Declines a Russian word; showing a table with its full declension forms.
     :param word: The word to decline.
@@ -238,7 +267,7 @@ class Declension(commands.Cog):
           )
         await ctx.send(embed=embed)
 
-  @commands.command(aliases=['fi', 'fin'])
+  @commands.command(aliases=['fi', 'fin', 'suomi'])
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def finnish(self, ctx, word: str = None, word_type: str = None):
     '''
@@ -345,8 +374,8 @@ class Declension(commands.Cog):
 
   
 
-  @commands.command(aliases=['german', 'ger', 'de'])
-  async def deutsch(self, ctx, word: str = None):
+  @commands.command(aliases=['deutsch', 'ger', 'de'])
+  async def german(self, ctx, word: str = None):
     '''
     Declines a German word; showing an embedded message with its full declension forms.
     :param word: The word to decline.

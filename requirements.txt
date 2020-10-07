@@ -2,7 +2,7 @@ aiohttp==3.6.2
 aiomysql==0.0.20
 requests==2.24.0
 convertapi==1.4.0
-discord.py==1.4.1
+discord.py==1.5.0
 Pillow==7.2.0
 beautifulsoup4==4.9.1
 discord==1.0.1

@@ -4,7 +4,8 @@ import os
 import asyncio
 from re import match
 
-client = commands.Bot(command_prefix='dec!')
+intents = discord.Intents().all()
+client = commands.Bot(command_prefix='dec!', intents=intents)
 client.remove_command('help')
 token = os.getenv('TOKEN')
 on_guild_log_id = os.getenv('ON_GUILD_LOG_ID')

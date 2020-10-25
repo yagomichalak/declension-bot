@@ -324,8 +324,11 @@ class Declension(commands.Cog):
                   pass
           #print()
           #print(f"{case_titles=}")
-        except (AttributeError, asyncio.InvalidUrl):
+        except AttributeError:
           return await ctx.send("**Nothing found! Make sure to type correct parameters!**")
+
+        except Exception:
+          return await ctx.send("**Error, I couldn't do it, make sure to type things correctyl!**")
 
         # Embed part
         embed = discord.Embed(

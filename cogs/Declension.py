@@ -327,9 +327,7 @@ class Declension(commands.Cog):
         except AttributeError:
           return await ctx.send("**Nothing found! Make sure to type correct parameters!**")
 
-        except Exception:
-          return await ctx.send("**Error, I couldn't do it, make sure to type things correctyl!**")
-
+      try:
         # Embed part
         embed = discord.Embed(
           title=f"Finnish Declension",
@@ -353,7 +351,8 @@ class Declension(commands.Cog):
           )
           count += 1
         await ctx.send(embed=embed)
-
+      except Exception:
+        return await ctx.send("**Error, I couldn't do it, make sure to type things correctly!**")
 
   @staticmethod
   async def database():

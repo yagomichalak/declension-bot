@@ -324,7 +324,7 @@ class Declension(commands.Cog):
                   pass
           #print()
           #print(f"{case_titles=}")
-        except AttributeError:
+        except (AttributeError, asyncio.InvalidUrl):
           return await ctx.send("**Nothing found! Make sure to type correct parameters!**")
 
         # Embed part

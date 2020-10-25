@@ -290,7 +290,7 @@ async def vote(ctx):
   embed = discord.Embed(
     title="__Support__",
     description=f"Click [here]{link} to vote.",
-    url=link
+    url=link,
     color=ctx.author.color
   )
   await ctx.send(embed=embed)

@@ -4,7 +4,7 @@ import os
 import asyncio
 from re import match
 
-intents = discord.Intents().all()
+intents = discord.Intents().default()
 client = commands.Bot(command_prefix='dec!', intents=intents)
 client.remove_command('help')
 token = os.getenv('TOKEN')
@@ -278,6 +278,20 @@ async def support(ctx):
   timestamp=ctx.message.created_at,
   url=link,
   color=ctx.author.color
+  )
+  await ctx.send(embed=embed)
+
+@client.command()
+async def vote(ctx):
+  '''
+  Vote for me on TopGG!
+  '''
+  link = 'https://top.gg/bot/753754955005034497/vote'
+  embed = discord.Embed(
+    title="__Support__",
+    description=f"Click [here]{link} to vote.",
+    url=link
+    color=ctx.author.color
   )
   await ctx.send(embed=embed)
 

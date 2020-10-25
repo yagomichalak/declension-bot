@@ -71,7 +71,7 @@ class Declension(commands.Cog):
     
     
   
-  @commands.command(hidden=True, aliases=['polski', 'pl', 'pol', 'po'])
+  @commands.command(aliases=['polski', 'pl', 'pol', 'po'])
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def polish(self, ctx, word: str = None):
     '''

@@ -48,18 +48,23 @@ class Declension(commands.Cog):
       timestamp=ctx.message.created_at
     )
     embed.add_field(
-      name="Русский",
+      name="🇷🇺 Русский",
       value=f'''```ini\n[1] dec!russian год noun\n[2] dec!ruski люди n\n[3] dec!ru разный adjective\n[4] dec!rus эмоциональный adj```''',
       inline=False
     )
     embed.add_field(
-      name="Deutsch",
+      name="🇩🇪 Deutsch",
       value=f'''```ini\n[1] dec!german mann\n[2] dec!de groß n\n[3] dec!deutsch lecker\n[4] dec!ger frau```''',
       inline=False
     )
     embed.add_field(
-      name="Suomi",
+      name="🇫🇮 Suomi",
       value=f'''```ini\n[1] dec!finnish erilainen adjective\n[2] dec!suomi kallis adjn\n[3] dec!fi aika noun\n[4] dec!fin kansa n```''',
+      inline=False
+    )
+    embed.add_field(
+      name="🇵🇱 Polski",
+      value=f'''```ini\n[1] dec!polish kobieta\n[2] dec!po mężczyzna\n[3] dec!polski warzywa\n[4] dec!pol przyjaciel```''',
       inline=False
     )
     await ctx.send(embed=embed)
@@ -243,6 +248,7 @@ class Declension(commands.Cog):
         except AttributeError:
           return await ctx.send("**Nothing found! Make sure to type correct parameters!**")
 
+      try:
         # Embed part
         embed = discord.Embed(
           title=f"Russian Declension",
@@ -264,6 +270,8 @@ class Declension(commands.Cog):
             inline=True
           )
         await ctx.send(embed=embed)
+      except Exception:
+        return await ctx.send("**I couldn't do this request, make sure to type things correctly!**")
 
   @commands.command(aliases=['fi', 'fin', 'suomi'])
   @commands.cooldown(1, 10, commands.BucketType.user)
@@ -352,7 +360,7 @@ class Declension(commands.Cog):
           count += 1
         await ctx.send(embed=embed)
       except Exception:
-        return await ctx.send("**Error, I couldn't do it, make sure to type things correctly!**")
+        return await ctx.send("**I couldn't do this request, make sure to type things correctly!**")
 
   @staticmethod
   async def database():

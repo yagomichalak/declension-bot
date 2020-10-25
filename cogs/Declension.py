@@ -88,7 +88,6 @@ class Declension(commands.Cog):
           start = 'https://e-polish.eu/dictionary/en/'
           end = '.pdf'
           s = data.find(start)
-          print(data)
           e = data.find(end)
           #print(data)
           url = data[s:e+4]
@@ -104,7 +103,7 @@ class Declension(commands.Cog):
           except Exception:
             return await ctx.send("**I couldn't find anything for that word!**")
         else:
-          print(error)
+          # print(error)
           return await ctx.send("**For some reason I couldn't process it!**")
       
 
@@ -225,7 +224,7 @@ class Declension(commands.Cog):
           main_div = html.select('#conjugationDivs')
           div = html.select_one('.conjugation-table.collapsable')
           case_titles = {title.text: [] for title in div.select('.conjugation-cell.conjugation-cell-four.tense-title') if title.text}
-          print(f"{case_titles=}")
+          # print(f"{case_titles=}")
           case_names = [case.text for case in div.select('.conjugation-cell.conjugation-cell-four.conjugation-cell-pronouns.pronounColumn') if case.text]
           indexes = list(case_titles)
           index = indexes[0]
@@ -253,7 +252,7 @@ class Declension(commands.Cog):
           url=req
         )
         for key, values in case_titles.items():
-          print(key)
+          # print(key)
           temp_list = zip_longest(case_names, values, fillvalue='')
           temp_text = ''
           for tl in temp_list:

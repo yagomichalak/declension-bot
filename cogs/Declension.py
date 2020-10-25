@@ -15,7 +15,7 @@ from bs4 import BeautifulSoup
 import copy
 from itertools import zip_longest, cycle
 
-status = cycle(['Russian', 'German', 'Finnish'])
+status = cycle(['Russian', 'German', 'Finnish', 'Polish'])
 
 class Declension(commands.Cog):
   '''
@@ -66,8 +66,7 @@ class Declension(commands.Cog):
     
     
   
-  @commands.command(hidden=True, aliases=['polski', 'pl', 'pol'])
-  @commands.is_owner()
+  @commands.command(hidden=True, aliases=['polski', 'pl', 'pol', 'po'])
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def polish(self, ctx, word: str = None):
     '''

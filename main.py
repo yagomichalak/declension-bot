@@ -289,7 +289,7 @@ async def vote(ctx):
   link = 'https://top.gg/bot/753754955005034497/vote'
   embed = discord.Embed(
     title="__Support__",
-    description=f"Click [here]{link} to vote.",
+    description=f"Click [here]({link}) to vote.",
     url=link,
     color=ctx.author.color
   )

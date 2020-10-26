@@ -113,7 +113,7 @@ async def info(ctx):
                 value="The bot either web scrapes or use an API to fetch information from websites, after that, the bot does its magic to nicely show the information in an embedded message.",
                 inline=True)
   embed.add_field(name="🌎 __**More languages**__ ", 
-                value="More languages will be added as I'm requested and have some to implement them.", inline=True)
+                value="More languages will be added as I'm requested and have some time to implement them.", inline=True)
   embed.set_footer(text=ctx.guild.name,
                 icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720294157406568458/universe_hub_server_icon.png')
   embed.set_thumbnail(

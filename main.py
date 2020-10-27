@@ -102,7 +102,7 @@ async def info(ctx):
   '''
   Shows some information about the bot itself.
   '''
-  embed = discord.Embed(title='Declinator Bot', description="__**WHAT IS IT?:**__```Hello, the Declinator bot is an open source bot based on word declensions, in other words, it shows you all forms of a particular word of a given language that contains a grammatical case system.```", colour=ctx.author.color, url="https://theartemisbot.herokuapp.com", timestamp=ctx.message.created_at)
+  embed = discord.Embed(title='Declinator Bot', description="__**WHAT IS IT?:**__```Hello, the Declinator bot is an open source bot based on word declensions, in other words, it shows you all forms of a particular word of a given language that contains a grammatical case system.```", colour=ctx.author.color, url="https://languagesloth.herokuapp.com/", timestamp=ctx.message.created_at)
   embed.add_field(name="📚 __**Language declinators**__",
                 value="`4` different languages to decline so far.",
                 inline=True)
@@ -119,7 +119,7 @@ async def info(ctx):
   embed.set_thumbnail(
     url=client.user.avatar_url)
   embed.set_author(name='DNK#6725', url='https://discord.gg/languages',
-                icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720289112040669284/DNK_icon.png')
+                icon_url='https://cdn.discordapp.com/icons/459195345419763713/a_f5c4ccc783f9c8a9d9ce8940a5eea852.gif?size=1024')
   await ctx.send(embed=embed)
 
 @client.command()

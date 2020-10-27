@@ -115,11 +115,11 @@ async def info(ctx):
   embed.add_field(name="🌎 __**More languages**__ ", 
                 value="More languages will be added as I'm requested and have some time to implement them.", inline=True)
   embed.set_footer(text=ctx.guild.name,
-                icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720294157406568458/universe_hub_server_icon.png')
+                icon_url='https://cdn.discordapp.com/icons/459195345419763713/a_f5c4ccc783f9c8a9d9ce8940a5eea852.gif?size=1024')
   embed.set_thumbnail(
     url=client.user.avatar_url)
   embed.set_author(name='DNK#6725', url='https://discord.gg/languages',
-                icon_url='https://cdn.discordapp.com/icons/459195345419763713/a_f5c4ccc783f9c8a9d9ce8940a5eea852.gif?size=1024')
+                icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720289112040669284/DNK_icon.png')
   await ctx.send(embed=embed)
 
 @client.command()

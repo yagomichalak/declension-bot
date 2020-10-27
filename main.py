@@ -118,7 +118,7 @@ async def info(ctx):
                 icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720294157406568458/universe_hub_server_icon.png')
   embed.set_thumbnail(
     url=client.user.avatar_url)
-  embed.set_author(name='DNK#6725', url='https://discord.gg/7DyWxSt',
+  embed.set_author(name='DNK#6725', url='https://discord.gg/languages',
                 icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720289112040669284/DNK_icon.png')
   await ctx.send(embed=embed)
 

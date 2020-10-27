@@ -49,7 +49,7 @@ class Declension(commands.Cog):
     )
     embed.add_field(
       name="🇷🇺 Русский",
-      value=f'''```ini\n[1] dec!russian год noun\n[2] dec!ruski люди n\n[3] dec!ru разный adjective\n[4] dec!rus эмоциональный adj```''',
+      value=f'''```ini\n[1] dec!russian год\n[2] dec!ruski красивый\n[3] dec!ru такой\n[4] dec!rus эмоциональный```''',
       inline=False
     )
     embed.add_field(
@@ -142,136 +142,85 @@ class Declension(commands.Cog):
 
       await ctx.send(file=discord.File(f'files/{me.id}.png'))
       os.remove(f"files/{me.id}.pdf")
-      os.remove(f"files/{me.id}.png")
-
-
-  @commands.command(hidden=True)  
-  @commands.is_owner()
-  #@commands.cooldown(1, 10, commands.BucketType.user)
-  async def pl2(self, ctx, word: str = None):
-    '''
-    (PS) This command might not work, in fact, it hardly will.
-
-    Declines a Polish word; showing a table with its full declension forms.
-    :param word: The word to decline.
-    '''
-    me = ctx.author
-    if not word:
-      return await ctx.send(f"**Please {me.mention}, inform a word to search!**")
-
-    #root2 = 'https://www.declinator.com/?word'
-
-    #root = 'http://online-polish-dictionary.com/word'
-    root3 = f'http://aztekium.pl/przypadki.py?szukaj={word}&lang=en'
-
-    # Request part
-    async with self.session.get(root3) as response:
-      if response.status == 200:
-
-
-        # Embed
-        embed = discord.Embed(
-          title=f"Polish Declension",
-          description=f"**Word:** {word}",
-          color=ctx.author.color,
-          timestamp=ctx.message.created_at
-        )
-
-        # Scraping part
-        html = BeautifulSoup(await response.read(), 'html.parser')
-        div = html.select(
-        'body center:nth-child(1) form:nth-child(1) table:nth-child(3) tbody:nth-child(1) tr:nth-child(1) td:nth-child(2)')
-        text = ''
-        for sub in div:
-          for i, tr in enumerate(sub.select('table:nth-child(9) tr')):
-            tds = tr.select('td')
-            tds = tds[:3:2]
-            beginning, ending = tds[0].select('b')
-            text += f'{beginning.text} = "{ending.text}"\n'
-
-
-        #print(text)
-        if text:
-          embed.add_field(
-            name="All cases",
-            value=f"```apache\n{text}```")
-          await ctx.send(embed=embed)
-    
+      os.remove(f"files/{me.id}.png")    
+  
   
   @commands.command(aliases=['ruski', 'ru', 'rus', 'русский'])
   @commands.cooldown(1, 10, commands.BucketType.user)
-  async def russian(self, ctx, word: str = None, word_type: str = None):
+  async def russian(self, ctx, word: str = None):
     '''
     Declines a Russian word; showing a table with its full declension forms.
     :param word: The word to decline.
     '''
-    me = ctx.author
     if not word:
-      return await ctx.send(f"**Please {me.mention}, inform a word to search!**")
-    if not word_type:
-      return await ctx.send("**Inform the word type!**")
+      return await ctx.send("**Please, type a word**")
 
-    if word_type.lower() in ['noun', 'n']:
-      root = 'https://cooljugator.com/run'
-    elif word_type.lower() in ['adjective', 'adj']:
-      root = 'https://cooljugator.com/rua'
-    else:
-      return await ctx.send("**Invalid word type!**")    
+    root = 'https://en.openrussian.org/ru'
 
-    # Request part
     req = f"{root}/{word.lower()}"
     async with self.session.get(req) as response:
-      if response.status == 200:
+      if response.status != 200:
+        return await ctx.send("**Something went wrong with that search!**")
 
-        try:
-          # Scraping part
-          html = BeautifulSoup(await response.read(), 'html.parser')
-          main_div = html.select('#conjugationDivs')
-          div = html.select_one('.conjugation-table.collapsable')
-          case_titles = {title.text: [] for title in div.select('.conjugation-cell.conjugation-cell-four.tense-title') if title.text}
-          # print(f"{case_titles=}")
-          case_names = [case.text for case in div.select('.conjugation-cell.conjugation-cell-four.conjugation-cell-pronouns.pronounColumn') if case.text]
-          indexes = list(case_titles)
-          index = indexes[0]
-          for decl in div.select('.conjugation-cell.conjugation-cell-four'):
-            if decl.text:
-              try:
-                if new_i := indexes.index(decl.text):
-                  index = indexes[new_i]
-              except ValueError:
-                pass
-            
-              try:
-                case_titles[index].append(decl['data-default'])
-              except Exception:
-                pass
-        except AttributeError:
-          return await ctx.send("**Nothing found! Make sure to type correct parameters!**")
+    
+      # Gets the html and the table div
+      html = BeautifulSoup(await response.read(), 'html.parser')
+      div = html.select_one('.table-container')
 
-      try:
-        # Embed part
-        embed = discord.Embed(
-          title=f"Russian Declension",
-          description=f"**Word:** {word}",
-          color=ctx.author.color,
-          timestamp=ctx.message.created_at,
-          url=req
-        )
-        for key, values in case_titles.items():
-          # print(key)
-          temp_list = zip_longest(case_names, values, fillvalue='')
-          temp_text = ''
-          for tl in temp_list:
-            temp_text += f"{' '.join(tl)}\n"
+      if not div:
+        return await ctx.send("**I couldn't find anything for this!**")
 
-          embed.add_field(
-            name=key,
-            value=f"```apache\n{temp_text}```",
-            inline=True
-          )
-        await ctx.send(embed=embed)
-      except Exception:
-        return await ctx.send("**I couldn't do this request, make sure to type things correctly!**")
+      # Gets the word modes (singular, plura, m., f., etc)
+      word_modes = []
+      for mode in div.select('.table-audio'):
+        print(mode)
+        # Checks whether the row has a long version of the mode
+        if value := mode.select_one('.long'):
+          if value.text:
+            word_modes.append(value.text.strip())
+        # If not just tries to get its content
+        else:
+          if mode.text:
+            word_modes.append(mode.text.strip())
+
+      if not word_modes:
+        return await ctx.send("**I can't decline this word, maybe this is a verb!**")
+      # Gets all case names
+      case_names = [case.text.strip() for case in div.select('tbody tr th .short') if case.text]
+      # Gets all values
+      case_values = []
+      for case in div.select('tbody tr'):
+        row_values = []
+        for row in case.select('td'):
+          print(row.get_text("", strip=True))
+          if value := row.get_text(" | ", strip=True):
+            row_values.append(value.strip())
+
+        case_values.append(row_values)
+
+
+      tds = [td for td in div.select('tbody tr')]
+      word_type = html.select_one('.info').get_text(", ", strip=True)
+      # Makes the embedded message
+      embed = discord.Embed(
+        title="Russian Declension",
+        description=f"**Word:** {word.lower()}\n**Description:** {word_type}",
+        color=ctx.author.color,
+        url=req,
+        timestamp=ctx.message.created_at
+      )
+      # Loops through the word modes and get equivalent cases and values
+      for i, word_mode in enumerate(word_modes):
+        temp_text = ''
+        for ii, case_value in enumerate(case_values):
+          line = f"{case_names[ii]} {case_values[ii][i]}\n"
+          temp_text += line
+
+        embed.add_field(
+          name=word_mode,
+          value=f"```apache\n{temp_text}```",
+          inline=True)
+      await ctx.send(embed=embed)
 
   @commands.command(aliases=['fi', 'fin', 'suomi'])
   @commands.cooldown(1, 10, commands.BucketType.user)

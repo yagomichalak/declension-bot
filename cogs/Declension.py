@@ -173,7 +173,6 @@ class Declension(commands.Cog):
       # Gets the word modes (singular, plura, m., f., etc)
       word_modes = []
       for mode in div.select('.table-audio'):
-        print(mode)
         # Checks whether the row has a long version of the mode
         if value := mode.select_one('.long'):
           if value.text:
@@ -256,14 +255,11 @@ class Declension(commands.Cog):
           for d in div:
             case_titles.update({title.text: [] for title in d.select('.conjugation-cell.conjugation-cell-four.tense-title') if title.text})
             
-          #print(f"{case_titles=}")
+          # Get case names
           case_names = []
           for dd in div:
             case_names.append([case.text for case in dd.select('.conjugation-cell.conjugation-cell-four.conjugation-cell-pronouns.pronounColumn') if case.text])
-          #   print()
-          #   print(f"{case_names=}")
-          #   print()
-          # print()
+
           indexes = list(case_titles)
           index = indexes[0]
           for dd in div:
@@ -279,8 +275,7 @@ class Declension(commands.Cog):
                   case_titles[index].append(decl['data-default'])
                 except Exception:
                   pass
-          #print()
-          #print(f"{case_titles=}")
+
         except AttributeError:
           return await ctx.send("**Nothing found! Make sure to type correct parameters!**")
 
@@ -327,9 +322,6 @@ class Declension(commands.Cog):
 
     mycursor = await db.cursor()
     return mycursor, db
-
-
-  
 
   @commands.command(aliases=['deutsch', 'ger', 'de'])
   async def german(self, ctx, word: str = None):

@@ -1,7 +1,6 @@
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands
 import aiohttp
-import aiomysql
 from os import getenv
 import asyncio
 import json
@@ -13,9 +12,7 @@ from PIL import Image
 import time
 from bs4 import BeautifulSoup
 import copy
-from itertools import zip_longest, cycle
-
-status = cycle(['Russian', 'German', 'Finnish', 'Polish'])
+from itertools import zip_longest
 
 class Declension(commands.Cog):
   '''
@@ -29,17 +26,12 @@ class Declension(commands.Cog):
 
   @commands.Cog.listener()
   async def on_ready(self):
-    self.change_status.start()
-    print('Declension cog is online!')
+    print('Declension cog is online!')  
 
-  @tasks.loop(seconds=30)
-  async def change_status(self):
-    await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name=f"{next(status)} declensions!"))
-
-  @commands.command(aliases=['ex', 'ie', 'eg'])
-  async def example(self, ctx):
+  @commands.command()
+  async def dec_example(self, ctx):
     '''
-    A command for showing example commands.
+    Examples for declension commands.
     '''
     embed = discord.Embed(
       title="Examples",
@@ -305,23 +297,6 @@ class Declension(commands.Cog):
         await ctx.send(embed=embed)
       except Exception:
         return await ctx.send("**I couldn't do this request, make sure to type things correctly!**")
-
-  @staticmethod
-  async def database():
-    '''
-    A database entry, in case I need some in the future.
-    '''
-    loop = asyncio.get_event_loop()
-    db = await aiomysql.connect(
-      host=getenv('DB_HOST'), 
-      user=getenv('DB_USER'), 
-      password=getenv('DB_PASSWORD'), 
-      db=getenv('DB_NAME'), 
-      loop=loop
-      )
-
-    mycursor = await db.cursor()
-    return mycursor, db
 
   @commands.command(aliases=['deutsch', 'ger', 'de'])
   async def german(self, ctx, word: str = None):

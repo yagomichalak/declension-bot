@@ -3,6 +3,14 @@ from discord.ext import commands, tasks
 import os
 import asyncio
 from re import match
+from itertools import cycle
+
+status = cycle([
+  "Russian declensions", "German declensions", "Finnish declensions", "Polish declensions",
+  "English conjugations", "Spanish conjugations",
+  "French conjugations", "Italian conjugations",
+  "Portuguese conjugations"
+  ])
 
 intents = discord.Intents().default()
 client = commands.Bot(command_prefix='dec!', intents=intents)
@@ -12,8 +20,13 @@ on_guild_log_id = os.getenv('ON_GUILD_LOG_ID')
 
 @client.event
 async def on_ready():
+  change_status.start()
   print("Bot is ready!")
 
+
+@tasks.loop(seconds=30)
+async def change_status():
+  await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name=f"{next(status)}!"))
 
 @client.event
 async def on_command_error(ctx, error):
@@ -102,9 +115,9 @@ async def info(ctx):
   '''
   Shows some information about the bot itself.
   '''
-  embed = discord.Embed(title='Declinator Bot', description="__**WHAT IS IT?:**__```Hello, the Declinator bot is an open source bot based on word declensions, in other words, it shows you all forms of a particular word of a given language that contains a grammatical case system.```", colour=ctx.author.color, url="https://languagesloth.herokuapp.com/", timestamp=ctx.message.created_at)
+  embed = discord.Embed(title='Declinator Bot', description="__**WHAT IS IT?:**__```Hello, the Declinator bot is an open source bot based on word declensions and verb conjugations, in other words, declensions are you all forms of a word in a language that uses a grammatical case system.```", colour=ctx.author.color, url="http://193.70.127.179/", timestamp=ctx.message.created_at)
   embed.add_field(name="📚 __**Language declinators**__",
-                value="`4` different languages to decline so far.",
+                value="`4` different languages to decline and `5` to conjugate so far.",
                 inline=True)
   embed.add_field(name="💻 __**Programmed in**__",
                 value="The Declinator bot was built in Python, and you can find its GitHub repository [here](https://github.com/yagomichalak/declension-bot).",
@@ -115,7 +128,7 @@ async def info(ctx):
   embed.add_field(name="🌎 __**More languages**__ ", 
                 value="More languages will be added as I'm requested and have some time to implement them.", inline=True)
   embed.set_footer(text=ctx.guild.name,
-                icon_url='https://cdn.discordapp.com/icons/459195345419763713/a_f5c4ccc783f9c8a9d9ce8940a5eea852.gif?size=1024')
+                icon_url='https://cdn.discordapp.com/icons/459195345419763713/a_dff4456b872c84146a78be8422e33cc2.gif?size=1024')
   embed.set_thumbnail(
     url=client.user.avatar_url)
   embed.set_author(name='DNK#6725', url='https://discord.gg/languages',

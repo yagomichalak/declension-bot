@@ -26,7 +26,7 @@ async def on_ready():
 
 @tasks.loop(seconds=30)
 async def change_status():
-  await self.client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name=f"{next(status)}!"))
+  await client.change_presence(activity=discord.Activity(type=discord.ActivityType.playing, name=f"{next(status)}!"))
 
 @client.event
 async def on_command_error(ctx, error):

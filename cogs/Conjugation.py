@@ -27,7 +27,7 @@ class Conjugation(commands.Cog):
     '''
     embed = discord.Embed(
       title="Examples",
-      description="Some example commands for you to get started, but remember that declensions won't work with verbs.",
+      description="Some example commands for you to get started with.",
       color=ctx.author.color,
       timestamp=ctx.message.created_at
     )

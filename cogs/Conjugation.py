@@ -130,7 +130,7 @@ class Conjugation(commands.Cog):
     """Conjugates a verb in Arabic.\n:param verb: The verb to conjugate.```
     
     🇸🇦-🇪🇬 __**Example:**__
-    ```ini\n[1] dec!arabic احضار\n[2] dec!sa Hakama\n[3] dec!ar ʾakhadha\n[4] dec!arabic فَعَلَ"""
+    ```ini\n[1] dec!arabic عمل\n[2] dec!sa Hakama\n[3] dec!ar ʾakhadha\n[4] dec!arabic فَعَلَ"""
     if not verb:
       return await ctx.send("**Please, type a word**")
 

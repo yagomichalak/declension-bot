@@ -27,49 +27,14 @@ class Declension(commands.Cog):
   @commands.Cog.listener()
   async def on_ready(self):
     print('Declension cog is online!')  
-
-  @commands.command()
-  async def dec_example(self, ctx):
-    '''
-    Examples for declension commands.
-    '''
-    embed = discord.Embed(
-      title="Examples",
-      description="Some example commands for you to get started with, but remember that declensions won't work with verbs.",
-      color=ctx.author.color,
-      timestamp=ctx.message.created_at
-    )
-    embed.add_field(
-      name="🇷🇺 Русский",
-      value=f'''```ini\n[1] dec!russian год\n[2] dec!ruski красивый\n[3] dec!ru такой\n[4] dec!rus эмоциональный```''',
-      inline=False
-    )
-    embed.add_field(
-      name="🇩🇪 Deutsch",
-      value=f'''```ini\n[1] dec!german mann\n[2] dec!de groß n\n[3] dec!deutsch lecker\n[4] dec!ger frau```''',
-      inline=False
-    )
-    embed.add_field(
-      name="🇫🇮 Suomi",
-      value=f'''```ini\n[1] dec!finnish erilainen adjective\n[2] dec!suomi kallis adjn\n[3] dec!fi aika noun\n[4] dec!fin kansa n```''',
-      inline=False
-    )
-    embed.add_field(
-      name="🇵🇱 Polski",
-      value=f'''```ini\n[1] dec!polish kobieta\n[2] dec!po mężczyzna\n[3] dec!polski warzywa\n[4] dec!pol przyjaciel```''',
-      inline=False
-    )
-    await ctx.send(embed=embed)
-    
-    
   
   @commands.command(aliases=['polski', 'pl', 'pol', 'po'])
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def polish(self, ctx, word: str = None):
-    '''
-    Declines a Polish word; showing a table with its full declension forms.
-    :param word: The word to decline.
-    '''
+    """Declines a Polish word; showing a table with its full declension forms.\n:param word: The word to decline.```
+    
+    🇵🇱 __**Example:**__
+    ```ini\n[1] dec!polish kobieta\n[2] dec!po mężczyzna\n[3] dec!polski warzywa\n[4] dec!pol przyjaciel"""
     me = ctx.author
     if not word:
       return await ctx.send(f"**Please {me.mention}, inform a word to search!**")
@@ -140,10 +105,10 @@ class Declension(commands.Cog):
   @commands.command(aliases=['ruski', 'ru', 'rus', 'русский'])
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def russian(self, ctx, word: str = None):
-    '''
-    Declines a Russian word; showing a table with its full declension forms.
-    :param word: The word to decline.
-    '''
+    """Declines a Russian word; showing a table with its full declension forms.\n:param word: The word to decline.```
+    
+    🇷🇺 __**Example:**__
+    ```ini\n[1] dec!russian год\n[2] dec!ruski красивый\n[3] dec!ru такой\n[4] dec!rus эмоциональный"""
     if not word:
       return await ctx.send("**Please, type a word**")
 
@@ -216,10 +181,10 @@ class Declension(commands.Cog):
   @commands.command(aliases=['fi', 'fin', 'suomi'])
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def finnish(self, ctx, word: str = None, word_type: str = None):
-    '''
-    Declines a Finnish word; showing a table with its full declension forms.
-    :param word: The word to decline.
-    '''
+    """Declines a Finnish word; showing a table with its full declension forms.\n:param word: The word to decline.\n:param word_type: The type of the word (noun/adj)```
+    
+    🇫🇮 __**Example:**__
+    ```ini\n[1] dec!finnish erilainen adjective\n[2] dec!suomi kallis adjn\n[3] dec!fi aika noun\n[4] dec!fin kansa n"""
     me = ctx.author
     if not word:
       return await ctx.send(f"**Please {me.mention}, inform a word to search!**")
@@ -300,10 +265,10 @@ class Declension(commands.Cog):
 
   @commands.command(aliases=['deutsch', 'ger', 'de'])
   async def german(self, ctx, word: str = None):
-    '''
-    Declines a German word; showing an embedded message with its full declension forms.
-    :param word: The word to decline.
-    '''
+    """Declines a Finnish word; showing a table with its full declension forms.\n:param word: The word to decline.```
+    
+    🇩🇪 __**Example:**__
+    ```ini\n[1] dec!german mann\n[2] dec!de groß\n[3] dec!deutsch lecker\n[4] dec!ger frau"""
     if not word:
       return await ctx.send("**Inform a word to decline!**")
 

@@ -20,51 +20,138 @@ class Conjugation(commands.Cog):
   async def on_ready(self):
     print('Something cog is online!')
 
-  @commands.command()
-  async def con_example(self, ctx):
-    '''
-    Examples for conjugation commands.
-    '''
-    embed = discord.Embed(
-      title="Examples",
-      description="Some example commands for you to get started with.",
-      color=ctx.author.color,
-      timestamp=ctx.message.created_at
-    )
-    embed.add_field(
-      name="🇺🇸-🇬🇧 English",
-      value=f'''```ini\n[1] dec!english make\n[2] dec!en to do\n[3] dec!eng get\n[4] dec!inglés to guess```''',
-      inline=False
-    )
-    embed.add_field(
-      name="🇪🇸-🇲🇽 Spanish",
-      value=f'''```ini\n[1] dec!spanish hacer\n[2] dec!es tener\n[3] dec!español estoy\n[4] dec!espagnol stoy```''',
-      inline=False
-    )
-    embed.add_field(
-      name="🇫🇷-🇧🇪 French",
-      value=f'''```ini\n[1] dec!french être\n[2] dec!fr avoir\n[3] dec!français faire\n[4] dec!francés lire```''',
-      inline=False
-    )
-    embed.add_field(
-      name="🇮🇹-🇨🇭 Italian",
-      value=f'''```ini\n[1] dec!italian trovare\n[2] dec!it essere\n[3] dec!italiano avere\n[4] dec!italien finire```''',
-      inline=False
-    )
-    embed.add_field(
-      name="🇧🇷-🇵🇹 Portuguese",
-      value=f'''```ini\n[1] dec!portuguese ser\n[2] dec!pt estar\n[3] dec!portugais ir\n[4] dec!portugués fazer```''',
-      inline=False
-    )
-    await ctx.send(embed=embed)
 
+  @commands.command(aliases=['nl'])
+  @commands.cooldown(1, 10, commands.BucketType.user)
+  async def dutch(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in Dutch.\n:param verb: The verb to conjugate.```
+    
+    🇳🇱 __**Example:**__
+    ```ini\n[1] dec!dutch hebben\n[2] dec!nl leren\n[3] dec!dutch verlaten\n[4] dec!nl horen"""
+    if not verb:
+      return await ctx.send("**Please, type a word**")
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+
+    root = f'https://www.mijnwoordenboek.nl/werkwoord/{verb}'
+    async with self.session.get(root) as response:
+      if response.status != 200:
+        return await ctx.send("**Something went wrong with that search!**")
+
+    
+      # Gets the html, the conjugation table div and table
+      html = BeautifulSoup(await response.read(), 'html.parser')
+      content_box = html.select_one('.content_box')
+      table_rows = [row for row in content_box.select('table tr')[1:]]
+      lenro = len(table_rows)
+      if lenro == 0:
+        return await ctx.send("**Nothing found for the informed value!**")
+
+      # Creates the initial embed
+      embed = discord.Embed(
+        title="Dutch Conjugation",
+        color=ctx.author.color,
+        timestamp=ctx.message.created_at,
+        url=root
+      )
+      msg = await ctx.send(embed=discord.Embed(title='🇳🇱'))
+      await msg.add_reaction('⬅️')
+      await msg.add_reaction('➡️')
+      index = 0
+      # Loops through each row of the conjugation tables
+      while True:
+        embed.title = f"Dutch Conjugation ({round(lenro/(lenro-index))}/{round(lenro/11)})"
+        for i in range(0, 12, 2):
+          if index + i + 1< len(table_rows):
+            tense_name = table_rows[index+i].get_text().strip()
+            conjugation = table_rows[index+i+1].get_text().strip().split('  ')
+            conjugation = '\n'.join(conjugation)
+          else:
+            break
+
+          # Adds a field for each table
+          embed.add_field(
+            name=tense_name,
+            value=f"```apache\n{conjugation}```",
+            inline=True
+          )
+
+        await msg.edit(embed=embed)
+        embed.clear_fields()
+        # Waits for user response to switch the page
+        try:
+          reaction, user = await self.client.wait_for('reaction_add', timeout=60, check=lambda r, u: r.message.id == msg.id and u.id == ctx.author.id and \
+          str(r.emoji) in ['⬅️', '➡️']
+          )
+        except asyncio.TimeoutError:
+          await msg.remove_reaction('⬅️', self.client.user)
+          await msg.remove_reaction('➡️', self.client.user)
+          break
+        else:
+          if str(reaction.emoji) == "➡️":
+              await msg.remove_reaction(reaction.emoji, user)
+              if index + 11 <= len(table_rows) / 2:
+                  index += 12
+              continue
+          elif str(reaction.emoji) == "⬅️":
+              await msg.remove_reaction(reaction.emoji, user)
+              if index > 0:
+                  index -= 12
+              continue
+  
+
+  # Conjugators based on Reverso's website
+  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.command(aliases=['jp', 'ja', 'jap'])
+  async def japanese(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in Japanese.\n:param verb: The verb to conjugate.```
+    
+    🇯🇵 __**Example:**__
+    ```ini\n[1] dec!japanese 食べる\n[2] dec!jp kurasu\n[3] dec!ja 分かる\n[4] dec!jap kangaeru"""
+    if not verb:
+      return await ctx.send("**Please, type a word**")
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+
+    root = f'https://conjugator.reverso.net/conjugation-japanese-verb-{temp_verb}.html'
+    emoji_title = '🇯🇵'
+    return await self.conjugate(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Japanese', space=True, aligned=False)
+
+  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.command(aliases=['sa', 'ar'])
+  async def arabic(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in Arabic.\n:param verb: The verb to conjugate.```
+    
+    🇸🇦-🇪🇬 __**Example:**__
+    ```ini\n[1] dec!arabic احضار\n[2] dec!sa Hakama\n[3] dec!ar ʾakhadha\n[4] dec!arabic فَعَلَ"""
+    if not verb:
+      return await ctx.send("**Please, type a word**")
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+
+    root = f'https://conjugator.reverso.net/conjugation-arabic-verb-{temp_verb}.html'
+    emoji_title = '🇸🇦-🇪🇬'
+    return await self.conjugate(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Arabic', space=True, aligned=False)
 
   @commands.command(aliases=['pt', 'portugais', 'portugués', 'português'])
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def portuguese(self, ctx, *, verb: str = None) -> None:
-    """ Conjugates a verb in Portuguese.
-    :param verb: The verb to conjugate.
-    """
+    """Conjugates a verb in Portuguese.\n:param verb: The verb to conjugate.```
+    
+    🇧🇷-🇵🇹 __**Example:**__
+    ```ini\n[1] dec!portuguese ser\n[2] dec!pt estar\n[3] dec!portugais ir\n[4] dec!portugués fazer"""
+
     if not verb:
       return await ctx.send("**Please, type a word**")
 
@@ -74,7 +161,7 @@ class Conjugation(commands.Cog):
     temp_verb = '%20'.join(verb.split())
 
     root = f'https://conjugator.reverso.net/conjugation-portuguese-verb-{temp_verb}.html'
-    emoji_title = '🇧🇷|🇵🇹'
+    emoji_title = '🇧🇷-🇵🇹'
     language_title = 'Portuguese'
     # return await self.conjugate(ctx=ctx, root=root, 
     # verb=verb, emoji_title=emoji_title)
@@ -186,9 +273,10 @@ class Conjugation(commands.Cog):
   @commands.command(aliases=['it', 'italiano', 'italien', 'ita'])
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def italian(self, ctx, *, verb: str = None) -> None:
-    """ Conjugates a verb in Italian.
-    :param verb: The verb to conjugate.
-    """
+    """Conjugates a verb in Italian.\n:param verb: The verb to conjugate.```
+    
+    🇮🇹-🇨🇭 __**Example:**__
+    ```ini\n[1] dec!italian trovare\n[2] dec!it essere\n[3] dec!italiano avere\n[4] dec!italien finire"""
     if not verb:
       return await ctx.send("**Please, type a word**")
 
@@ -198,16 +286,17 @@ class Conjugation(commands.Cog):
     temp_verb = '%20'.join(verb.split())
 
     root = f'https://conjugator.reverso.net/conjugation-italian-verb-{temp_verb}.html'
-    emoji_title = '🇮🇹|🇨🇭'
+    emoji_title = '🇮🇹-🇨🇭'
     return await self.conjugate(ctx=ctx, root=root, 
     verb=verb, emoji_title=emoji_title, language_title='Italian')
 
   @commands.command(aliases=['fr', 'français', 'francés', 'francais', 'francês', 'frances'])
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def french(self, ctx, *, verb: str = None) -> None:
-    """ Conjugates a verb in French.
-    :param verb: The verb to conjugate.
-    """
+    """Conjugates a verb in French.\n:param verb: The verb to conjugate.```
+    
+    🇫🇷-🇧🇪 __**Example:**__
+    ```ini\n[1] dec!french être\n[2] dec!fr avoir\n[3] dec!français faire\n[4] dec!francés lire"""
     if not verb:
       return await ctx.send("**Please, type a word**")
 
@@ -217,16 +306,17 @@ class Conjugation(commands.Cog):
     temp_verb = '%20'.join(verb.split())
 
     root = f'https://conjugator.reverso.net/conjugation-french-verb-{temp_verb}.html'
-    emoji_title = '🇫🇷|🇧🇪'
+    emoji_title = '🇫🇷-🇧🇪'
     return await self.conjugate(ctx=ctx, root=root, 
     verb=verb, emoji_title=emoji_title, language_title='French')
   
   @commands.command(aliases=['es', 'esp', 'español', 'espanhol', 'espagnol', 'espanol'])
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def spanish(self, ctx, *, verb: str = None) -> None:
-    """ Conjugates a verb in Spanish.
-    :param verb: The verb to conjugate.
-    """
+    """Conjugates a verb in Spanish.\n:param verb: The verb to conjugate.```
+    
+    🇪🇸-🇲🇽 __**Example:**__
+    ```ini\n[1] dec!spanish hacer\n[2] dec!es tener\n[3] dec!español estoy\n[4] dec!espagnol stoy"""
     if not verb:
       return await ctx.send("**Please, type a word**")
 
@@ -237,7 +327,7 @@ class Conjugation(commands.Cog):
 
     root = f'https://conjugator.reverso.net/conjugation-spanish-verb-{temp_verb}.html'
 
-    emoji_title = '🇪🇸|🇲🇽'
+    emoji_title = '🇪🇸-🇲🇽'
     return await self.conjugate(ctx=ctx, root=root, 
   verb=verb, emoji_title=emoji_title, language_title='Spanish')
 
@@ -245,9 +335,10 @@ class Conjugation(commands.Cog):
   @commands.command(aliases=['en', 'eng', 'ing', 'inglés', 'ingles'])
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def english(self, ctx, *, verb: str = None) -> None:
-    """ Conjugates a verb in English.
-    :param verb: The verb to conjugate.
-    """
+    """Conjugates a verb in English.\n:param verb: The verb to conjugate.```
+    
+    🇺🇸-🇬🇧 __**Example:**__
+    ```ini\n[1] dec!english make\n[2] dec!en to do\n[3] dec!eng get\n[4] dec!inglés to guess"""
     if not verb:
       return await ctx.send("**Please, type a word**")
 
@@ -257,7 +348,7 @@ class Conjugation(commands.Cog):
     temp_verb = '%20'.join(verb.split())
 
     root = f'https://conjugator.reverso.net/conjugation-english-verb-{temp_verb}.html'
-    emoji_title = "🇺🇸|🇬🇧"
+    emoji_title = "🇺🇸-🇬🇧"
     return await self.conjugate(ctx=ctx, root=root, 
     verb=verb, emoji_title=emoji_title, language_title='English')
 

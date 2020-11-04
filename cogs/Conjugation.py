@@ -163,112 +163,8 @@ class Conjugation(commands.Cog):
     root = f'https://conjugator.reverso.net/conjugation-portuguese-verb-{temp_verb}.html'
     emoji_title = '🇧🇷-🇵🇹'
     language_title = 'Portuguese'
-    # return await self.conjugate(ctx=ctx, root=root, 
-    # verb=verb, emoji_title=emoji_title)
-
-    async with self.session.get(root) as response:
-      if response.status != 200:
-        return await ctx.send("**Something went wrong with that search!**")
-
-    
-      # Gets the html and the table div
-      html = BeautifulSoup(await response.read(), 'html.parser')
-      subhead = html.select_one('.subHead.subHead-res.clearfix')
-      if not subhead:
-        return await ctx.send("**Invalid request!**")
-
-      # Translation options
-      #-> Word translation
-      tr_div = subhead.select_one('.word-transl-options')
-      found_verb = tr_div.select_one('.targetted-word-wrap').get_text().strip()
-
-      embed = discord.Embed(
-        title="English Conjugation",
-        description=f"""**Searched:** {verb}
-        **Found:** {found_verb}""",
-        color=ctx.author.color,
-        timestamp=ctx.message.created_at,
-        url=root
-      )
-      embed.set_footer(
-        text=f"Requested by {ctx.author}",
-        icon_url=ctx.author.avatar_url)
-
-
-      # Conjugation table divs
-      verb_div = html.select_one('.word-wrap')
-      word_wraps = verb_div.select_one('.result-block-api')
-      word_wrap_rows = word_wraps.select('.word-wrap-row')
-
-      index = 0
-      tense_title = ''
-
-      # Sends initial embed and adds the arrow emojis to it
-      msg = await ctx.send(embed=discord.Embed(
-        title=emoji_title))
-      await msg.add_reaction('⬅️')
-      await msg.add_reaction('➡️')
-      await asyncio.sleep(0.5)
-
-      while True:
-        current_row = word_wrap_rows[index]
-        embed.title = f"{language_title} Conjugation ({index+1}/{len(word_wrap_rows)})"
-        embed.clear_fields()
-
-        # Loops through the rows
-        for table in current_row.select('.wrap-three-col'):
-          # Specifies the verbal tense if there is one
-          if temp_tense_name := table.select_one('p'):
-            tense_name = temp_tense_name.get_text()
-
-            # Changes verbal mode if it's time to change it
-            if (temp_title := current_row.select_one('.word-wrap-title')):
-              title = temp_title.get_text().strip()
-            verbal_mode = title
-          # If there isn't, it shows '...' instead
-          else:
-            tense_name = '...'
-            verbal_mode = table.select_one('.word-wrap-title').get_text().strip()
-
-          temp_text = ""
-
-          # Loops through each tense row
-          for li in table.select('.wrap-verbs-listing li'):
-            # Makes a temp text with all conjugations
-            temp_text += f"{li.get_text(separator=' ')}\n"
-          # Specifies the verbal mode
-          temp_text += f"""\nmode="{verbal_mode}"\n"""
-          embed.add_field(
-            name=tense_name,
-            value=f"```apache\n{temp_text}```",
-            inline=True
-          )
-          # Sends to Discord the current state of the embed
-          await msg.edit(embed=embed)
-
-        # Waits for user reaction to switch pages
-        try:
-          r, u = await self.client.wait_for(
-            'reaction_add', timeout=60, 
-            check=lambda r, u: r.message.id == msg.id and \
-            u.id == ctx.author.id and str(r.emoji) in ['⬅️', '➡️']
-          )
-        except asyncio.TimeoutError:
-          await msg.remove_reaction('⬅️', self.client.user)
-          await msg.remove_reaction('➡️', self.client.user)
-          return
-        else:
-          if str(r.emoji) == '⬅️':
-            if index > 0:
-              index -= 1
-            await msg.remove_reaction(r, u)
-            continue
-          else:
-            if index < len(word_wrap_rows) - 1:
-              index += 1
-            await msg.remove_reaction(r, u)
-            continue
-
+    return await self.conjugate(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, space=True)
 
   @commands.command(aliases=['it', 'italiano', 'italien', 'ita'])
   @commands.cooldown(1, 10, commands.BucketType.user)
@@ -353,7 +249,7 @@ class Conjugation(commands.Cog):
     verb=verb, emoji_title=emoji_title, language_title='English')
 
 
-  async def conjugate(self, ctx, root: str, verb: str, emoji_title: str, language_title: str) -> None:
+  async def conjugate(self, ctx, root: str, verb: str, emoji_title: str, language_title: str, space: bool = False, aligned: bool =  True) -> None:
     """ Conjugates a verb.
     :param root: The language endpoint from which to do the HTTP request.
     :param verb: The verb that is being conjugated.
@@ -427,13 +323,16 @@ class Conjugation(commands.Cog):
           # Loops through each tense row
           for li in table.select('.wrap-verbs-listing li'):
             # Makes a temp text with all conjugations
-            temp_text += f"{li.get_text()}\n"
+            if space:
+              temp_text += f"{li.get_text(separator=' ')}\n"
+            else:
+              temp_text += f"{li.get_text()}\n"
           # Specifies the verbal mode
           temp_text += f"""\nmode="{verbal_mode}"\n"""
           embed.add_field(
             name=tense_name,
             value=f"```apache\n{temp_text}```",
-            inline=True
+            inline=aligned
           )
           # Sends to Discord the current state of the embed
           await msg.edit(embed=embed)

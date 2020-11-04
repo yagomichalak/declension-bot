@@ -164,7 +164,7 @@ class Conjugation(commands.Cog):
     emoji_title = '🇧🇷-🇵🇹'
     language_title = 'Portuguese'
     return await self.conjugate(ctx=ctx, root=root, 
-    verb=verb, emoji_title=emoji_title, space=True)
+    verb=verb, emoji_title=emoji_title, language_title=language_title, space=True)
 
   @commands.command(aliases=['it', 'italiano', 'italien', 'ita'])
   @commands.cooldown(1, 10, commands.BucketType.user)

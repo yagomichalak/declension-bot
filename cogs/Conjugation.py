@@ -310,9 +310,14 @@ class Conjugation(commands.Cog):
             tense_name = temp_tense_name.get_text()
 
             # Changes verbal mode if it's time to change it
-            if (temp_title := current_row.select_one('.word-wrap-title')):
+            if (temp_title := table.select_one('.word-wrap-title')):
               title = temp_title.get_text().strip()
-            verbal_mode = title
+              print(title)
+              verbal_mode = title
+            elif (temp_title := current_row.select_one('.word-wrap-title')):
+              title = temp_title.get_text().strip()
+              verbal_mode = title
+              
           # If there isn't, it shows '...' instead
           else:
             tense_name = '...'

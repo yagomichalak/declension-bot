@@ -192,7 +192,7 @@ async def help(ctx, cmd: str = None):
                   cog_embed.add_field(
                     name=f"```{c.name}```", 
                     value=f"```{c.help}```",
-                    inline=False
+                    inline=True
                     )
 
           return await ctx.send(embed=cog_embed)

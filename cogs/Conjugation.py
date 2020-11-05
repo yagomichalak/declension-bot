@@ -249,7 +249,7 @@ class Conjugation(commands.Cog):
     verb=verb, emoji_title=emoji_title, language_title='English')
 
 
-  async def conjugate(self, ctx, root: str, verb: str, emoji_title: str, language_title: str, space: bool = False, aligned: bool =  True) -> None:
+  async def conjugate(self, ctx, root: str, verb: str, emoji_title: str, language_title: str, space: bool = False, aligned: bool = True) -> None:
     """ Conjugates a verb.
     :param root: The language endpoint from which to do the HTTP request.
     :param verb: The verb that is being conjugated.
@@ -271,7 +271,7 @@ class Conjugation(commands.Cog):
       found_verb = tr_div.select_one('.targetted-word-wrap').get_text().strip()
 
       embed = discord.Embed(
-        title="English Conjugation",
+        title=f"{emoji_title} Conjugation",
         description=f"""**Searched:** {verb}
         **Found:** {found_verb}""",
         color=ctx.author.color,
@@ -288,20 +288,12 @@ class Conjugation(commands.Cog):
       word_wraps = verb_div.select_one('.result-block-api')
       word_wrap_rows = word_wraps.select('.word-wrap-row')
 
-      index = 0
-      tense_title = ''
+      
+      verbal_mode = ''
 
-      # Sends initial embed and adds the arrow emojis to it
-      msg = await ctx.send(embed=discord.Embed(
-        title=emoji_title))
-      await msg.add_reaction('⬅️')
-      await msg.add_reaction('➡️')
-      await asyncio.sleep(0.5)
-
-      while True:
-        current_row = word_wrap_rows[index]
-        embed.title = f"{language_title} Conjugation ({index+1}/{len(word_wrap_rows)})"
-        embed.clear_fields()
+      conjugations = {}
+      for i, current_row in enumerate(word_wrap_rows):
+        conjugations[f'page{i}'] = []
 
         # Loops through the rows
         for table in current_row.select('.wrap-three-col'):
@@ -312,12 +304,13 @@ class Conjugation(commands.Cog):
             # Changes verbal mode if it's time to change it
             if (temp_title := table.select_one('.word-wrap-title')):
               title = temp_title.get_text().strip()
-              print(title)
               verbal_mode = title
             elif (temp_title := current_row.select_one('.word-wrap-title')):
               title = temp_title.get_text().strip()
               verbal_mode = title
-              
+
+            verbal_mode = title
+
           # If there isn't, it shows '...' instead
           else:
             tense_name = '...'
@@ -334,13 +327,30 @@ class Conjugation(commands.Cog):
               temp_text += f"{li.get_text()}\n"
           # Specifies the verbal mode
           temp_text += f"""\nmode="{verbal_mode}"\n"""
-          embed.add_field(
-            name=tense_name,
-            value=f"```apache\n{temp_text}```",
-            inline=aligned
-          )
-          # Sends to Discord the current state of the embed
-          await msg.edit(embed=embed)
+          temp_text = f"```apache\n{temp_text}```"
+          conjugations[f'page{i}'].append({'tense': [temp_text, tense_name, aligned]})
+
+      index = 0
+      # Sends initial embed and adds the arrow emojis to it
+      msg = await ctx.send(embed=discord.Embed(
+        title=emoji_title))
+      await msg.add_reaction('⬅️')
+      await msg.add_reaction('➡️')
+      await asyncio.sleep(0.5)
+
+      while True:
+        embed.title = f"{language_title} Conjugation ({index+1}/{len(conjugations)})"
+        embed.clear_fields()
+        the_key = list(conjugations.keys())[index]
+        for a_dict in conjugations[the_key]:
+          for page, values in dict(a_dict).items():
+            embed.add_field(
+              name=values[1],
+              value=values[0],
+              inline=values[2]
+            )
+        # Sends to Discord the current state of the embed
+        await msg.edit(embed=embed)
 
         # Waits for user reaction to switch pages
         try:
@@ -360,7 +370,7 @@ class Conjugation(commands.Cog):
             await msg.remove_reaction(r, u)
             continue
           else:
-            if index < len(word_wrap_rows) - 1:
+            if index < len(conjugations) - 1:
               index += 1
             await msg.remove_reaction(r, u)
             continue

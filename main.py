@@ -146,7 +146,7 @@ async def invite(ctx):
   await ctx.send(f"Here's my invite:\n{invite}")
 
 @client.command()
-async def help(ctx, cmd: str = None):
+async def help(ctx, *, cmd: str = None):
   '''
   Shows some information about commands and categories.
   '''
@@ -160,11 +160,23 @@ async def help(ctx, cmd: str = None):
 
       for cog in client.cogs:
           cog = client.get_cog(cog)
-          commands = [c.name for c in cog.get_commands() if not c.hidden]
+          commands = [c.qualified_name for c in cog.get_commands() if not c.hidden]
+          subcommands = []
+          for c in cog.get_commands():
+              try:
+                for sb in c.commands:
+                  if not c.hidden:
+                    subcommands.append(sb.qualified_name)
+              except AttributeError:
+                pass
+
           if commands:
+            text = f"`Commands:` {', '.join(commands)}" 
+            if subcommands:
+              text += f"\n`Subcommands:` {', '.join(subcommands)}"
             embed.add_field(
             name=f"__{cog.qualified_name}__",
-            value=f"`Commands:` {', '.join(commands)}",
+            value=text,
             inline=False
             )
 
@@ -195,6 +207,15 @@ async def help(ctx, cmd: str = None):
                     value=f"```{c.help}```",
                     inline=True
                     )
+              try:
+                for sb in c.commands:
+                  if not c.hidden:
+                    cog_embed.add_field(
+                      name=f"```{sb.qualified_name}```", 
+                      value=f"```{sb.help}```", 
+                      inline=False)
+              except AttributeError:
+                pass
 
           return await ctx.send(embed=cog_embed)
 

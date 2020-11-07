@@ -20,7 +20,7 @@ class Conjugation(commands.Cog):
   async def on_ready(self):
     print('Something cog is online!')
 
-  @commands.group(aliases=['conj', 'con', 'conjugation', 'cj'])
+  @commands.group(aliases=['conj', 'con', 'cj'])
   async def conjugate(self, ctx):
     """ A command for conjugating specific languages.
     

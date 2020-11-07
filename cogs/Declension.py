@@ -26,8 +26,8 @@ class Declension(commands.Cog):
   async def on_ready(self):
     print('Declension cog is online!')
 
-  @commands.group(aliases=['dec', 'decl', 'decline', 'declination'])
-  async def declension(self, ctx):
+  @commands.group(aliases=['dec', 'decl', 'declination'])
+  async def decline(self, ctx):
     """ A command for declinating specific languages.
     
     PS: Since we have 2 dinstinct commands (conjugation, declension) for some languages,
@@ -37,7 +37,7 @@ class Declension(commands.Cog):
     ```ini\n[Declension] dec!dec polish kobieta\n[Conjugation] dec!conj polish dać"""
     pass
   
-  @declension.command(aliases=['polski', 'pl', 'pol', 'po'])
+  @decline.command(aliases=['polski', 'pl', 'pol', 'po'])
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def polish(self, ctx, word: str = None):
     """Declines a Polish word; showing a table with its full declension forms.\n:param word: The word to decline.```
@@ -272,7 +272,7 @@ class Declension(commands.Cog):
       except Exception:
         return await ctx.send("**I couldn't do this request, make sure to type things correctly!**")
 
-  @declension.command(aliases=['deutsch', 'ger', 'de'])
+  @decline.command(aliases=['deutsch', 'ger', 'de'])
   async def german(self, ctx, word: str = None):
     """Declines a German word; showing a table with its full declension forms.\n:param word: The word to decline.```
     

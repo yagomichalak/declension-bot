@@ -11,8 +11,6 @@ import convertapi
 from PIL import Image
 import time
 from bs4 import BeautifulSoup
-import copy
-from itertools import zip_longest
 
 class Declension(commands.Cog):
   '''
@@ -26,15 +24,26 @@ class Declension(commands.Cog):
 
   @commands.Cog.listener()
   async def on_ready(self):
-    print('Declension cog is online!')  
+    print('Declension cog is online!')
+
+  @commands.group(aliases=['dec', 'decl', 'decline', 'declination'])
+  async def declension(self, ctx):
+    """ A command for declinating specific languages.
+    
+    PS: Since we have 2 dinstinct commands (conjugation, declension) for some languages,
+    we will need to use this for specifying which one we want to use.```
+    
+    __**Example:**__
+    ```ini\n[Declension] dec!dec polish kobieta\n[Conjugation] dec!conj polish dać"""
+    pass
   
-  @commands.command(aliases=['polski', 'pl', 'pol', 'po'])
+  @declension.command(aliases=['polski', 'pl', 'pol', 'po'])
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def polish(self, ctx, word: str = None):
     """Declines a Polish word; showing a table with its full declension forms.\n:param word: The word to decline.```
     
     🇵🇱 __**Example:**__
-    ```ini\n[1] dec!polish kobieta\n[2] dec!po mężczyzna\n[3] dec!polski warzywa\n[4] dec!pol przyjaciel"""
+    ```ini\n[1] dec!dec polish kobieta\n[2] dec!dec po mężczyzna\n[3] dec!dec polski warzywa\n[4] dec!dec pol przyjaciel"""
     me = ctx.author
     if not word:
       return await ctx.send(f"**Please {me.mention}, inform a word to search!**")
@@ -263,12 +272,12 @@ class Declension(commands.Cog):
       except Exception:
         return await ctx.send("**I couldn't do this request, make sure to type things correctly!**")
 
-  @commands.command(aliases=['deutsch', 'ger', 'de'])
+  @declension.command(aliases=['deutsch', 'ger', 'de'])
   async def german(self, ctx, word: str = None):
-    """Declines a Finnish word; showing a table with its full declension forms.\n:param word: The word to decline.```
+    """Declines a German word; showing a table with its full declension forms.\n:param word: The word to decline.```
     
     🇩🇪 __**Example:**__
-    ```ini\n[1] dec!german mann\n[2] dec!de groß\n[3] dec!deutsch lecker\n[4] dec!ger frau"""
+    ```ini\n[1] dec!dec german mann\n[2] dec!dec de groß\n[3] dec!dec deutsch lecker\n[4] dec!dec ger frau"""
     if not word:
       return await ctx.send("**Inform a word to decline!**")
 

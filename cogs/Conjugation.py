@@ -4,7 +4,7 @@ import asyncio
 import aiohttp
 import json
 from bs4 import BeautifulSoup
-from itertools import zip_longest
+from itertools import zip_longest, cycle
 
 
 class Conjugation(commands.Cog):
@@ -20,6 +20,16 @@ class Conjugation(commands.Cog):
   async def on_ready(self):
     print('Something cog is online!')
 
+  @commands.group(aliases=['conj', 'con', 'conjugation', 'cj'])
+  async def conjugate(self, ctx):
+    """ A command for conjugating specific languages.
+    
+    PS: Since we have 2 dinstinct commands (conjugation, declension) for some languages,
+    we will need to use this for specifying which one we want to use.```
+    
+    __**Example:**__
+    ```ini\n[Declension] dec!dec polish kobieta\n[Conjugation] dec!conj polish dać"""
+    pass
 
   @commands.command(aliases=['nl'])
   @commands.cooldown(1, 10, commands.BucketType.user)
@@ -102,7 +112,6 @@ class Conjugation(commands.Cog):
                   index -= 12
               continue
   
-
   # Conjugators based on Reverso's website
   @commands.cooldown(1, 10, commands.BucketType.user)
   @commands.command(aliases=['jp', 'ja', 'jap'])
@@ -121,7 +130,7 @@ class Conjugation(commands.Cog):
 
     root = f'https://conjugator.reverso.net/conjugation-japanese-verb-{temp_verb}.html'
     emoji_title = '🇯🇵'
-    return await self.conjugate(ctx=ctx, root=root, 
+    return await self.__conjugate(ctx=ctx, root=root, 
     verb=verb, emoji_title=emoji_title, language_title='Japanese', space=True, aligned=False)
 
   @commands.cooldown(1, 10, commands.BucketType.user)
@@ -141,7 +150,7 @@ class Conjugation(commands.Cog):
 
     root = f'https://conjugator.reverso.net/conjugation-arabic-verb-{temp_verb}.html'
     emoji_title = '🇸🇦-🇪🇬'
-    return await self.conjugate(ctx=ctx, root=root, 
+    return await self.__conjugate(ctx=ctx, root=root, 
     verb=verb, emoji_title=emoji_title, language_title='Arabic', space=True, aligned=False)
 
   @commands.command(aliases=['pt', 'portugais', 'portugués', 'português'])
@@ -163,7 +172,7 @@ class Conjugation(commands.Cog):
     root = f'https://conjugator.reverso.net/conjugation-portuguese-verb-{temp_verb}.html'
     emoji_title = '🇧🇷-🇵🇹'
     language_title = 'Portuguese'
-    return await self.conjugate(ctx=ctx, root=root, 
+    return await self.__conjugate(ctx=ctx, root=root, 
     verb=verb, emoji_title=emoji_title, language_title=language_title, space=True)
 
   @commands.command(aliases=['it', 'italiano', 'italien', 'ita'])
@@ -183,7 +192,7 @@ class Conjugation(commands.Cog):
 
     root = f'https://conjugator.reverso.net/conjugation-italian-verb-{temp_verb}.html'
     emoji_title = '🇮🇹-🇨🇭'
-    return await self.conjugate(ctx=ctx, root=root, 
+    return await self.__conjugate(ctx=ctx, root=root, 
     verb=verb, emoji_title=emoji_title, language_title='Italian')
 
   @commands.command(aliases=['fr', 'français', 'francés', 'francais', 'francês', 'frances'])
@@ -203,7 +212,7 @@ class Conjugation(commands.Cog):
 
     root = f'https://conjugator.reverso.net/conjugation-french-verb-{temp_verb}.html'
     emoji_title = '🇫🇷-🇧🇪'
-    return await self.conjugate(ctx=ctx, root=root, 
+    return await self.__conjugate(ctx=ctx, root=root, 
     verb=verb, emoji_title=emoji_title, language_title='French')
   
   @commands.command(aliases=['es', 'esp', 'español', 'espanhol', 'espagnol', 'espanol'])
@@ -224,9 +233,8 @@ class Conjugation(commands.Cog):
     root = f'https://conjugator.reverso.net/conjugation-spanish-verb-{temp_verb}.html'
 
     emoji_title = '🇪🇸-🇲🇽'
-    return await self.conjugate(ctx=ctx, root=root, 
+    return await self.__conjugate(ctx=ctx, root=root, 
   verb=verb, emoji_title=emoji_title, language_title='Spanish')
-
 
   @commands.command(aliases=['en', 'eng', 'ing', 'inglés', 'ingles'])
   @commands.cooldown(1, 10, commands.BucketType.user)
@@ -245,11 +253,10 @@ class Conjugation(commands.Cog):
 
     root = f'https://conjugator.reverso.net/conjugation-english-verb-{temp_verb}.html'
     emoji_title = "🇺🇸-🇬🇧"
-    return await self.conjugate(ctx=ctx, root=root, 
+    return await self.__conjugate(ctx=ctx, root=root, 
     verb=verb, emoji_title=emoji_title, language_title='English')
 
-
-  async def conjugate(self, ctx, root: str, verb: str, emoji_title: str, language_title: str, space: bool = False, aligned: bool = True) -> None:
+  async def __conjugate(self, ctx, root: str, verb: str, emoji_title: str, language_title: str, space: bool = False, aligned: bool = True) -> None:
     """ Conjugates a verb.
     :param root: The language endpoint from which to do the HTTP request.
     :param verb: The verb that is being conjugated.
@@ -375,7 +382,153 @@ class Conjugation(commands.Cog):
             await msg.remove_reaction(r, u)
             continue
 
+  @conjugate.command(aliases=['de', 'deutsch', 'ger'])
+  async def german(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in German.\n:param verb: The verb to conjugate.```
+    
+    🇩🇪|🇦🇹 __**Example:**__
+    ```ini\n[1] dec!conj german habben\n[2] dec!conj deutsch gehen\n[3] dec!conj de sprachen\n[4] dec!conj ger essen"""
+    if not verb:
+      return await ctx.send("**Please, type a word**")
 
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+
+    root = f'https://conjugator.reverso.net/conjugation-german-verb-{temp_verb}.html'
+    emoji_title = '🇩🇪|🇦🇹'
+    return await self.__conjugate(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='German')
+
+  @conjugate.command(aliases=['po', 'pl', 'polski', 'polonais', 'polonês', 'polonés'])
+  async def polish(self, ctx, word: str) -> None:
+    """Conjugates a verb in German.\n:param verb: The verb to conjugate.```
+    
+    🇵🇱 __**Example:**__
+    ```ini\n[1] dec!conj polish dać\n[2] dec!conj po sprzedawać\n[3] dec!conj polski mówić\n[4] dec!conj pl jechać"""
+    if not word:
+      return await ctx.send("**Please, type a word**")
+
+    if len(word) > 50:
+      return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+
+    temp_verb = '%20'.join(word.split())
+
+    root = f'https://cooljugator.com/pl/{word}'
+
+    # Performs the GET request to the endpoint
+    async with self.session.get(root) as response:
+      if response.status != 200:
+        return await ctx.send("**Something went wrong with that search!**")
+
+      # Gets the html and the container div
+      html = BeautifulSoup(await response.read(), 'html.parser')
+      container = html.select_one('#conjugationDivs.fourteen.wide.column')
+      if not container:
+        return await ctx.send("**Couldn't find anything for it!**")
+
+      conjugations = []
+      conj_divs = container.select('.conjugation-table.collapsable')
+      # Makes initial embed
+      embed = discord.Embed(
+        color=ctx.author.color,
+        timestamp=ctx.message.created_at,
+        url=root
+      )
+      # Gets all useful information
+      for i, conj_div in enumerate(conj_divs):
+        # Gets all pronouns
+        pronouns = [
+          pronoun.get_text(separator=' ').strip()
+          for pronoun in conj_div.select(
+            '.conjugation-cell.conjugation-cell-four.conjugation-cell-pronouns.pronounColumn'
+          ) if pronoun.get_text()
+        ]
+        # Gets all tenses
+        tenses = [
+          tense.get_text().strip() 
+          for tense in conj_div.select(
+            '.conjugation-cell.conjugation-cell-four.tense-title'
+          ) if tense.get_text()
+        ]
+        # Gets all conjugations
+        conjs = [
+          conj.get_text(separator='  ').strip() if conj.get_text() else '' 
+          for conj in conj_div.select(
+            '.conjugation-cell.conjugation-cell-four'
+          )
+        ][1:]
+        # Filters the conjugations a bit
+        new_conjs = []
+        for conj in conjs:
+          if conj.strip() not in pronouns and conj.strip() not in tenses:
+            conj = conj.strip().split('  ')[0]
+            new_conjs.append(conj)
+
+        # Unify the pronouns with the conjugations
+        rows = []
+        pronouns = cycle(pronouns)
+        for conj in new_conjs:
+          if conj:
+            try:
+              temp = f"{next(pronouns)} {conj}"
+            except Exception as e:
+              temp = f"- {conj}"
+
+            rows.append(temp)
+        
+        # Unify the tenses with the rows
+        n = round(len(rows)/len(tenses))
+        rows = [rows[i:i + n] for i in range(0, len(rows), n)]
+        pairs = list(zip_longest(tenses, rows, fillvalue='_'))
+        conjugations.append(pairs)
+
+    # Initial index
+    index = 0
+    # Sends initial msg
+    msg = await ctx.send(embed=discord.Embed(title="🇵🇱"))
+    await asyncio.sleep(0.5)
+    await msg.add_reaction('⬅️')
+    await msg.add_reaction('➡️')
+    # Main loop for switching pages
+    while True:
+      current = conjugations[index]
+      embed.clear_fields()
+      embed.title = f"Polish Declension ({index+1}/{len(conjugations)})"
+      # Adds a field for each conjugation table of the current tense
+      for conj in current:
+        temp_text = '\n'.join(conj[1])
+        embed.add_field(
+          name=conj[0],
+          value=f"```apache\n{temp_text}```\n",
+          inline=True
+        )
+      # Updates the embedded message
+      await msg.edit(embed=embed)
+      # Waits for user reaction in order to switch pages
+      try:
+        r, u = await self.client.wait_for(
+          'reaction_add',
+          timeout=60,
+          check=lambda r, u: r.message.id == msg.id and u.id == ctx.author.id and \
+          str(r.emoji) in ['⬅️', '➡️']
+        )
+      except asyncio.TimeoutError:
+        await msg.remove_reaction('➡️', self.client.user)
+        await msg.remove_reaction('⬅️', self.client.user)
+        break
+      else:
+        if str(r.emoji) == '➡️':
+          await msg.remove_reaction('➡️', u)
+          if index < len(conjugations) - 1:
+            index += 1
+          continue
+        else:
+          await msg.remove_reaction('⬅️', u)
+          if index > 0:
+            index -= 1
+          continue
 
 def setup(client) -> None:
   client.add_cog(Conjugation(client))

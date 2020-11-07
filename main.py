@@ -10,7 +10,8 @@ status = cycle([
   "English conjugations", "Spanish conjugations",
   "French conjugations", "Italian conjugations",
   "Portuguese conjugations", "Arabic conjugations",
-  "Japanese conjugations", "Dutch conjugations"
+  "Japanese conjugations", "Dutch conjugations",
+  "Polish conjugations", "German conjugations"
   ])
 
 intents = discord.Intents.default()
@@ -118,7 +119,7 @@ async def info(ctx):
   '''
   embed = discord.Embed(title='Declinator Bot', description="__**WHAT IS IT?:**__```Hello, the Declinator bot is an open source bot based on word declensions and verb conjugations, in other words, declensions are you all forms of a word in a language that uses a grammatical case system.```", colour=ctx.author.color, url="http://193.70.127.179/", timestamp=ctx.message.created_at)
   embed.add_field(name="📚 __**Language declinators**__",
-                value="`4` different languages to decline and `8` to conjugate so far.",
+                value="`4` different languages to decline and `10` to conjugate so far.",
                 inline=True)
   embed.add_field(name="💻 __**Programmed in**__",
                 value="The Declinator bot was built in Python, and you can find its GitHub repository [here](https://github.com/yagomichalak/declension-bot).",

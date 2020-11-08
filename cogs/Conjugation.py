@@ -428,10 +428,13 @@ class Conjugation(commands.Cog):
       if not container:
         return await ctx.send("**Couldn't find anything for it!**")
 
+      title = html.select_one('#conjugation-data.ui.segment > .centered > h1').get_text().strip()
+
       conjugations = []
       conj_divs = container.select('.conjugation-table.collapsable')
       # Makes initial embed
       embed = discord.Embed(
+        description=title,
         color=ctx.author.color,
         timestamp=ctx.message.created_at,
         url=root

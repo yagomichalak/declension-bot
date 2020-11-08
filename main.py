@@ -11,7 +11,9 @@ status = cycle([
   "French conjugations", "Italian conjugations",
   "Portuguese conjugations", "Arabic conjugations",
   "Japanese conjugations", "Dutch conjugations",
-  "Polish conjugations", "German conjugations"
+  "Polish conjugations", "German conjugations",
+  "Esperanto conjugations", "Estonian conjugations",
+  "Turkish conjugations"
   ])
 
 intents = discord.Intents.default()

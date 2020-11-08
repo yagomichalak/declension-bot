@@ -541,7 +541,7 @@ class Conjugation(commands.Cog):
     if len(verb) > 50:
       return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
 
-    temp_verb = '%20'.join(word.split())
+    temp_verb = '%20'.join(verb.split())
 
     root = f'https://cooljugator.com/pl/{temp_verb.lower()}'
     emoji_title = '🇵🇱'

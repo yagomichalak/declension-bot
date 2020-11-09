@@ -48,7 +48,7 @@ class Conjugation(commands.Cog):
 
 
   @commands.command(aliases=['nl'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def dutch(self, ctx, *, verb: str = None) -> None:
     """Conjugates a verb in Dutch.\n:param verb: The verb to conjugate.```
     
@@ -129,7 +129,7 @@ class Conjugation(commands.Cog):
               continue
   
   # Conjugators based on Reverso's website
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   @commands.command(aliases=['jp', 'ja', 'jap'])
   async def japanese(self, ctx, *, verb: str = None) -> None:
     """Conjugates a verb in Japanese.\n:param verb: The verb to conjugate.```
@@ -149,7 +149,7 @@ class Conjugation(commands.Cog):
     return await self.__conjugate(ctx=ctx, root=root, 
     verb=verb, emoji_title=emoji_title, language_title='Japanese', space=True, aligned=False)
 
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   @commands.command(aliases=['sa', 'ar'])
   async def arabic(self, ctx, *, verb: str = None) -> None:
     """Conjugates a verb in Arabic.\n:param verb: The verb to conjugate.```
@@ -170,7 +170,7 @@ class Conjugation(commands.Cog):
     verb=verb, emoji_title=emoji_title, language_title='Arabic', space=True, aligned=False)
 
   @commands.command(aliases=['pt', 'portugais', 'portugués', 'português'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def portuguese(self, ctx, *, verb: str = None) -> None:
     """Conjugates a verb in Portuguese.\n:param verb: The verb to conjugate.```
     
@@ -192,7 +192,7 @@ class Conjugation(commands.Cog):
     verb=verb, emoji_title=emoji_title, language_title=language_title, space=True)
 
   @commands.command(aliases=['it', 'italiano', 'italien', 'ita'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def italian(self, ctx, *, verb: str = None) -> None:
     """Conjugates a verb in Italian.\n:param verb: The verb to conjugate.```
     
@@ -212,7 +212,7 @@ class Conjugation(commands.Cog):
     verb=verb, emoji_title=emoji_title, language_title='Italian')
 
   @commands.command(aliases=['fr', 'français', 'francés', 'francais', 'francês', 'frances'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def french(self, ctx, *, verb: str = None) -> None:
     """Conjugates a verb in French.\n:param verb: The verb to conjugate.```
     
@@ -232,7 +232,7 @@ class Conjugation(commands.Cog):
     verb=verb, emoji_title=emoji_title, language_title='French')
   
   @commands.command(aliases=['es', 'español', 'espanhol', 'espagnol', 'espanol'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def spanish(self, ctx, *, verb: str = None) -> None:
     """Conjugates a verb in Spanish.\n:param verb: The verb to conjugate.```
     
@@ -253,7 +253,7 @@ class Conjugation(commands.Cog):
   verb=verb, emoji_title=emoji_title, language_title='Spanish')
 
   @commands.command(aliases=['en', 'eng', 'ing', 'inglés', 'ingles'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def english(self, ctx, *, verb: str = None) -> None:
     """Conjugates a verb in English.\n:param verb: The verb to conjugate.```
     
@@ -399,6 +399,7 @@ class Conjugation(commands.Cog):
             continue
 
   @conjugate.command(aliases=['de', 'deutsch', 'ger'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def german(self, ctx, *, verb: str = None) -> None:
     """Conjugates a verb in German.\n:param verb: The verb to conjugate.```
     
@@ -545,7 +546,7 @@ class Conjugation(commands.Cog):
           continue
 
   @conjugate.command(aliases=['po', 'pl', 'polski', 'polonais', 'polonês', 'polonés'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def polish(self, ctx, *, verb: str = None) -> None:
     """Conjugates a verb in Polish.\n:param verb: The verb to conjugate.```
     
@@ -565,7 +566,7 @@ class Conjugation(commands.Cog):
     verb=verb, emoji_title=emoji_title, language_title='Polish', space=True)
   
   @commands.command(aliases=['esp'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def esperanto(self, ctx, *, verb: str = None) -> None:
     """Conjugates a verb in Esperanto.\n:param verb: The verb to conjugate.```
     
@@ -587,7 +588,7 @@ class Conjugation(commands.Cog):
     verb=verb, emoji_title=emoji_title, language_title='Esperanto', space=True)
 
   @commands.command(aliases=['ee'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def estonian(self, ctx, *, verb: str = None) -> None:
     """Conjugates a verb in Estonian.\n:param verb: The verb to conjugate.```
     
@@ -609,7 +610,7 @@ class Conjugation(commands.Cog):
     verb=verb, emoji_title=emoji_title, language_title='Estonian', space=True)
 
   @commands.command(aliases=['tr'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def turkish(self, ctx, verb: str = None) -> None:
     """Conjugates a verb in Turkish.\n:param verb: The verb to conjugate.```
     
@@ -632,7 +633,7 @@ class Conjugation(commands.Cog):
     verb=verb, emoji_title=emoji_title, language_title='Turkish', space=True)
 
   @commands.command(aliases=['dk', 'dansk'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def danish(self, ctx, verb: str = None) -> None:
     """Conjugates a verb in Danish.\n:param verb: The verb to conjugate.```
     
@@ -654,7 +655,7 @@ class Conjugation(commands.Cog):
     verb=verb, emoji_title=emoji_title, language_title='Danish', space=True)
 
   @commands.command(aliases=['se', 'svensk'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def swedish(self, ctx, verb: str = None) -> None:
     """Conjugates a verb in Swedish.\n:param verb: The verb to conjugate.```
     
@@ -676,7 +677,7 @@ class Conjugation(commands.Cog):
     verb=verb, emoji_title=emoji_title, language_title='Swedish', space=True)
 
   @commands.command(aliases=['no', 'norsk'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def norwegian(self, ctx, verb: str = None) -> None:
     """Conjugates a verb in Norwegian.\n:param verb: The verb to conjugate.```
     
@@ -699,7 +700,7 @@ class Conjugation(commands.Cog):
 
 
   @commands.command(aliases=['fo'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def faroese(self, ctx, verb: str = None) -> None:
     """Conjugates a verb in Faroese.\n:param verb: The verb to conjugate.```
     
@@ -721,7 +722,7 @@ class Conjugation(commands.Cog):
     verb=verb, emoji_title=emoji_title, language_title='Faroese', space=True)
 
   @commands.command(aliases=['is'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def icelandic(self, ctx, verb: str = None) -> None:
     """Conjugates a verb in Icelandic.\n:param verb: The verb to conjugate.```
     

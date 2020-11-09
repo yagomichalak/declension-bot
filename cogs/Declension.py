@@ -54,7 +54,7 @@ class Declension(commands.Cog):
 
   
   @decline.command(aliases=['polski', 'pl', 'pol', 'po'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def polish(self, ctx, word: str = None):
     """Declines a Polish word; showing a table with its full declension forms.\n:param word: The word to decline.```
     
@@ -128,7 +128,7 @@ class Declension(commands.Cog):
   
   
   @commands.command(aliases=['ruski', 'ru', 'rus', 'русский'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def russian(self, ctx, word: str = None):
     """Declines a Russian word; showing a table with its full declension forms.\n:param word: The word to decline.```
     
@@ -204,7 +204,7 @@ class Declension(commands.Cog):
       await ctx.send(embed=embed)
 
   @commands.command(aliases=['fi', 'fin', 'suomi'])
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def finnish(self, ctx, word: str = None, word_type: str = None):
     """Declines a Finnish word; showing a table with its full declension forms.\n:param word: The word to decline.\n:param word_type: The type of the word (noun/adj)```
     
@@ -289,6 +289,7 @@ class Declension(commands.Cog):
         return await ctx.send("**I couldn't do this request, make sure to type things correctly!**")
 
   @decline.command(aliases=['deutsch', 'ger', 'de'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def german(self, ctx, word: str = None):
     """Declines a German word; showing a table with its full declension forms.\n:param word: The word to decline.```
     

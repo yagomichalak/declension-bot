@@ -203,23 +203,21 @@ async def help(ctx, *, cmd: str = None):
     for cog in client.cogs:
       if str(cog).lower() == str(cmd).lower():
           cog = client.get_cog(cog)
-          cog_embed = discord.Embed(title=f"__Cog:__ {cog.qualified_name}", description=f"__**Description:**__\n```{cog.description}```", color=ctx.author.color, timestamp=ctx.message.created_at)
+          cog_embed = discord.Embed(title=f"__Cog:__ {cog.qualified_name}",
+          color=ctx.author.color, timestamp=ctx.message.created_at)
+          commands = []
+          subcommands = []
           for c in cog.get_commands():
               if not c.hidden:
-                  cog_embed.add_field(
-                    name=f"```{c.name}```", 
-                    value=f"```{c.help}```",
-                    inline=True
-                    )
+                  commands.append(c.name)
               try:
                 for sb in c.commands:
                   if not c.hidden:
-                    cog_embed.add_field(
-                      name=f"```{sb.qualified_name}```", 
-                      value=f"```{sb.help}```", 
-                      inline=False)
+                    subcommands.append(sb.qualified_name)
               except AttributeError:
                 pass
+
+          cog_embed.description = f"__**Description:**__\n```{cog.description}```\n`Commands:` {', '.join(commands)}\n\n`Subcommands:` {', '.join(subcommands)}"
 
           return await ctx.send(embed=cog_embed)
 

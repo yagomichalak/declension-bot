@@ -29,7 +29,23 @@ class Conjugation(commands.Cog):
     
     __**Example:**__
     ```ini\n[Declension] dec!dec polish kobieta\n[Conjugation] dec!conj polish dać"""
-    pass
+    if ctx.invoked_subcommand:
+      return
+
+    cmd = self.client.get_command('conjugate')
+    prefix = self.client.command_prefix
+    subcommands = [f"{prefix}{c.qualified_name}" for c in cmd.commands
+          ]
+
+    subcommands = '\n'.join(subcommands)
+    embed = discord.Embed(
+      title="Subcommads",
+      description=f"```apache\n{subcommands}```",
+      color=ctx.author.color,
+      timestamp=ctx.message.created_at
+    )
+    await ctx.send(embed=embed)
+
 
   @commands.command(aliases=['nl'])
   @commands.cooldown(1, 10, commands.BucketType.user)

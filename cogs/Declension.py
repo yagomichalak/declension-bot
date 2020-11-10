@@ -12,6 +12,7 @@ from PIL import Image
 import time
 from bs4 import BeautifulSoup
 import copy
+from itertools import zip_longest
 
 class Declension(commands.Cog):
   '''

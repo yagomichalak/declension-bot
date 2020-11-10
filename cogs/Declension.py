@@ -11,6 +11,7 @@ import convertapi
 from PIL import Image
 import time
 from bs4 import BeautifulSoup
+import copy
 
 class Declension(commands.Cog):
   '''

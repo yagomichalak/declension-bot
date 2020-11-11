@@ -743,5 +743,118 @@ class Conjugation(commands.Cog):
     return await self.__cooljugator(ctx=ctx, root=root, 
     verb=verb, emoji_title=emoji_title, language_title='Icelandic', space=True)
 
+  # Asian languages
+  @commands.command(aliases=['id'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
+  async def indonesian(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in Indonesian.\n:param verb: The verb to conjugate.```
+    
+    🇮🇩 __**Example:**__
+    ```ini\n[1] dec!indonesian bereda\n[2] dec!id mempunyai\n[3] dec!id lihat\n[4] dec!indonesian kira"""
+    if not verb:
+      return await ctx.send("**Please, type a verb**")
+
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+    
+    root =f'https://cooljugator.com/id/{temp_verb.lower()}'
+
+    emoji_title = '🇮🇩'
+    return await self.__cooljugator(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Indonesian', space=True)
+
+  @commands.command(aliases=['mt'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
+  async def maltese(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in Maltese.\n:param verb: The verb to conjugate.```
+    
+    🇲🇹 __**Example:**__
+    ```ini\n[1] dec!maltese għand\n[2] dec!mt qal\n[3] dec!mt sama'\n[4] dec!maltese għażel"""
+    if not verb:
+      return await ctx.send("**Please, type a verb**")
+
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+    
+    root =f'https://cooljugator.com/mt/{temp_verb.lower()}'
+
+    emoji_title = '🇲🇹'
+    return await self.__cooljugator(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Maltese', space=True)
+
+  @commands.command(aliases=['th'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
+  async def thai(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in Thai.\n:param verb: The verb to conjugate.```
+    
+    🇹🇭 __**Example:**__
+    ```ini\n[1] dec!thai อยู่\n[2] dec!th ฆ่า\n[3] dec!th หยุด\n[4] dec!thai ตี"""
+    if not verb:
+      return await ctx.send("**Please, type a verb**")
+
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+    
+    root =f'https://cooljugator.com/th/{temp_verb.lower()}'
+
+    emoji_title = '🇹🇭'
+    return await self.__cooljugator(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Thai', space=True)
+
+  @commands.command(aliases=['vi', 'vn'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
+  async def vietnamese(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in Vietnamese.\n:param verb: The verb to conjugate.```
+    
+    🇻🇳 __**Example:**__
+    ```ini\n[1] dec!vietnamese ở\n[2] dec!vi dịch chuyển\n[3] dec!vi bể\n[4] dec!vietnamese đưa"""
+    if not verb:
+      return await ctx.send("**Please, type a verb**")
+
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+    
+    root =f'https://cooljugator.com/vi/{temp_verb.lower()}'
+
+    emoji_title = '🇻🇳'
+    return await self.__cooljugator(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Vietnamese', space=True)
+
+  @commands.command(aliases=['my', 'ms'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
+  async def malay(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in Malay.\n:param verb: The verb to conjugate.```
+    
+    🇲🇾 __**Example:**__
+    ```ini\n[1] dec!malay berada\n[2] dec!my bilang\n[3] dec!ms pergi\n[4] dec!malay buat"""
+    if not verb:
+      return await ctx.send("**Please, type a verb**")
+
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+    
+    root =f'https://cooljugator.com/ms/{temp_verb.lower()}'
+
+    emoji_title = '🇲🇾'
+    return await self.__cooljugator(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Malay', space=True)
+
+
+
 def setup(client) -> None:
   client.add_cog(Conjugation(client))

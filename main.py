@@ -132,7 +132,7 @@ async def info(ctx):
                 value="The Declinator bot was built in Python, and you can find its GitHub repository [here](https://github.com/yagomichalak/declension-bot).",
                 inline=True)
   embed.add_field(name='❓ __**How do you do It?**__',
-                value="The bot either web scrapes or use an API to fetch information from websites, after that, the bot does its magic to nicely show the information in an embedded message.",
+                value="The bot either web scrapes or uses an API to fetch information from websites, after that, the bot does its magic to nicely show the information in an embedded message.",
                 inline=True)
   embed.add_field(name="🌎 __**More languages**__ ", 
                 value="More languages will be added as I'm requested and have some time to implement them.", inline=True)

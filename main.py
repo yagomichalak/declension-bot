@@ -124,7 +124,7 @@ async def info(ctx):
   '''
   Shows some information about the bot itself.
   '''
-  embed = discord.Embed(title='Declinator Bot', description="__**WHAT IS IT?:**__```Hello, the Declinator bot is an open source bot based on word declensions and verb conjugations, in other words, declensions are you all forms of a word in a language that uses a grammatical case system.```", colour=ctx.author.color, url="http://193.70.127.179/", timestamp=ctx.message.created_at)
+  embed = discord.Embed(title='Declinator Bot', description="__**WHAT IS IT?:**__```Hello, the Declinator bot is an open source bot based on word declensions and verb conjugations.\nPS: declensions are all forms of a word in a language that contains a grammatical case system.```", colour=ctx.author.color, url="http://193.70.127.179/", timestamp=ctx.message.created_at)
   embed.add_field(name="📚 __**Language declinators**__",
                 value="`4` different languages to decline and `23` to conjugate so far.",
                 inline=True)

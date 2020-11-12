@@ -564,7 +564,28 @@ class Conjugation(commands.Cog):
     emoji_title = '🇵🇱'
     return await self.__cooljugator(ctx=ctx, root=root, 
     verb=verb, emoji_title=emoji_title, language_title='Polish', space=True)
-  
+
+  @conjugate.command(aliases=['ru', 'rus', 'ruski'])
+  async def russian(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in Russian.\n:param verb: The verb to conjugate.```
+    
+    🇷🇺|🇧🇾 __**Example:**__
+    ```ini\n[1] dec!conj russian идти\n[2] dec!conj ru учиться\n[3] dec!conj rus быть\n[4] dec!conj ruski говорить"""
+
+    if not verb:
+      return await ctx.send("**Please, type a word**")
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+
+    root = f'https://cooljugator.com/ru/{temp_verb}'
+    emoji_title = '🇷🇺|🇧🇾'
+    return await self.__cooljugator(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Russian', space=True)
+
+
   @commands.command(aliases=['esp'])
   @commands.cooldown(1, 5, commands.BucketType.user)
   async def esperanto(self, ctx, *, verb: str = None) -> None:
@@ -632,6 +653,7 @@ class Conjugation(commands.Cog):
     return await self.__cooljugator(ctx=ctx, root=root, 
     verb=verb, emoji_title=emoji_title, language_title='Turkish', space=True)
 
+  # North Germanic languages - Scandinavian languages
   @commands.command(aliases=['dk', 'dansk'])
   @commands.cooldown(1, 5, commands.BucketType.user)
   async def danish(self, ctx, verb: str = None) -> None:
@@ -742,6 +764,28 @@ class Conjugation(commands.Cog):
     emoji_title = '🇮🇸'
     return await self.__cooljugator(ctx=ctx, root=root, 
     verb=verb, emoji_title=emoji_title, language_title='Icelandic', space=True)
+
+  @conjugate.command(aliases=['fi', 'finsk'])
+  async def finnish(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in Finnish.\n:param verb: The verb to conjugate.```
+    
+    🇫🇮 __**Example:**__
+    ```ini\n[1] dec!finnish ola\n[2] dec!fi omata\n[3] dec!finsk löytää\n[4] dec!finnish sanoa"""
+    if not verb:
+      return await ctx.send("**Please, type a verb**")
+
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+    
+    root =f'https://cooljugator.com/fi/{temp_verb.lower()}'
+
+    emoji_title = '🇫🇮'
+    return await self.__cooljugator(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Finnish', space=True)
+
 
   # Asian languages
   @commands.command(aliases=['id'])

@@ -129,7 +129,7 @@ class Declension(commands.Cog):
       os.remove(f"files/{me.id}.png")    
   
   
-  @commands.command(aliases=['ruski', 'ru', 'rus', 'русский'])
+  @decline.command(aliases=['ruski', 'ru', 'rus', 'русский'])
   @commands.cooldown(1, 5, commands.BucketType.user)
   async def russian(self, ctx, word: str = None):
     """Declines a Russian word; showing a table with its full declension forms.\n:param word: The word to decline.```
@@ -205,7 +205,7 @@ class Declension(commands.Cog):
           inline=True)
       await ctx.send(embed=embed)
 
-  @commands.command(aliases=['fi', 'fin', 'suomi'])
+  @decline.command(aliases=['fi', 'fin', 'suomi'])
   @commands.cooldown(1, 5, commands.BucketType.user)
   async def finnish(self, ctx, word: str = None, word_type: str = None):
     """Declines a Finnish word; showing a table with its full declension forms.\n:param word: The word to decline.\n:param word_type: The type of the word (noun/adj)```

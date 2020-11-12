@@ -566,6 +566,7 @@ class Conjugation(commands.Cog):
     verb=verb, emoji_title=emoji_title, language_title='Polish', space=True)
 
   @conjugate.command(aliases=['ru', 'rus', 'ruski'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def russian(self, ctx, *, verb: str = None) -> None:
     """Conjugates a verb in Russian.\n:param verb: The verb to conjugate.```
     
@@ -766,6 +767,7 @@ class Conjugation(commands.Cog):
     verb=verb, emoji_title=emoji_title, language_title='Icelandic', space=True)
 
   @conjugate.command(aliases=['fi', 'finsk'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def finnish(self, ctx, *, verb: str = None) -> None:
     """Conjugates a verb in Finnish.\n:param verb: The verb to conjugate.```
     
@@ -897,6 +899,72 @@ class Conjugation(commands.Cog):
     emoji_title = '🇲🇾'
     return await self.__cooljugator(ctx=ctx, root=root, 
     verb=verb, emoji_title=emoji_title, language_title='Malay', space=True)
+
+  @commands.command(aliases=['ca'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
+  async def catalan(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in Catalan.\n:param verb: The verb to conjugate.```
+    
+    🟨 __**Example:**__
+    ```ini\n[1] dec!catalan ésser\n[2] dec!ca tenir\n[3] dec!ca marxar\n[4] dec!catalan dir"""
+    if not verb:
+      return await ctx.send("**Please, type a verb**")
+
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+    
+    root =f'https://cooljugator.com/ca/{temp_verb.lower()}'
+
+    emoji_title = '🟨'
+    return await self.__cooljugator(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Catalan', space=True)
+
+  @commands.command(aliases=['ro', 'romana'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
+  async def romanian(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in Romanian.\n:param verb: The verb to conjugate.```
+    
+    🇷🇴 __**Example:**__
+    ```ini\n[1] dec!romanian găsi\n[2] dec!ro învăța\n[3] dec!romana ști\n[4] dec!romanian dobândi"""
+    if not verb:
+      return await ctx.send("**Please, type a verb**")
+
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+    
+    root =f'https://cooljugator.com/ro/{temp_verb.lower()}'
+
+    emoji_title = '🇷🇴'
+    return await self.__cooljugator(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Romanian', space=True)
+
+  @commands.command(aliases=['gr'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
+  async def greek(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in modern Greek.\n:param verb: The verb to conjugate.```
+    
+    🇬🇷 __**Example:**__
+    ```ini\n[1] dec!greek είμαι\n[2] dec!gr βλέπω\n[3] dec!gr πηγαίνω\n[4] dec!greek κάνω"""
+    if not verb:
+      return await ctx.send("**Please, type a verb**")
+
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+    
+    root =f'https://cooljugator.com/gr/{temp_verb.lower()}'
+
+    emoji_title = '🇬🇷'
+    return await self.__cooljugator(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Greek', space=True)
 
 
 

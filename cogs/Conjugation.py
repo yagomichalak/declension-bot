@@ -770,7 +770,7 @@ class Conjugation(commands.Cog):
     """Conjugates a verb in Finnish.\n:param verb: The verb to conjugate.```
     
     🇫🇮 __**Example:**__
-    ```ini\n[1] dec!finnish ola\n[2] dec!fi omata\n[3] dec!finsk löytää\n[4] dec!finnish sanoa"""
+    ```ini\n[1] dec!conj finnish ola\n[2] dec!conj fi omata\n[3] dec!conj finsk löytää\n[4] dec!conj finnish sanoa"""
     if not verb:
       return await ctx.send("**Please, type a verb**")
 

@@ -135,7 +135,7 @@ class Declension(commands.Cog):
     """Declines a Russian word; showing a table with its full declension forms.\n:param word: The word to decline.```
     
     🇷🇺 __**Example:**__
-    ```ini\n[1] dec!russian год\n[2] dec!ruski красивый\n[3] dec!ru такой\n[4] dec!rus эмоциональный"""
+    ```ini\n[1] dec!dec russian год\n[2] dec!dec ruski красивый\n[3] dec!dec ru такой\n[4] dec!dec rus эмоциональный"""
     if not word:
       return await ctx.send("**Please, type a word**")
 
@@ -211,7 +211,7 @@ class Declension(commands.Cog):
     """Declines a Finnish word; showing a table with its full declension forms.\n:param word: The word to decline.\n:param word_type: The type of the word (noun/adj)```
     
     🇫🇮 __**Example:**__
-    ```ini\n[1] dec!finnish erilainen adjective\n[2] dec!suomi kallis adjn\n[3] dec!fi aika noun\n[4] dec!fin kansa n"""
+    ```ini\n[1] dec!dec finnish erilainen adjective\n[2] dec!dec suomi kallis adjn\n[3] dec!dec fi aika noun\n[4] dec!dec fin kansa n"""
     me = ctx.author
     if not word:
       return await ctx.send(f"**Please {me.mention}, inform a word to search!**")

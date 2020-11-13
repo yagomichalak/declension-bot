@@ -966,6 +966,71 @@ class Conjugation(commands.Cog):
     return await self.__cooljugator(ctx=ctx, root=root, 
     verb=verb, emoji_title=emoji_title, language_title='Greek', space=True)
 
+  @commands.command(aliases=['af', 'za'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
+  async def afrikaans(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in modern Afrikaans.\n:param verb: The verb to conjugate.```
+    
+    🇿🇦 __**Example:**__
+    ```ini\n[1] dec!afrikaans wees\n[2] dec!af hê\n[3] dec!za sê\n[4] dec!afrikaans gaan"""
+    if not verb:
+      return await ctx.send("**Please, type a verb**")
+
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+    
+    root =f'https://cooljugator.com/afr/{temp_verb.lower()}'
+
+    emoji_title = '🇿🇦'
+    return await self.__cooljugator(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Afrikaans', space=True)
+
+  @commands.command(aliases=['lt'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
+  async def lithuanian(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in modern Lithuanian.\n:param verb: The verb to conjugate.```
+    
+    🇱🇹 __**Example:**__
+    ```ini\n[1] dec!lithuanian būti\n[2] dec!lt eiti\n[3] dec!lithuanian daryti\n[4] dec!lt norėti"""
+    if not verb:
+      return await ctx.send("**Please, type a verb**")
+
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+    
+    root =f'https://cooljugator.com/lt/{temp_verb.lower()}'
+
+    emoji_title = '🇱🇹'
+    return await self.__cooljugator(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Lithuanian', space=True)
+
+  @commands.command(aliases=['lv'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
+  async def latvian(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in modern Latvian.\n:param verb: The verb to conjugate.```
+    
+    🇱🇻 __**Example:**__
+    ```ini\n[1] dec!latvian būt\n[2] dec!lv iet\n[3] dec!latvian varēt\n[4] dec!lv darīt"""
+    if not verb:
+      return await ctx.send("**Please, type a verb**")
+
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+    
+    root =f'https://cooljugator.com/lv/{temp_verb.lower()}'
+
+    emoji_title = '🇱🇻'
+    return await self.__cooljugator(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Latvian', space=True)
 
 
 def setup(client) -> None:

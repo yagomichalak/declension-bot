@@ -982,7 +982,7 @@ class Conjugation(commands.Cog):
 
     temp_verb = '%20'.join(verb.split())
     
-    root =f'https://cooljugator.com/afr/{temp_verb.lower()}'
+    root =f'https://cooljugator.com/af/{temp_verb.lower()}'
 
     emoji_title = '🇿🇦'
     return await self.__cooljugator(ctx=ctx, root=root, 

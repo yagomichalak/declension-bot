@@ -969,7 +969,7 @@ class Conjugation(commands.Cog):
   @commands.command(aliases=['af', 'za'])
   @commands.cooldown(1, 5, commands.BucketType.user)
   async def afrikaans(self, ctx, *, verb: str = None) -> None:
-    """Conjugates a verb in modern Afrikaans.\n:param verb: The verb to conjugate.```
+    """Conjugates a verb in Afrikaans.\n:param verb: The verb to conjugate.```
     
     🇿🇦 __**Example:**__
     ```ini\n[1] dec!afrikaans wees\n[2] dec!af hê\n[3] dec!za sê\n[4] dec!afrikaans gaan"""
@@ -991,7 +991,7 @@ class Conjugation(commands.Cog):
   @commands.command(aliases=['lt'])
   @commands.cooldown(1, 5, commands.BucketType.user)
   async def lithuanian(self, ctx, *, verb: str = None) -> None:
-    """Conjugates a verb in modern Lithuanian.\n:param verb: The verb to conjugate.```
+    """Conjugates a verb in Lithuanian.\n:param verb: The verb to conjugate.```
     
     🇱🇹 __**Example:**__
     ```ini\n[1] dec!lithuanian būti\n[2] dec!lt eiti\n[3] dec!lithuanian daryti\n[4] dec!lt norėti"""
@@ -1013,7 +1013,7 @@ class Conjugation(commands.Cog):
   @commands.command(aliases=['lv'])
   @commands.cooldown(1, 5, commands.BucketType.user)
   async def latvian(self, ctx, *, verb: str = None) -> None:
-    """Conjugates a verb in modern Latvian.\n:param verb: The verb to conjugate.```
+    """Conjugates a verb in Latvian.\n:param verb: The verb to conjugate.```
     
     🇱🇻 __**Example:**__
     ```ini\n[1] dec!latvian būt\n[2] dec!lv iet\n[3] dec!latvian varēt\n[4] dec!lv darīt"""
@@ -1031,6 +1031,72 @@ class Conjugation(commands.Cog):
     emoji_title = '🇱🇻'
     return await self.__cooljugator(ctx=ctx, root=root, 
     verb=verb, emoji_title=emoji_title, language_title='Latvian', space=True)
+
+  @commands.command(aliases=['mk'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
+  async def macedonian(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in Macedonian.\n:param verb: The verb to conjugate.```
+    
+    🇲🇰 __**Example:**__
+    ```ini\n[1] dec!macedonian сум\n[2] dec!mk има\n[3] dec!macedonian рече\n[4] dec!mk оди"""
+    if not verb:
+      return await ctx.send("**Please, type a verb**")
+
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+    
+    root =f'https://cooljugator.com/mk/{temp_verb.lower()}'
+
+    emoji_title = '🇲🇰'
+    return await self.__cooljugator(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Macedonian', space=True)
+
+  @commands.command(aliases=['fa'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
+  async def persian(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in Persian.\n:param verb: The verb to conjugate.```
+    
+    🇮🇷 __**Example:**__
+    ```ini\n[1] dec!persian گم شدن\n[2] dec!fa گفتن\n[3] dec!persian رفتن\n[4] dec!fa ساختن"""
+    if not verb:
+      return await ctx.send("**Please, type a verb**")
+
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+    
+    root =f'https://cooljugator.com/fa/{temp_verb.lower()}'
+
+    emoji_title = '🇮🇷'
+    return await self.__cooljugator(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Persian', space=True)
+
+  @commands.command(aliases=['he', 'il'])
+  @commands.cooldown(1, 5, commands.BucketType.user)
+  async def hebrew(self, ctx, *, verb: str = None) -> None:
+    """Conjugates a verb in Hebrew.\n:param verb: The verb to conjugate.```
+    
+    🇮🇱 __**Example:**__
+    ```ini\n[1] dec!hebrew היה\n[2] dec!he אמר\n[3] dec!il ידע\n[4] dec!hebrew לקח"""
+    if not verb:
+      return await ctx.send("**Please, type a verb**")
+
+
+    if len(verb) > 50:
+      return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+
+    temp_verb = '%20'.join(verb.split())
+    
+    root =f'https://cooljugator.com/he/{temp_verb.lower()}'
+
+    emoji_title = '🇮🇱'
+    return await self.__cooljugator(ctx=ctx, root=root, 
+    verb=verb, emoji_title=emoji_title, language_title='Hebrew', space=True)
 
 
 def setup(client) -> None:

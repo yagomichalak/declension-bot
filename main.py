@@ -316,11 +316,27 @@ async def reload_all(ctx):
       pass
   await ctx.send(f"**Cogs reloaded!**")
 
+@client.command(aliases=['patron'])
+async def patreon(ctx):
+  """ Support the creator on Patreon. """
+
+  link = 'https://www.patreon.com/dnk'
+
+  embed = discord.Embed(
+  title="__Patreon__",
+  description=f"If you want to finacially support my work and motivate me to keep adding more features, put more effort and time into this and other bots, click [here]({link})",
+  timestamp=ctx.message.created_at,
+  url=link,
+  color=ctx.author.color
+  )
+  await ctx.send(embed=embed)
+
 @client.command()
 async def support(ctx):
   '''
   Support for the bot and its commands.
   '''
+
   link = 'https://discord.gg/languages'
 
   embed = discord.Embed(

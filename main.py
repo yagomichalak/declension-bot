@@ -23,7 +23,9 @@ status = cycle([
   "Catalan conjugations", "Greek conjugations",
   "Afrikaans conjugations", "Lithuanian conjugations", 
   "Latvian conjugations", "Macedonian conjugations",
-  "Persian conjugations", "Hebrew conjugations"
+  "Persian conjugations", "Hebrew conjugations",
+  "Spanish context", "French context",
+  "Italian context", "German context"
   ])
 
 intents = discord.Intents.default()
@@ -129,9 +131,9 @@ async def info(ctx):
   '''
   Shows some information about the bot itself.
   '''
-  embed = discord.Embed(title='Declinator Bot', description="__**WHAT IS IT?:**__```Hello, the Declinator bot is an open source bot based on word declensions and verb conjugations.\nPS: declensions are all forms of a word in a language that contains a grammatical case system.```", colour=ctx.author.color, url="http://193.70.127.179/", timestamp=ctx.message.created_at)
+  embed = discord.Embed(title='Declinator Bot', description="__**WHAT IS IT?:**__```Hello, the Declinator bot is an open source bot based on word declensions, verb conjugations and words in context.\nPS: declensions are all forms of a word in a language that contains a grammatical case system.```", colour=ctx.author.color, url="http://193.70.127.179/", timestamp=ctx.message.created_at)
   embed.add_field(name="📚 __**Language declinators**__",
-                value="`4` different languages to decline and `34` to conjugate so far.",
+                value="So far, there are `4` different languages to decline, `34` to conjugate and `4` to get context.",
                 inline=True)
   embed.add_field(name="💻 __**Programmed in**__",
                 value="The Declinator bot was built in Python, and you can find its GitHub repository [here](https://github.com/yagomichalak/declension-bot).",
@@ -159,9 +161,8 @@ async def invite(ctx):
 
 @client.command()
 async def help(ctx, *, cmd: str = None):
-  '''
-  Shows some information about commands and categories.
-  '''
+  """ Shows some information about commands and categories. """
+  
   if not cmd:
       embed = discord.Embed(
       title="All commands and categories",

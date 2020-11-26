@@ -59,7 +59,7 @@ class ReversoContext(commands.Cog):
     if len(search) > 100:
       return await ctx.send("**Wow! Your searched must be within 100 characters!**")
 
-    root = 'https://context.reverso.net/translation/spanish-english/'
+    root = 'https://context.reverso.net/translation/spanish-english'
 
     emoji = "🇪🇸-🇲🇽"
     return await self._reverso(ctx, root, search, 'Spanish', emoji)
@@ -80,7 +80,7 @@ class ReversoContext(commands.Cog):
     if len(search) > 100:
       return await ctx.send("**Wow! Your searched must be within 100 characters!**")
 
-    root = 'https://context.reverso.net/translation/italian-english/'
+    root = 'https://context.reverso.net/translation/italian-english'
 
     emoji = "🇮🇹-🇨🇭"
     return await self._reverso(ctx, root, search, 'Italian', emoji)
@@ -101,7 +101,7 @@ class ReversoContext(commands.Cog):
     if len(search) > 100:
       return await ctx.send("**Wow! Your searched must be within 100 characters!**")
 
-    root = 'https://context.reverso.net/translation/french-english/'
+    root = 'https://context.reverso.net/translation/french-english'
 
     emoji = "🇫🇷-🇧🇪"
     return await self._reverso(ctx, root, search, 'French', emoji)
@@ -122,7 +122,7 @@ class ReversoContext(commands.Cog):
     if len(search) > 100:
       return await ctx.send("**Wow! Your searched must be within 100 characters!**")
 
-    root = 'https://context.reverso.net/translation/german-english/'
+    root = 'https://context.reverso.net/translation/german-english'
 
     emoji = "🇩🇪-🇦🇹"
     return await self._reverso(ctx, root, search, 'German', emoji)

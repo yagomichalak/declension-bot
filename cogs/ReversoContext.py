@@ -6,19 +6,24 @@ import json
 from bs4 import BeautifulSoup
 
 class ReversoContext(commands.Cog):
+  """ A category regarding the acquisition of words in context for different languages. """
 
   def __init__(self, client) -> None:
+    """ Class initializing method."""
+
     self.client = client
     self.session = aiohttp.ClientSession(loop=client.loop)
 
 
   @commands.Cog.listener()
   async def on_ready(self) -> None:
+    """ Tells when the cog is ready to use."""
+
     print('ReversoContext cog is online!')
 
   
   @commands.group(aliases=['ctx'])
-  async def context(self, ctx):
+  async def context(self, ctx) -> None:
     """ Gets context in ReversoContext's website for some languages. """
 
     if ctx.invoked_subcommand:
@@ -39,7 +44,7 @@ class ReversoContext(commands.Cog):
     await ctx.send(embed=embed)
 
   @context.command(aliases=['es'])
-  async def spanish(self, ctx, *, search: str = None):
+  async def spanish(self, ctx, *, search: str = None) -> None:
     """ Searches and shows examples of Spanish words and sentences in context.
     :param search: What you want to be searched.```
     **🇪🇸-🇲🇽 Example:**
@@ -60,7 +65,7 @@ class ReversoContext(commands.Cog):
     return await self._reverso(ctx, root, search, 'Spanish', emoji)
 
   @context.command(aliases=['it'])
-  async def italian(self, ctx, *, search: str = None):
+  async def italian(self, ctx, *, search: str = None) -> None:
     """ Searches and shows examples of Italian words and sentences in context.
     :param search: What you want to be searched.```
     **🇮🇹-🇨🇭 Example:**
@@ -81,7 +86,7 @@ class ReversoContext(commands.Cog):
     return await self._reverso(ctx, root, search, 'Italian', emoji)
 
   @context.command(aliases=['fr'])
-  async def french(self, ctx, *, search: str = None):
+  async def french(self, ctx, *, search: str = None) -> None:
     """ Searches and shows examples of French words and sentences in context.
     :param search: What you want to be searched.```
     **🇫🇷-🇧🇪 Example:**
@@ -102,7 +107,7 @@ class ReversoContext(commands.Cog):
     return await self._reverso(ctx, root, search, 'French', emoji)
 
   @context.command(aliases=['de'])
-  async def german(self, ctx, *, search: str = None):
+  async def german(self, ctx, *, search: str = None) -> None:
     """ Searches and shows examples of German words and sentences in context.
     :param search: What you want to be searched.```
     **🇩🇪-🇦🇹 Example:**
@@ -211,4 +216,6 @@ class ReversoContext(commands.Cog):
             continue
 
 def setup(client) -> None:
+  """ Cog's setup function."""
+  
   client.add_cog(ReversoContext(client))

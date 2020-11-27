@@ -32,7 +32,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=True)):
   async def add_card(self, ctx) -> None:
     """ Adds a card into the database. """
 
-    if not ctx.guild and ctx.guild.id != self.server_id:
+    if not ctx.guild or ctx.guild.id != self.server_id:
       return await ctx.send("**No**")
 
     member = ctx.author
@@ -82,12 +82,12 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=True)):
     """ Deletes a card from the user's deck. 
     :param card_id: The ID of the card that is gonna be deleted. """
 
-    if not ctx.guild and ctx.guild.id != self.server_id:
+    if not ctx.guild or ctx.guild.id != self.server_id:
       return await ctx.send("**No**")
 
     member = ctx.author
     if not card_id:
-      await ctx.get_command().reset_cooldown()
+      self.client.get_command().reset_cooldown()
       return await ctx.send(f"**You need to inform a card ID, {member.mention}!**")
 
     if not await self.card_exists(member.id, card_id):
@@ -101,7 +101,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=True)):
   async def cards(self, ctx):
     """ Shows all cards of a particular user. """
 
-    if not ctx.guild and ctx.guild.id != self.server_id:
+    if not ctx.guild or ctx.guild.id != self.server_id:
       return await ctx.send("**No**")
 
     member = ctx.author
@@ -115,7 +115,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=True)):
     """ Searches for cards in the user's deck with the given search values. 
     :param values: What is gonna be searched in the DB.
     """
-    if not ctx.guild and ctx.guild.id != self.server_id:
+    if not ctx.guild or ctx.guild.id != self.server_id:
       return await ctx.send("**No**")
 
     member = ctx.author

@@ -15,7 +15,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=True)):
 
     self.client = client
     self.loop = asyncio.get_event_loop()
-    self.server_id = os.getenv('SERVER_ID')
+    self.server_id = int(os.getenv('SERVER_ID'))
 
   
   @commands.Cog.listener()

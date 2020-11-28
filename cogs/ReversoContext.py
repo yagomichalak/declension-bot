@@ -135,7 +135,7 @@ class ReversoContext(commands.Cog):
   async def polish(self, ctx, *, search: str = None) -> None:
     """ Searches and shows examples of Polish words and sentences in context.
     :param search: What you want to be searched.```
-    **🇩🇪-🇦🇹 Example:**
+    **🇵🇱 Example:**
     ```ini
     [1] dec!ctx pl chcę zrobić
     [2] dec!ctx polski kobieta

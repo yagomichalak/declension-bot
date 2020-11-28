@@ -4,6 +4,8 @@ import asyncio
 import aiohttp
 import json
 from bs4 import BeautifulSoup
+from datetime import datetime
+from cogs.FlashCard import FlashCard
 
 class ReversoContext(commands.Cog):
   """ A category regarding the acquisition of words in context for different languages. """
@@ -174,6 +176,8 @@ class ReversoContext(commands.Cog):
       await asyncio.sleep(0.5)
       await msg.add_reaction('⬅️')
       await msg.add_reaction('➡️')
+      await msg.add_reaction('➕')
+      await msg.add_reaction('🛑')
 
       # Main loop, for switching pages
       while True:
@@ -197,11 +201,13 @@ class ReversoContext(commands.Cog):
           r, u = await self.client.wait_for(
             'reaction_add', timeout=60, 
             check=lambda r, u: r.message.id == msg.id and \
-            u.id == ctx.author.id and str(r.emoji) in ['⬅️', '➡️']
+            u.id == ctx.author.id and str(r.emoji) in ['⬅️', '➡️', '➕', '🛑']
           )
         except asyncio.TimeoutError:
           await msg.remove_reaction('⬅️', self.client.user)
           await msg.remove_reaction('➡️', self.client.user)
+          await msg.remove_reaction('➕', self.client.user)
+          await msg.remove_reaction('🛑', self.client.user)
           return
         else:
           if str(r.emoji) == '⬅️':
@@ -209,11 +215,40 @@ class ReversoContext(commands.Cog):
               index -= 1
             await msg.remove_reaction(r, u)
             continue
-          else:
+          elif str(r.emoji) == '➡️':
             if index < len(groups) - 1:
               index += 1
             await msg.remove_reaction(r, u)
             continue
+          elif str(r.emoji) == '➕':
+            front = groups[index]['original']
+            back = groups[index]['translation']
+            await self._add_card(ctx, ctx.author, front, back)
+            await msg.remove_reaction(r, u)
+            continue
+          elif str(r.emoji) == '🛑':
+            await msg.remove_reaction('⬅️', self.client.user)
+            await msg.remove_reaction('➡️', self.client.user)
+            await msg.remove_reaction('➕', self.client.user)
+            await msg.remove_reaction('🛑', self.client.user)
+            await msg.remove_reaction('🛑', ctx.author)
+            break
+
+  async def _add_card(self, ctx, member: discord.Member, front: str, back: str) -> None:
+    """" Adds a card from the context list into the DB. 
+    :param ctx: The context.
+    :param member: The member to whom the card is gonna be added.
+    :param front: The value for the frontside of the card.
+    :param back: The values for the backside of the card. """
+
+    try:
+      epoch = datetime.utcfromtimestamp(0)
+      the_time = (datetime.utcnow() - epoch).total_seconds()
+      flashcard = FlashCard(self.client)
+      await flashcard._insert_card(member.id, front, back, the_time)
+      return await ctx.send(f"**Added card into the DB, {member.mention}!**", delete_after=3)
+    except Exception as e:
+      return await ctx.send(f"**For some reason I couldn't add it into the DB, {member.mention}!**", delete_after=3)
 
 def setup(client) -> None:
   """ Cog's setup function."""

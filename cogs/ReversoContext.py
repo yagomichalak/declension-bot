@@ -131,6 +131,27 @@ class ReversoContext(commands.Cog):
     emoji = "🇩🇪-🇦🇹"
     return await self._reverso(ctx, root, search, 'German', emoji)
 
+  @context.command(aliases=['pl', 'po', 'polski'])
+  async def polish(self, ctx, *, search: str = None) -> None:
+    """ Searches and shows examples of Polish words and sentences in context.
+    :param search: What you want to be searched.```
+    **🇩🇪-🇦🇹 Example:**
+    ```ini
+    [1] dec!ctx pl chcę zrobić
+    [2] dec!ctx polski kobieta
+    [3] dec!context polish nie wiem"""
+
+    if not search:
+      return await ctx.send("**Inform a query to search for context!**")
+
+    if len(search) > 100:
+      return await ctx.send("**Wow! Your searched must be within 100 characters!**")
+
+    root = 'https://context.reverso.net/translation/polish-english'
+
+    emoji = "🇵🇱"
+    return await self._reverso(ctx, root, search, 'Polish', emoji)
+
   async def _reverso(self, ctx, root: str, search: str, language: str, emoji: str) -> None:
     """ Gets context in ReversoContext's website for some languages.
     :param root: The root endpoint to perform the GET HTTP request.

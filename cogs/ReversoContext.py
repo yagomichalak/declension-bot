@@ -6,6 +6,7 @@ import json
 from bs4 import BeautifulSoup
 from datetime import datetime
 from cogs.FlashCard import FlashCard
+import os
 
 class ReversoContext(commands.Cog):
   """ A category regarding the acquisition of words in context for different languages. """
@@ -15,6 +16,7 @@ class ReversoContext(commands.Cog):
 
     self.client = client
     self.session = aiohttp.ClientSession(loop=client.loop)
+    self.server_id = os.getenv('SERVER_ID')
 
 
   @commands.Cog.listener()
@@ -221,6 +223,8 @@ class ReversoContext(commands.Cog):
             await msg.remove_reaction(r, u)
             continue
           elif str(r.emoji) == '➕':
+            if not ctx.guild or ctx.guild.id != self.server_id:
+              return await ctx.send("**This server is not whitelisted!**")
             front = groups[index]['original']
             back = groups[index]['translation']
             await self._add_card(ctx, ctx.author, front, back)

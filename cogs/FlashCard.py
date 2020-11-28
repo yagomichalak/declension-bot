@@ -33,7 +33,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=True)):
     """ Adds a card into the database. """
 
     if not ctx.guild or ctx.guild.id != self.server_id:
-      return await ctx.send("**No**")
+      return await ctx.send("**This server is not whitelisted!**")
 
     member = ctx.author
     # Makes initial embed
@@ -83,7 +83,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=True)):
     :param card_id: The ID of the card that is gonna be deleted. """
 
     if not ctx.guild or ctx.guild.id != self.server_id:
-      return await ctx.send("**No**")
+      return await ctx.send("**This server is not whitelisted!**")
 
     member = ctx.author
     if not card_id:
@@ -102,7 +102,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=True)):
     """ Shows all cards of a particular user. """
 
     if not ctx.guild or ctx.guild.id != self.server_id:
-      return await ctx.send("**No**")
+      return await ctx.send("**This server is not whitelisted!**")
 
     member = ctx.author
     cards = await self.get_user_cards(member.id)
@@ -116,7 +116,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=True)):
     :param values: What is gonna be searched in the DB.
     """
     if not ctx.guild or ctx.guild.id != self.server_id:
-      return await ctx.send("**No**")
+      return await ctx.send("**This server is not whitelisted!**")
 
     member = ctx.author
 

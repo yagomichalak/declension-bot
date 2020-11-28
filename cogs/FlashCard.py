@@ -244,7 +244,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
 
   # Database methods
 
-  @commands.command()
+  @commands.command(hidden=True)
   @commands.is_owner()
   async def create_table(self, ctx) -> None:
     """ Creates the Cards table. """
@@ -265,7 +265,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     await mycursor.close()
     await ctx.send("**Table __Cards__ created!**")
 
-  @commands.command()
+  @commands.command(hidden=True)
   @commands.is_owner()
   async def drop_table(self, ctx) -> None:
     """ Drops the Cards table. """
@@ -279,7 +279,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     await mycursor.close()
     await ctx.send("**Table __Cards__ dropped!**")
 
-  @commands.command()
+  @commands.command(hidden=True)
   @commands.is_owner()
   async def reset_table(self, ctx) -> None:
     """ Resets the Cards table. """

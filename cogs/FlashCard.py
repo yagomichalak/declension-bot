@@ -7,7 +7,7 @@ import asyncio
 from functools import reduce
 from datetime import datetime
 
-class FlashCard(commands.Cog, command_attrs=dict(hidden=True)):
+class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
   """ A category for creating, editing, deleting and showing 'FlashCard'."""
 
   def __init__(self, client) -> None:

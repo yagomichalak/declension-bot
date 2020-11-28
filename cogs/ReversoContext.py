@@ -16,7 +16,7 @@ class ReversoContext(commands.Cog):
 
     self.client = client
     self.session = aiohttp.ClientSession(loop=client.loop)
-    self.server_id = os.getenv('SERVER_ID')
+    self.server_id = int(os.getenv('SERVER_ID'))
 
 
   @commands.Cog.listener()
@@ -223,11 +223,12 @@ class ReversoContext(commands.Cog):
             await msg.remove_reaction(r, u)
             continue
           elif str(r.emoji) == '➕':
-            if not ctx.guild or ctx.guild.id != self.server_id:
-              return await ctx.send("**This server is not whitelisted!**")
-            front = groups[index]['original']
-            back = groups[index]['translation']
-            await self._add_card(ctx, ctx.author, front, back)
+            if ctx.guild and ctx.guild.id == self.server_id:
+              front = groups[index]['original']
+              back = groups[index]['translation']
+              await self._add_card(ctx, ctx.author, front, back)
+            else:
+              await ctx.send("**This server is not whitelisted!**", delete_after=3)
             await msg.remove_reaction(r, u)
             continue
           elif str(r.emoji) == '🛑':

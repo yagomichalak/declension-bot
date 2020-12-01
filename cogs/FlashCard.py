@@ -6,6 +6,9 @@ from typing import Any, List, Dict, Union, Callable
 import asyncio
 from functools import reduce
 from datetime import datetime
+from others.customerrors import NotInWhitelist
+
+class NotInWhitelist(CheckFailure): pass
 
 class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
   """ A category for creating, editing, deleting and showing 'FlashCard'."""
@@ -16,23 +19,35 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     self.client = client
     self.loop = asyncio.get_event_loop()
     self.server_id = int(os.getenv('SERVER_ID'))
+    self.whitelist: List[int] = []
 
   
   @commands.Cog.listener()
   async def on_ready(self) -> None:
     """ Tells when the cog is ready to use. """
 
+    if await self.table_exists_whitelist():
+      self.whitelist = await self.get_whitelist()
+      
     print('FlashCard cog is online')
 
   # Discord commands
 
+  def check_whitelist():
+    async def real_check(ctx):
+      if ctx.guild.id in ctx.command.cog.whitelist:
+          return True
+      raise NotInWhitelist()
+    return commands.check(real_check)
+
 
   @commands.command(aliases=['addc', 'ac'])
   @commands.cooldown(1, 120, commands.BucketType.user)
+  @check_whitelist()
   async def add_card(self, ctx) -> None:
     """ Adds a card into the database. """
 
-    if not ctx.guild or ctx.guild.id != self.server_id:
+    if not ctx.guild or ctx.guild.id not in self.whitelist:
       return await ctx.send("**This server is not whitelisted!**")
 
     member = ctx.author
@@ -71,18 +86,22 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
       self.client.get_command('add_card').reset_cooldown(ctx)
       epoch = datetime.utcfromtimestamp(0)
       the_time = (datetime.utcnow() - epoch).total_seconds()
-      await self._insert_card(member.id, front, back, the_time)
-      return await ctx.send("**Values confirmed! Added them into the DB...**")
+      inserted = await self._insert_card(ctx.guild.id, member.id, front, back, the_time)
+      if inserted:
+        await ctx.send("**Values confirmed! Added them into the DB...**")
+      else:
+        await ctx.send("**Values confirmed! But this server is not whitelisted...**")
     elif reaction == '❌':
       return await ctx.send("**Values not confirmed! Not adding them into the DB...**")
 	
   @commands.command(aliases=['delc', 'dc', 'del_card'])
   @commands.cooldown(1, 5, commands.BucketType.user)
+  @check_whitelist()
   async def delete_card(self, ctx, card_id: int = None) -> None:
     """ Deletes a card from the user's deck. 
     :param card_id: The ID of the card that is gonna be deleted. """
 
-    if not ctx.guild or ctx.guild.id != self.server_id:
+    if not ctx.guild or ctx.guild.id not in self.whitelist:
       return await ctx.send("**This server is not whitelisted!**")
 
     member = ctx.author
@@ -98,10 +117,11 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
 
   @commands.command(aliases=['cds'])
   @commands.cooldown(1, 10, commands.BucketType.user)
+  @check_whitelist()
   async def cards(self, ctx):
     """ Shows all cards of a particular user. """
 
-    if not ctx.guild or ctx.guild.id != self.server_id:
+    if not ctx.guild or ctx.guild.id not in self.whitelist:
       return await ctx.send("**This server is not whitelisted!**")
 
     member = ctx.author
@@ -111,11 +131,12 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
 
   @commands.command(aliases=['sc', 'scs', 'search_card', 'search'])
   @commands.cooldown(1, 10, commands.BucketType.user)
+  @check_whitelist()
   async def search_cards(self, ctx, *, values: str = None) -> None:
     """ Searches for cards in the user's deck with the given search values. 
     :param values: What is gonna be searched in the DB.
     """
-    if not ctx.guild or ctx.guild.id != self.server_id:
+    if not ctx.guild or ctx.guild.id not in self.whitelist:
       return await ctx.send("**This server is not whitelisted!**")
 
     member = ctx.author
@@ -305,20 +326,25 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     else:
       return False
 
-  async def _insert_card(self, user_id: int, front: str, back: str, timestamp: int) -> None:
+  async def _insert_card(self, server_id: int, user_id: int, front: str, back: str, timestamp: int) -> bool:
     """ Checks whether the Cards table exists. 
+    :param server_id: The ID of the server which to check whether it's whitelisted.
     :param user_id: The ID of the card's creator.
     :param front: The value for the frontside of the card.
     :param back: The value for the backside of the card.
     :param timestamp: The creation timestamp.
     """
 
-    mycursor, db = await self.the_database()
-    await mycursor.execute("""INSERT INTO Cards (
-      user_id, front_value, back_value, timestamp) 
-      VALUES (%s, %s, %s, %s)""", (user_id, front, back, timestamp))
-    await db.commit()
-    await mycursor.close()
+    if server_id in self.whitelist:
+      mycursor, db = await self.the_database()
+      await mycursor.execute("""INSERT INTO Cards (
+        user_id, front_value, back_value, timestamp) 
+        VALUES (%s, %s, %s, %s)""", (user_id, front, back, timestamp))
+      await db.commit()
+      await mycursor.close()
+      return True
+    else:
+      return False
 
   async def _delete_card(self, user_id: int, card_id: int) -> None:
     """ Deletes a user card by ID. 
@@ -368,16 +394,119 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     else:
       return False
 
-  # @commands.command()
-  # @commands.has_permissions(administrator=True)
-  # async def get_tables(self, ctx) -> List[str]:
-  #   """ Gets all existing tables from the DB. """
+  # Whitelist
 
-  #   mycursor, db = await self.the_database()
-  #   await mycursor.execute("SHOW TABLES")
-  #   tables = list(reduce(lambda t: t[0], await mycursor.fetchall()))
-  #   await mycursor.close()
-  #   print(tables)
+  @commands.command(aliases=['whitelist', 'ws', 'insert'], hidden=True)
+  @commands.is_owner()
+  async def insert_server(self, ctx, server_id: int = None) -> None:
+
+    member = ctx.author
+    if not server_id:
+      return await ctx.send(f"**Please, inform a server ID, {member.mention}!**")
+
+    try:
+      await self._insert_server(server_id)
+      await ctx.send(f"**The informed server is now whitelisted, {member.mention}!**")
+    except Exception as e:
+      print(e)
+      await ctx.send(f"**It looks like this server was already whitelisted!**")
+
+
+  @commands.command(aliases=['remove_server'], hidden=True)
+  @commands.is_owner()
+  async def delete_server(self, ctx, server_id: int = None) -> None:
+
+    member = ctx.author
+    if not server_id:
+      return await ctx.send(f"**Please, inform a server ID, {member.mention}!**")
+
+    await self._delete_server(server_id)
+    await ctx.send(f"**The informed server was removed from the whitelist, {member.mention}!**")
+
+  @commands.command(hidden=True)
+  @commands.is_owner()
+  async def create_table_whitelist(self, ctx) -> None:
+    """ Creates the Whitelist table. """
+
+    if await self.table_whitelist_exists():
+      return await ctx.send("**The __Cards__ table already exists!**")
+
+    mycursor, db = await self.the_database()
+    await mycursor.execute("""CREATE TABLE Whitelist (
+      server_id BIGINT NOT NULL,
+      PRIMARY KEY (server_id)
+    ) DEFAULT CHARSET=utf8mb4""")
+    await db.commit()
+    await mycursor.close()
+    await ctx.send("**Table __Cards__ created!**")
+
+  @commands.command(hidden=True)
+  @commands.is_owner()
+  async def drop_table_whitelist(self, ctx) -> None:
+    """ Drops the Whitelist table. """
+
+    if not await self.table_exists_whitelist():
+      return await ctx.send("**The __Whitelist__ table doesn't exist!**")
+
+    mycursor, db = await self.the_database()
+    await mycursor.execute("DROP TABLE Whitelist")
+    await db.commit()
+    await mycursor.close()
+    await ctx.send("**Table __Whitelist__ dropped!**")
+
+  @commands.command(hidden=True)
+  @commands.is_owner()
+  async def reset_table_whitelist(self, ctx) -> None:
+    """ Resets the Cards table. """
+
+    if not await self.table_exists_whitelist():
+      return await ctx.send("**The __Whitelist__ table doesn't exist yet!**")
+
+    mycursor, db = await self.the_database()
+    await mycursor.execute("DELETE FROM Whitelist")
+    await db.commit()
+    await mycursor.close()
+    await ctx.send("**Table __Whitelist__ reset!**")
+
+  async def table_exists_whitelist(self) -> bool:
+    """ Checks whether the table Whitelist exists. """
+
+    mycursor, db = await self.the_database()
+    await mycursor.execute("SHOW TABLE STATUS LIKE 'Whitelist'")
+    table = await mycursor.fetchone()
+    await mycursor.close()
+    if table:
+      return True
+    else:
+      return False
+
+  async def _insert_server(self, server_id: int) -> None:
+    """ Inserts a server into the whitelist. 
+    :param server_id: The ID of the server which to insert into the whitelist. """
+
+    mycursor, db = await self.the_database()
+    await mycursor.execute("INSERT INTO Whitelist (server_id) VALUES (%s)", (server_id,))
+    await db.commit()
+    await mycursor.close()
+    return True
+
+  async def _delete_server(self, server_id: int) -> None:
+    """ Deletes a server from the whitelist. 
+    :param server_id: The ID of the server which to delete from the whitelist. """
+
+    mycursor, db = await self.the_database()
+    await mycursor.execute("DELETE FROM Whitelist WHERE server_id = %s", (server_id,))
+    await db.commit()
+    await mycursor.close()
+
+  async def get_whitelist(self, ctx) -> List[int]:
+    """ Gets all existing servers that are in the whitelist. """
+
+    mycursor, db = await self.the_database()
+    await mycursor.execute("SELECT server_id FROM Whitelist")
+    whitelist = list(reduce(lambda s: s[0], await mycursor.fetchall()))
+    await mycursor.close()
+    return whitelist
 
   async def the_database(self) -> List[Any]:
     """ Gets a database connection. """

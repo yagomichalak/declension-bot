@@ -244,12 +244,10 @@ class ReversoContext(commands.Cog):
             await msg.remove_reaction(r, u)
             continue
           elif str(r.emoji) == '➕':
-            if ctx.guild and ctx.guild.id == self.server_id:
-              front = groups[index]['original']
-              back = groups[index]['translation']
-              await self._add_card(ctx, ctx.author, front, back)
-            else:
-              await ctx.send("**This server is not whitelisted!**", delete_after=3)
+            # if ctx.guild and ctx.guild.id == self.server_id:
+            front = groups[index]['original']
+            back = groups[index]['translation']
+            await self._add_card(ctx, ctx.author, front, back)
             await msg.remove_reaction(r, u)
             continue
           elif str(r.emoji) == '🛑':
@@ -271,8 +269,11 @@ class ReversoContext(commands.Cog):
       epoch = datetime.utcfromtimestamp(0)
       the_time = (datetime.utcnow() - epoch).total_seconds()
       flashcard = FlashCard(self.client)
-      await flashcard._insert_card(member.id, front, back, the_time)
-      return await ctx.send(f"**Added card into the DB, {member.mention}!**", delete_after=3)
+      inserted = await flashcard._insert_card(ctx.guild.id, member.id, front, back, the_time)
+      if inserted:
+        return await ctx.send(f"**Added card into the DB, {member.mention}!**", delete_after=3)
+      else: 
+        await ctx.send("**This server is not whitelisted!**", delete_after=3)
     except Exception as e:
       return await ctx.send(f"**For some reason I couldn't add it into the DB, {member.mention}!**", delete_after=3)
 

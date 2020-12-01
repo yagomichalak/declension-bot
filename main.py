@@ -4,6 +4,7 @@ import os
 import asyncio
 from re import match
 from itertools import cycle
+from others.customerrors import NotInWhitelist
 
 status = cycle([
   "Russian declensions", "German declensions", "Finnish declensions", "Polish declensions",
@@ -50,26 +51,29 @@ async def on_command_error(ctx, error):
   if isinstance(error, commands.MissingPermissions):
     await ctx.send(error)
 
-  if isinstance(error, commands.BotMissingPermissions):
+  elif isinstance(error, commands.BotMissingPermissions):
     await ctx.send("**I don't have permissions to run this command!**")
 
-  if isinstance(error, commands.BadArgument):
+  elif isinstance(error, commands.BadArgument):
     await ctx.send("**Invalid parameters!**")
 
-  if isinstance(error, commands.CommandOnCooldown):
+  elif isinstance(error, commands.CommandOnCooldown):
     secs = error.retry_after
     if int(secs) >= 60:
       await ctx.send(f"You are on cooldown! Try again in {secs/60:.1f} minutes!")
     else:
       await ctx.send(error)
       
-  if isinstance(error, commands.NotOwner):
+  elif isinstance(error, commands.NotOwner):
     await ctx.send("**You can't do that, you're not the owner!**")
 
-  if isinstance(error, commands.MissingRequiredArgument):
+  elif isinstance(error, commands.MissingRequiredArgument):
     await ctx.send('**Make sure to inform all parameters!**')
 
-  print(error)
+  elif isinstance(error, NotInWhitelist:
+    await ctx.send(f"**{error}**")
+  else:
+    print(error)
 
 
 @client.event

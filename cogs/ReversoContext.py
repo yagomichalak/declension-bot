@@ -267,10 +267,9 @@ class ReversoContext(commands.Cog):
     try:
       epoch = datetime.utcfromtimestamp(0)
       the_time = (datetime.utcnow() - epoch).total_seconds()
-      flashcard = FlashCard(self.client)
+      flashcard = self.client.get_cog('FlashCard')
       inserted = await flashcard._insert_card(ctx.guild.id, member.id, front, back, the_time)
-      print(ctx.guild.id)
-      print(inserted)
+
       if inserted:
         return await ctx.send(f"**Added card into the DB, {member.mention}!**", delete_after=3)
       else: 

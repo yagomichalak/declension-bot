@@ -506,8 +506,9 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
 
     mycursor, db = await self.the_database()
     await mycursor.execute("SELECT server_id FROM Whitelist")
-    whitelist = list(reduce(lambda s: s[0], await mycursor.fetchall()))
+    whitelist = [s[0] for s in await mycursor.fetchall()]
     await mycursor.close()
+    
     return whitelist
 
   async def the_database(self) -> List[Any]:

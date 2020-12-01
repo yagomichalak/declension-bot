@@ -407,7 +407,6 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
       await ctx.send(f"**The informed server is now whitelisted, {member.mention}!**")
       self.whitelist.append(server_id)
     except Exception as e:
-      print(e)
       await ctx.send(f"**It looks like this server was already whitelisted!**")
 
 
@@ -420,6 +419,10 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
       return await ctx.send(f"**Please, inform a server ID, {member.mention}!**")
 
     await self._delete_server(server_id)
+    try:
+      self.whitelist.remove(server_id)
+    except:
+      pass
     await ctx.send(f"**The informed server was removed from the whitelist, {member.mention}!**")
 
   @commands.command(hidden=True)
@@ -498,7 +501,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     await db.commit()
     await mycursor.close()
 
-  async def get_whitelist(self, ctx) -> List[int]:
+  async def get_whitelist(self) -> List[int]:
     """ Gets all existing servers that are in the whitelist. """
 
     mycursor, db = await self.the_database()

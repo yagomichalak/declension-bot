@@ -427,7 +427,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     """ Creates the Whitelist table. """
 
     if await self.table_whitelist_exists():
-      return await ctx.send("**The __Cards__ table already exists!**")
+      return await ctx.send("**The __Whitelist__ table already exists!**")
 
     mycursor, db = await self.the_database()
     await mycursor.execute("""CREATE TABLE Whitelist (
@@ -436,14 +436,14 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     ) DEFAULT CHARSET=utf8mb4""")
     await db.commit()
     await mycursor.close()
-    await ctx.send("**Table __Cards__ created!**")
+    await ctx.send("**Table __Whitelist__ created!**")
 
   @commands.command(hidden=True)
   @commands.is_owner()
   async def drop_table_whitelist(self, ctx) -> None:
     """ Drops the Whitelist table. """
 
-    if not await self.table_exists_whitelist():
+    if not await self.table_whitelist_exists():
       return await ctx.send("**The __Whitelist__ table doesn't exist!**")
 
     mycursor, db = await self.the_database()
@@ -457,7 +457,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
   async def reset_table_whitelist(self, ctx) -> None:
     """ Resets the Cards table. """
 
-    if not await self.table_exists_whitelist():
+    if not await self.table_whitelist_exists():
       return await ctx.send("**The __Whitelist__ table doesn't exist yet!**")
 
     mycursor, db = await self.the_database()
@@ -466,7 +466,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     await mycursor.close()
     await ctx.send("**Table __Whitelist__ reset!**")
 
-  async def table_exists_whitelist(self) -> bool:
+  async def table_whitelist_exists(self) -> bool:
     """ Checks whether the table Whitelist exists. """
 
     mycursor, db = await self.the_database()

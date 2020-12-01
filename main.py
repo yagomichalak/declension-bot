@@ -47,7 +47,8 @@ async def change_status():
 
 @client.event
 async def on_command_error(ctx, error):
-
+  """ Error handler. """
+  
   if isinstance(error, commands.MissingPermissions):
     await ctx.send(error)
 

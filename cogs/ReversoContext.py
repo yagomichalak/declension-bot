@@ -16,7 +16,6 @@ class ReversoContext(commands.Cog):
 
     self.client = client
     self.session = aiohttp.ClientSession(loop=client.loop)
-    self.server_id = int(os.getenv('SERVER_ID'))
 
 
   @commands.Cog.listener()

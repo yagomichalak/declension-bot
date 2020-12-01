@@ -8,17 +8,15 @@ from functools import reduce
 from datetime import datetime
 from others.customerrors import NotInWhitelist
 
-class NotInWhitelist(CheckFailure): pass
 
 class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
-  """ A category for creating, editing, deleting and showing 'FlashCard'."""
+  """ A category for creating, editing, deleting and showing 'FlashCard'. """
 
   def __init__(self, client) -> None:
     """Class initializing method."""
 
     self.client = client
     self.loop = asyncio.get_event_loop()
-    self.server_id = int(os.getenv('SERVER_ID'))
     self.whitelist: List[int] = []
 
   

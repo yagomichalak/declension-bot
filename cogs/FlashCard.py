@@ -24,7 +24,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
   async def on_ready(self) -> None:
     """ Tells when the cog is ready to use. """
 
-    if await self.reset_table_whitelist():
+    if await self.table_whitelist_exists():
       self.whitelist = await self.get_whitelist()
       
     print('FlashCard cog is online')

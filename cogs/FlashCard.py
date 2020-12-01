@@ -405,6 +405,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     try:
       await self._insert_server(server_id)
       await ctx.send(f"**The informed server is now whitelisted, {member.mention}!**")
+      self.whitelist.append(server_id)
     except Exception as e:
       print(e)
       await ctx.send(f"**It looks like this server was already whitelisted!**")

@@ -70,7 +70,7 @@ async def on_command_error(ctx, error):
   elif isinstance(error, commands.MissingRequiredArgument):
     await ctx.send('**Make sure to inform all parameters!**')
 
-  elif isinstance(error, NotInWhitelist:
+  elif isinstance(error, NotInWhitelist):
     await ctx.send(f"**{error}**")
   else:
     print(error)

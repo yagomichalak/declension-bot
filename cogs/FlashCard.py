@@ -35,7 +35,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     async def real_check(ctx):
       if ctx.guild.id in ctx.command.cog.whitelist:
           return True
-      raise NotInWhitelist()
+      raise NotInWhitelist("This server is not whitelisted!")
     return commands.check(real_check)
 
 

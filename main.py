@@ -5,6 +5,8 @@ import asyncio
 from re import match
 from itertools import cycle
 from others.customerrors import NotInWhitelist
+from dotenv import load_dotenv
+load_dotenv()
 
 status = cycle([
   "Russian declensions", "German declensions", "Finnish declensions", "Polish declensions",

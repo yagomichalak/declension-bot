@@ -1,8 +1,9 @@
-aiohttp==3.6.2
-aiomysql==0.0.20
 requests==2.24.0
+discord_ext_menus==1.0.0a27+g6f2b873
+aiohttp==3.6.2
 convertapi==1.4.0
-discord.py==1.5.0
-Pillow==7.2.0
-beautifulsoup4==4.9.1
+aiomysql==0.0.20
+beautifulsoup4==4.9.3
 discord==1.0.1
+Pillow==8.1.0
+python-dotenv==0.15.0

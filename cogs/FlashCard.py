@@ -104,7 +104,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
 
     member = ctx.author
     if not card_id:
-      self.client.get_command().reset_cooldown()
+      self.client.get_command('delete_card').reset_cooldown(ctx)
       return await ctx.send(f"**You need to inform a card ID, {member.mention}!**")
 
     if not await self.card_exists(member.id, card_id):

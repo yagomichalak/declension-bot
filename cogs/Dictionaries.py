@@ -118,8 +118,10 @@ class Dictionaries(commands.Cog):
 		# Gets the main examples div
 		examples_div = example.select_one('.def-body.ddef_b')
 		# Gets all examples
-		examples = examples_div.select('.examp.dexamp')
-		examples = list(map(lambda ex: ex.get_text().strip(), examples))
+		examples = []
+		if examples_div:
+			examples = examples_div.select('.examp.dexamp')
+			examples = list(map(lambda ex: ex.get_text().strip(), examples))
 
 		return examples
 

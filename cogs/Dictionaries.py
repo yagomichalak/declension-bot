@@ -66,7 +66,7 @@ class Dictionaries(commands.Cog):
 
 		# Gets simple tags from the HTML, as the title, type of word (noun, adjective, verb, etc)
 		title = header.select_one('.di-title').get_text().strip()
-		kind = header.select_one('.posgram.dpos-g.hdib.lmr-5').get_text().strip()
+		kind = kd.get_text().strip() if (kd := header.select_one('.posgram.dpos-g.hdib.lmr-5')) else '?'
 
 		# Gets all phonetic texts from elements that have specific class names in the list below
 		phonetics = []
@@ -87,7 +87,7 @@ class Dictionaries(commands.Cog):
 		header_dict = {
 			"title": title,
 			"kind": kind,
-			"phonetics": ' | '.join(phonetics)
+			"phonetics": ' | '.join(phonetics) if phonetics else '?'
 		}
 		
 		# Returns it
@@ -144,7 +144,7 @@ class Dictionaries(commands.Cog):
 		# Makes the embed's header
 		embed = discord.Embed(
 			title=f"Search for __{search}__",
-			description=f"**Title:** {header['title']}\n**Kind:** {header['kind']}\n**Phonetics:** `{header['phonetics']}`",
+			description=f"**Title:** `{header['title']}`\n**Kind:** `{header['kind']}`\n**Phonetics:** `{header['phonetics']}`",
 			color=ctx.author.color,
 			timestamp=ctx.message.created_at,
 			url=req

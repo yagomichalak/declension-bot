@@ -1,5 +1,5 @@
 requests==2.24.0
-discord_ext_menus==1.0.0a27+g6f2b873
+discord_ext_menus==1.0.0
 aiohttp==3.6.2
 convertapi==1.4.0
 aiomysql==0.0.20

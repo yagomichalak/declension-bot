@@ -40,6 +40,9 @@ class Dictionaries(commands.Cog):
 				return await ctx.send(f"**{member.mention}, something went wrong with that search!**")
 
 			html = BeautifulSoup(await response.read(), 'html.parser')
+			if not html:
+				return await ctx.send(f"**{member.mention}, nothing found for the given search!**")
+				
 			page = html.select_one('.page')
 			examples = page.select('.pr .dictionary')
 

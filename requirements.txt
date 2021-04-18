@@ -1,8 +1,10 @@
 requests==2.24.0
+discord.py==1.7.1
 git+https://github.com/Rapptz/discord-ext-menus
-aiohttp==3.6.2
+aiohttp==3.6.3
 convertapi==1.4.0
-aiomysql==0.0.20
+aiomysql==0.0.21
+googletrans==3.1.0a0
 beautifulsoup4==4.9.3
 discord==1.0.1
 Pillow==8.1.0

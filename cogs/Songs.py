@@ -8,6 +8,7 @@ from typing import Any
 
 
 class Songs(commands.Cog):
+	""" A category for commands related to finding songs. """
 
 	def __init__(self, client) -> None:
 		self.client = client
@@ -22,6 +23,7 @@ class Songs(commands.Cog):
 
 	@commands.group(aliases=['find'])
 	async def find_by(self, ctx) -> None:
+		""" A command for finding songs by something. """
 
 		if ctx.invoked_subcommand:
 			return
@@ -41,11 +43,13 @@ class Songs(commands.Cog):
 		await ctx.send(embed=embed)
 
 
-	@find_by.command()
+	@find_by.command(hidden=True)
 	async def title(self, ctx, *, value: str = None) -> None: pass
 
 	@find_by.command()
 	async def lyrics(self, ctx, *, value: str = None) -> None:
+		""" Searches a song by a given lyrics.
+		:param value: The lyrics value. """
 
 		member = ctx.author
 
@@ -98,11 +102,13 @@ class Songs(commands.Cog):
 
 		# embed.set_thumbnail(url="")
 		title = example.select_one('.lyric-meta.within-lyrics')
-
-		embed.add_field(name="__Title__", value=f"[{title.get_text().strip()}]({self.lyrics}/{title.href})")
+		print(title)
+		embed.add_field(
+			name="__Title__", 
+			value=f"[{title.get_text().strip()}]({self.lyrics}/{title.href})")
 
 		image = img['src'] if (img := example.select_one('.album-thumb img')) else ''
-		print(image)
+		# print(image)
 		if image.startswith('https://'):
 			embed.set_thumbnail(url=image)
 	
@@ -118,7 +124,27 @@ class Songs(commands.Cog):
 		:param url: The url to clean. """
 
 
-		url = url.replace(' ', '%20').replace(',', '%2C')
+		url = url.replace(' ', '%20'
+			).replace(',', '%2C'
+			).replace("'", '%27'
+			).replace('!', '%21'
+			).replace(':', '%3A'
+			).replace(';', '%3B'
+			).replace('>', '%26gt%3B'
+			).replace('\\', '%5C'
+			).replace('/', '%2F'
+			).replace('|', '%7C'
+			).replace('#', '%23'
+			).replace('$', '%24'
+			).replace('%', '%25'
+			).replace('&', '%26'
+			).replace('*', '%2A'
+			).replace('(', '%28'
+			).replace(')', '%29'
+			).replace('[', '%5B'
+			).replace(']', '%5D'
+			).replace('{', '%7B'
+			).replace('}', '%7D')
 
 		return url
 

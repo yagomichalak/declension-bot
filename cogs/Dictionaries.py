@@ -50,7 +50,7 @@ class Dictionaries(commands.Cog):
 	@dictionary.command(aliases=['en', 'eng'])
 	@commands.cooldown(1, 15, commands.BucketType.user)
 	async def english(self, ctx, *, search: str = None) -> None:
-		""" Searches something in the Cambridge dictionary. 
+		""" Searches something in the Cambridge dictionary.
 		:param search: What you want to search there.```
 	
 		🇺🇸-🇬🇧 __**Example:**__

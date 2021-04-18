@@ -98,7 +98,7 @@ class Expressions(commands.Cog):
 
 		# Makes the embed's header
 		embed = discord.Embed(
-			title="__French Dictionary__",
+			title="__French Expression__",
 			description=f"Showing results for: {example['mot']}",
 			color=ctx.author.color,
 			timestamp=ctx.message.created_at,

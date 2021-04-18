@@ -100,15 +100,14 @@ class Songs(commands.Cog):
 			)
 
 
-		# embed.set_thumbnail(url="")
 		title = example.select_one('.lyric-meta.within-lyrics')
-		print(title)
+		href = h if (h := example.select_one('.lyric-meta-title a')['href']) else None
 		embed.add_field(
 			name="__Title__", 
-			value=f"[{title.get_text().strip()}]({self.lyrics}/{title.href})")
+			value=f"[{title.get_text().strip()}]({self.lyrics}/{href})")
 
 		image = img['src'] if (img := example.select_one('.album-thumb img')) else ''
-		# print(image)
+		
 		if image.startswith('https://'):
 			embed.set_thumbnail(url=image)
 	

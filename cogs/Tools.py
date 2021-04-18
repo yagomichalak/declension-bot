@@ -149,18 +149,13 @@ class Tools(commands.Cog):
 			self.antonym_french.reset_cooldown(ctx)
 			return await ctx.send(f"**Please, {member.mention}, inform a word!**")
 
-		print('da')
 		url = f"https://dicolink.p.rapidapi.com/mot/{search.strip().replace(' ', '%20')}/antonymes"
-		print('da1')
 		querystring = {"limite":"10"}
-		print('da2')
 		headers = {
 			'x-rapidapi-key': os.getenv('RAPID_API_TOKEN'),
 			'x-rapidapi-host': "dicolink.p.rapidapi.com"
 			}
-		print('da4')
 		async with self.session.get(url=url, headers=headers, params=querystring) as response:
-			print('oh', response)
 			if response.status != 200:
 				self.antonym_french.reset_cooldown(ctx)
 				return await ctx.send(f"**Nothing found, {member.mention}!**")

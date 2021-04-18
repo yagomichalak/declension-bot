@@ -92,7 +92,7 @@ class Tools(commands.Cog):
 
 		async with self.session.get(url=url, headers=headers, params=querystring) as response:
 			if response.status != 200:
-				self.french.reset_cooldown(ctx)
+				self.synonym_french.reset_cooldown(ctx)
 				return await ctx.send(f"**Nothing found, {member.mention}!**")
 
 			data = json.loads(await response.read())
@@ -160,7 +160,7 @@ class Tools(commands.Cog):
 
 		async with self.session.get(url=url, headers=headers, params=querystring) as response:
 			if response.status != 200:
-				self.french.reset_cooldown(ctx)
+				self.antonym_french.reset_cooldown(ctx)
 				return await ctx.send(f"**Nothing found, {member.mention}!**")
 
 			data = json.loads(await response.read())

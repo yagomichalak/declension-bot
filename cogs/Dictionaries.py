@@ -209,7 +209,7 @@ class Dictionaries(commands.Cog):
 			return await ctx.send(f"**Please, {member.mention}, inform a word!**")
 
 
-		url = f"https://dicolink.p.rapidapi.com/mot/{search}/definitions"
+		url = f"https://dicolink.p.rapidapi.com/mot/{search.strip().replace(' ', '%20')}/definitions"
 
 		headers = {
 			'x-rapidapi-key': os.getenv('RAPID_API_TOKEN'),

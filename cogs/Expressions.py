@@ -61,7 +61,7 @@ class Expressions(commands.Cog):
 			return await ctx.send(f"**Please, {member.mention}, inform a word!**")
 
 
-		url = f"https://dicolink.p.rapidapi.com/mot/{search}/expressions"
+		url = f"https://dicolink.p.rapidapi.com/mot/{search.strip().replace(' ', '%20')}/expressions"
 
 		querystring = {"limite": "10"}
 

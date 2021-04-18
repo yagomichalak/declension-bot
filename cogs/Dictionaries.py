@@ -28,15 +28,33 @@ class Dictionaries(commands.Cog):
 
 	@commands.group(aliases=['dict'])
 	async def dictionary(self, ctx) -> None:
-		""" A dictionary handler command. """
+		""" A command for getting expressions in specific languages. """
 
-		pass
+		if ctx.invoked_subcommand:
+		  return
+
+		cmd = self.client.get_command('dictionary')
+		prefix = self.client.command_prefix
+		subcommands = [f"{prefix}{c.qualified_name}" for c in cmd.commands
+			  ]
+
+		subcommands = '\n'.join(subcommands)
+		embed = discord.Embed(
+		  title="Subcommads",
+		  description=f"```apache\n{subcommands}```",
+		  color=ctx.author.color,
+		  timestamp=ctx.message.created_at
+		)
+		await ctx.send(embed=embed)
 
 	@dictionary.command(aliases=['en', 'eng'])
 	@commands.cooldown(1, 15, commands.BucketType.user)
 	async def english(self, ctx, *, search: str = None) -> None:
 		""" Searches something in the Cambridge dictionary. 
-		:param search: What you want to search there. """
+		:param search: What you want to search there.```
+	
+		🇺🇸-🇬🇧 __**Example:**__
+		```ini\n[1] dec!dictionary en hello\n[2] dec!dict english flee """
 
 		member = ctx.author
 		if not search:
@@ -177,9 +195,13 @@ class Dictionaries(commands.Cog):
 
 
 	@dictionary.command(aliases=['fr', 'français', 'francês', 'francés', 'frances'])
+	@commands.cooldown(1, 15, commands.BucketType.user)
 	async def french(self, ctx, *, search: str = None) -> None:
 		""" Searches a word in a French dictionary.
-		:param search: The word you are looking for. """
+		:param search: The word you are looking for.```
+	
+		🇫🇷-🇧🇪 __**Example:**__
+		```ini\n[1] dec!dictionary fr cheval\n[2] dec!dict french méchant """
 
 		member = ctx.author
 
@@ -190,9 +212,9 @@ class Dictionaries(commands.Cog):
 		url = f"https://dicolink.p.rapidapi.com/mot/{search}/definitions"
 
 		headers = {
-		    'x-rapidapi-key': os.getenv('RAPID_API_TOKEN'),
-		    'x-rapidapi-host': "dicolink.p.rapidapi.com"
-		    }
+			'x-rapidapi-key': os.getenv('RAPID_API_TOKEN'),
+			'x-rapidapi-host': "dicolink.p.rapidapi.com"
+			}
 
 		async with self.session.get(url=url, headers=headers) as response:
 

@@ -73,7 +73,8 @@ class Expressions(commands.Cog):
 		async with self.session.get(url=url, headers=headers, params=querystring) as response:
 
 			if response.status != 200:
-				return await ctx.send(f"**Something went wrong with that search, {member.mention}!**")
+				self.french.reset_cooldown(ctx)
+				return await ctx.send(f"**Nothing found, {member.mention}!**")
 
 			data = json.loads(await response.read())
 

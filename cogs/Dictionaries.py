@@ -63,6 +63,7 @@ class Dictionaries(commands.Cog):
 		req = f"https://dictionary.cambridge.org/us/dictionary/english/{search.strip().replace(' ', '%20')}"
 		async with self.session.get(req, headers={'User-Agent': 'Mozilla/5.0'}) as response:
 			if response.status != 200:
+				self.english.reset_cooldown(ctx)
 				return await ctx.send(f"**{member.mention}, something went wrong with that search!**")
 
 			html = BeautifulSoup(await response.read(), 'html.parser')
@@ -70,6 +71,7 @@ class Dictionaries(commands.Cog):
 			page = html.select_one('.page')
 
 			if not page:
+				self.english.reset_cooldown(ctx)
 				return await ctx.send(f"**{member.mention}, nothing found for the given search!**")
 				
 			examples = page.select('.pr .dictionary')
@@ -217,9 +219,9 @@ class Dictionaries(commands.Cog):
 			}
 
 		async with self.session.get(url=url, headers=headers) as response:
-
 			if response.status != 200:
-				return await ctx.send(f"**Something went wrong with that search, {member.mention}!**")
+				self.french.reset_cooldown(ctx)
+				return await ctx.send(f"**Nothing found, {member.mention}!**")
 
 			data = json.loads(await response.read())
 

@@ -95,7 +95,9 @@ class Tools(commands.Cog):
 				self.synonym_french.reset_cooldown(ctx)
 				return await ctx.send(f"**Nothing found, {member.mention}!**")
 
+			print('aa')
 			data = json.loads(await response.read())
+			print('bb')
 
 			# Makes the embed's header
 			embed = discord.Embed(
@@ -163,7 +165,9 @@ class Tools(commands.Cog):
 				self.antonym_french.reset_cooldown(ctx)
 				return await ctx.send(f"**Nothing found, {member.mention}!**")
 
+			print('aa')
 			data = json.loads(await response.read())
+			print('bb')
 
 			# Makes the embed's header
 			embed = discord.Embed(

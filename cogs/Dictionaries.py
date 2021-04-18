@@ -28,7 +28,7 @@ class Dictionaries(commands.Cog):
 
 	@commands.group(aliases=['dict'])
 	async def dictionary(self, ctx) -> None:
-		""" A command for getting expressions in specific languages. """
+		""" A command for getting definitions in specific languages. """
 
 		if ctx.invoked_subcommand:
 		  return

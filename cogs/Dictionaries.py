@@ -1,10 +1,12 @@
 import discord
 from discord.ext import commands, menus
 import aiohttp
+import requests
 import json
 from bs4 import BeautifulSoup
 from typing import Any, List, Dict, Union
 from others.menu import SwitchPages
+import os
 
 
 class Dictionaries(commands.Cog):
@@ -24,9 +26,15 @@ class Dictionaries(commands.Cog):
 		print("Dictionary cog is online")
 
 
-	@commands.command(aliases=['dict'])
+	@commands.group(aliases=['dict'])
+	async def dictionary(self, ctx) -> None:
+		""" A dictionary handler command. """
+
+		pass
+
+	@dictionary.command(aliases=['en', 'eng'])
 	@commands.cooldown(1, 15, commands.BucketType.user)
-	async def dictionary(self, ctx, *, search: str = None) -> None:
+	async def english(self, ctx, *, search: str = None) -> None:
 		""" Searches something in the Cambridge dictionary. 
 		:param search: What you want to search there. """
 
@@ -166,6 +174,76 @@ class Dictionaries(commands.Cog):
 		embed.set_footer(text=f"{offset}/{lentries}", icon_url=ctx.guild.icon_url)
 
 		return embed
+
+
+	@dictionary.command(aliases=['fr', 'français', 'francês', 'francés', 'frances'])
+	async def french(self, ctx, *, search: str = None) -> None:
+		""" Searches a word in a French dictionary.
+		:param search: The word you are looking for. """
+
+		member = ctx.author
+
+		if not search:
+			return await ctx.send(f"**Please, {member.mention}, inform a word!**")
+
+
+		url = f"https://dicolink.p.rapidapi.com/mot/{search}/definitions"
+
+		headers = {
+		    'x-rapidapi-key': os.getenv('RAPID_API_TOKEN'),
+		    'x-rapidapi-host': "dicolink.p.rapidapi.com"
+		    }
+
+		async with self.session.get(url=url, headers=headers) as response:
+
+			if response.status != 200:
+				return await ctx.send(f"**Something went wrong with that search, {member.mention}!**")
+
+			data = json.loads(await response.read())
+
+			# Additional data:
+			additional = {
+				'req': response,
+				'search': search,
+				'change_embed': self.make_french_embed
+			}
+			pages = menus.MenuPages(source=SwitchPages(data, **additional), clear_reactions_after=True)
+			await pages.start(ctx)
+
+
+	async def make_french_embed(self, req: str, ctx: commands.Context, search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
+		""" Makes an embed for the current search example.
+		:param req: The request URL link.
+		:param ctx: The Discord context of the command.
+		:param search: The search that was performed.
+		:param example: The current search example.
+		:param offset: The current page of the total entries.
+		:param lentries: The length of entries for the given search. """
+
+		# Makes the embed's header
+		embed = discord.Embed(
+			title="__French Dictionary__",
+			description=f"Showing results for: {example['mot']}",
+			color=ctx.author.color,
+			timestamp=ctx.message.created_at,
+			url=example['dicolinkUrl']
+		)
+
+		# General info
+		embed.add_field(name="__Information__", inline=False,
+			value=f"**Word:** {example['mot']} | **ID:** {example['id']}\n**Nature:** {example['nature']} | **Source:** [{example['source']}]({example['attributionUrl']})")
+
+		# Adds a field for each example
+		embed.add_field(name="__Definition__", value=example['definition'], inline=False)
+
+		# Sets the author of the search
+		embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
+		# Makes a footer with the a current page and total page counter
+		embed.set_footer(text=f"{offset}/{lentries}", icon_url=ctx.guild.icon_url)
+
+		return embed
+
+
 
 
 def setup(client) -> None:

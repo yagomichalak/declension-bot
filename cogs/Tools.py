@@ -75,8 +75,6 @@ class Tools(commands.Cog):
 		🇫🇷-🇧🇪 __**Example:**__
 		```ini\n[1] dec!synonym fr autre\n[2] dec!syn french différent """
 
-		print(self, ctx, search)
-
 		member = ctx.author
 
 		if not search:
@@ -93,14 +91,11 @@ class Tools(commands.Cog):
 			}
 
 		async with self.session.get(url=url, headers=headers, params=querystring) as response:
-			print('oh', response)
 			if response.status != 200:
 				self.synonym_french.reset_cooldown(ctx)
 				return await ctx.send(f"**Nothing found, {member.mention}!**")
 
-			print('aa')
 			data = json.loads(await response.read())
-			print('bb')
 
 			# Makes the embed's header
 			embed = discord.Embed(
@@ -148,32 +143,29 @@ class Tools(commands.Cog):
 		🇫🇷-🇧🇪 __**Example:**__
 		```ini\n[1] dec!antonym fr autre\n[2] dec!ant french différent """
 
-		print(self, ctx, search)
-
 		member = ctx.author
 
 		if not search:
 			self.antonym_french.reset_cooldown(ctx)
 			return await ctx.send(f"**Please, {member.mention}, inform a word!**")
 
-
+		print('da')
 		url = f"https://dicolink.p.rapidapi.com/mot/{search.strip().replace(' ', '%20')}/antonymes"
+		print('da1')
 		querystring = {"limite":"10"}
-
+		print('da2')
 		headers = {
 			'x-rapidapi-key': os.getenv('RAPID_API_TOKEN'),
 			'x-rapidapi-host': "dicolink.p.rapidapi.com"
 			}
-
+		print('da4')
 		async with self.session.get(url=url, headers=headers, params=querystring) as response:
 			print('oh', response)
 			if response.status != 200:
 				self.antonym_french.reset_cooldown(ctx)
 				return await ctx.send(f"**Nothing found, {member.mention}!**")
 
-			print('aa')
 			data = json.loads(await response.read())
-			print('bb')
 
 			# Makes the embed's header
 			embed = discord.Embed(

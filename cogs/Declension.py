@@ -1,6 +1,12 @@
 import discord
 from discord.ext import commands
+from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_option, create_choice
+from discord_slash.utils.manage_components import create_button, create_actionrow, wait_for_component
+from discord_slash.model import ButtonStyle
+
 import aiohttp
+import os
 from os import getenv
 import asyncio
 import json
@@ -13,6 +19,9 @@ import time
 from bs4 import BeautifulSoup
 import copy
 from itertools import zip_longest
+from others import utils
+
+TEST_GUILDS = [792401342969675787]
 
 class Declension(commands.Cog):
   '''
@@ -28,123 +37,134 @@ class Declension(commands.Cog):
   async def on_ready(self):
     print('Declension cog is online!')
 
-  @commands.group(aliases=['dec', 'decl', 'declination'])
-  async def decline(self, ctx):
-    """ A command for declinating specific languages.
+  # # @commands.group(aliases=['dec', 'decl', 'declination'])
+  # @cog_ext.cog_slash(
+  #   guild_ids=TEST_GUILDS,
+  #   description="Has subcommands"
+  # )
+  # async def decline(self, interaction):
+  #   """ A command for declinating specific languages.
     
-    PS: Since we have 2 dinstinct commands (conjugation, declension) for some languages,
-    we will need to use this for specifying which one we want to use.```
+  #   PS: Since we have 2 dinstinct commands (conjugation, declension) for some languages,
+  #   we will need to use this for specifying which one we want to use.```
     
-    __**Example:**__
-    ```ini\n[Declension] dec!dec polish kobieta\n[Conjugation] dec!conj polish dać"""
-    if ctx.invoked_subcommand:
-      return
+  #   __**Example:**__
+  #   ```ini\n[Declension] dec!dec polish kobieta\n[Conjugation] dec!conj polish dać"""
 
-    cmd = self.client.get_command('decline')
-    prefix = self.client.command_prefix
-    subcommands = [f"{prefix}{c.qualified_name}" for c in cmd.commands
-          ]
+  #   # print(interaction)
+  #   # if ctx.invoked_subcommand:
+  #   #   return
 
-    subcommands = '\n'.join(subcommands)
-    embed = discord.Embed(
-      title="Subcommads",
-      description=f"```apache\n{subcommands}```",
-      color=ctx.author.color,
-      timestamp=ctx.message.created_at
-    )
-    await ctx.send(embed=embed)
+  #   # cmd = self.client.get_command('decline')
+  #   # prefix = self.client.command_prefix
+  #   # subcommands = [f"{prefix}{c.qualified_name}" for c in cmd.commands
+  #   #       ]
+
+  #   # subcommands = '\n'.join(subcommands)
+  #   # embed = discord.Embed(
+  #   #   title="Subcommads",
+  #   #   description=f"```apache\n{subcommands}```",
+  #   #   color=ctx.author.color,
+  #   #   timestamp=ctx.created_at
+  #   # )
+  #   # await ctx.send(embed=embed)
+  #   pass
 
   
-  @decline.command(aliases=['polski', 'pl', 'pol', 'po'])
-  @commands.cooldown(1, 5, commands.BucketType.user)
-  async def polish(self, ctx, word: str = None):
-    """Declines a Polish word; showing a table with its full declension forms.\n:param word: The word to decline.```
-    
-    🇵🇱 __**Example:**__
-    ```ini\n[1] dec!dec polish kobieta\n[2] dec!dec po mężczyzna\n[3] dec!dec polski warzywa\n[4] dec!dec pol przyjaciel"""
-    me = ctx.author
+  # @decline.command(aliases=['polski', 'pl', 'pol', 'po'])
+  # @commands.cooldown(1, 5, commands.BucketType.user)
+  @cog_ext.cog_subcommand(
+    base='decline', name='polish',
+    description="Declines a Polish word; showing a table with its full declension forms.",
+    options=[
+      create_option(name='word', description='The word to decline', option_type=3, required=True)
+    ], guild_ids=TEST_GUILDS
+  )
+  # @slash_commands.cooldown(1, 5, commands.BucketType.user)
+  async def polish(self, interaction, word: str = None):
+
+    await interaction.defer()
+
+    me = interaction.author
     if not word:
-      return await ctx.send(f"**Please {me.mention}, inform a word to search!**")
+      return await interaction.send(f"**Please {me.mention}, inform a word to search!**", hidden=True)
 
     root = 'http://online-polish-dictionary.com/word'
 
-    async with ctx.typing():
-      async with self.session.get(f"{root}/{word}") as response:
-        if response.status == 200:
-          data = await response.text()
+    async with self.session.get(f"{root}/{word}") as response:
+      if response.status == 200:
+        data = await response.text()
 
-          output = ''
-          start = 'https://e-polish.eu/dictionary/en/'
-          end = '.pdf'
-          s = data.find(start)
-          e = data.find(end)
-          #print(data)
-          url = data[s:e+4]
+        start = 'https://e-polish.eu/dictionary/en/'
+        end = '.pdf'
+        s = data.find(start)
+        e = data.find(end)
+        url = data[s:e+4]
 
-        else:
-          return await ctx.send("**For some reason I couldn't process it!**")
-      async with self.session.get(url) as response:
-        #response = requests.get(url)
-        if response.status == 200:
-          try:
-            with open(f'files/{me.id}.pdf', 'wb') as f:
-              f.write(await response.read())
-          except Exception:
-            return await ctx.send("**I couldn't find anything for that word!**")
-        else:
-          # print(error)
-          return await ctx.send("**For some reason I couldn't process it!**")
+      else:
+        return await interaction.send("**For some reason I couldn't process it!**", hidden=True)
+    async with self.session.get(url) as response:
+      #response = requests.get(url)
+      if response.status == 200:
+        try:
+          with open(f'files/{me.id}.pdf', 'wb') as f:
+            f.write(await response.read())
+        except Exception:
+          return await interaction.send("**I couldn't find anything for that word!**", hidden=True)
+      else:
+        # print(error)
+        return await interaction.reply("**For some reason I couldn't process it!**", hidden=True)
+    
+
+  
+    convertapi.api_secret = self.pdf_token
+    convertapi.convert('png', {
+    'File': f'./files/{me.id}.pdf',  
+}, from_format = 'pdf').save_files('./files')
+
+    # Opens a image in RGB mode 
+    im = Image.open(rf"files/{me.id}.png") 
       
-
-    
-      convertapi.api_secret = self.pdf_token
-      convertapi.convert('png', {
-      'File': f'./files/{me.id}.pdf',  
-  }, from_format = 'pdf').save_files('./files')
-
-      # Opens a image in RGB mode 
-      im = Image.open(rf"files/{me.id}.png") 
+    # Size of the image in pixels (size of orginal image) 
+    # (This is not mandatory) 
+      
+    # Setting the points for cropped image 
+    left = 155
+    top = 300
+    right = 1550
+    bottom = 1550
+      
+    # Cropped image of above dimension 
+    # (It will not change orginal image) 
+    im1 = im.crop((left, top, right, bottom))  
         
-      # Size of the image in pixels (size of orginal image) 
-      # (This is not mandatory) 
-      width, height = im.size 
-        
-      # Setting the points for cropped image 
-      left = 155
-      top = 300
-      right = 1550
-      bottom = 1550
-        
-      # Cropped image of above dimension 
-      # (It will not change orginal image) 
-      im1 = im.crop((left, top, right, bottom))  
-          
-      # Shows the image in image viewer 
-      im1.save(f'files/{me.id}.png')
+    # Shows the image in image viewer 
+    im1.save(f'files/{me.id}.png')
 
-
-
-      await ctx.send(file=discord.File(f'files/{me.id}.png'))
-      os.remove(f"files/{me.id}.pdf")
-      os.remove(f"files/{me.id}.png")    
+    file = discord.File(f'files/{me.id}.png', filename='polish.png')
+    await interaction.send(file=file)
+    os.remove(f"files/{me.id}.pdf")
+    os.remove(f"files/{me.id}.png")    
   
-  
-  @decline.command(aliases=['ruski', 'ru', 'rus', 'русский'])
-  @commands.cooldown(1, 5, commands.BucketType.user)
-  async def russian(self, ctx, word: str = None):
-    """Declines a Russian word; showing a table with its full declension forms.\n:param word: The word to decline.```
-    
-    🇷🇺 __**Example:**__
-    ```ini\n[1] dec!dec russian год\n[2] dec!dec ruski красивый\n[3] dec!dec ru такой\n[4] dec!dec rus эмоциональный"""
+  @cog_ext.cog_subcommand(
+    base='decline', name='russian',
+    description="Declines a Russian word; showing a table with its full declension forms.",
+    options=[
+      create_option(name='word', description='The word to decline', option_type=3, required=True)
+    ], guild_ids=TEST_GUILDS
+  )
+  # @slash_commands.cooldown(1, 5, commands.BucketType.user)
+  async def russian(self, interaction, word: str = None):
+
     if not word:
-      return await ctx.send("**Please, type a word**")
+      return await interaction.send("**Please, type a word**", hidden=True)
 
     root = 'https://en.openrussian.org/ru'
 
     req = f"{root}/{word.lower()}"
     async with self.session.get(req) as response:
       if response.status != 200:
-        return await ctx.send("**Something went wrong with that search!**")
+        return await interaction.send("**Something went wrong with that search!**", hidden=True)
 
     
       # Gets the html and the table div
@@ -152,7 +172,7 @@ class Declension(commands.Cog):
       div = html.select_one('.table-container')
 
       if not div:
-        return await ctx.send("**I couldn't find anything for this!**")
+        return await interaction.send("**I couldn't find anything for this!**", hidden=True)
 
       # Gets the word modes (singular, plura, m., f., etc)
       word_modes = []
@@ -167,7 +187,7 @@ class Declension(commands.Cog):
             word_modes.append(mode.text.strip())
 
       if not word_modes:
-        return await ctx.send("**I can't decline this word, maybe this is a verb!**")
+        return await interaction.send("**I can't decline this word, maybe this is a verb!**", hidden=True)
       # Gets all case names
       case_names = [case.text.strip() for case in div.select('tbody tr th .short') if case.text]
       # Gets all values
@@ -188,9 +208,9 @@ class Declension(commands.Cog):
       embed = discord.Embed(
         title="Russian Declension",
         description=f"**Word:** {word.lower()}\n**Description:** {word_type}",
-        color=ctx.author.color,
+        color=interaction.author.color,
         url=req,
-        timestamp=ctx.message.created_at
+        timestamp=interaction.created_at
       )
       # Loops through the word modes and get equivalent cases and values
       for i, word_mode in enumerate(word_modes):
@@ -203,27 +223,35 @@ class Declension(commands.Cog):
           name=word_mode,
           value=f"```apache\n{temp_text}```",
           inline=True)
-      await ctx.send(embed=embed)
+      await interaction.send(embed=embed, hidden=True)
 
-  @decline.command(aliases=['fi', 'fin', 'suomi'])
-  @commands.cooldown(1, 5, commands.BucketType.user)
-  async def finnish(self, ctx, word: str = None, word_type: str = None):
-    """Declines a Finnish word; showing a table with its full declension forms.\n:param word: The word to decline.\n:param word_type: The type of the word (noun/adj)```
-    
-    🇫🇮 __**Example:**__
-    ```ini\n[1] dec!dec finnish erilainen adjective\n[2] dec!dec suomi kallis adjn\n[3] dec!dec fi aika noun\n[4] dec!dec fin kansa n"""
-    me = ctx.author
+#   # @decline.command(aliases=['fi', 'fin', 'suomi'])
+#   # @commands.cooldown(1, 5, commands.BucketType.user)
+  @cog_ext.cog_subcommand(
+    base='decline', name='finnish',
+    description="Declines a Finnish word; showing a table with its full declension forms.",
+    options=[
+      create_option(name='word', description='The word to decline', option_type=3, required=True),
+      create_option(name='word_type', description='The word type', option_type=3, required=True,
+        choices=[
+            create_choice(name="Adjective", value="adjetctive"), create_choice(name="Noun", value="noun"),
+        ])
+    ], guild_ids=TEST_GUILDS
+  )
+  async def finnish(self, interaction, word: str = None, word_type: str = None):
+
+    me = interaction.author
     if not word:
-      return await ctx.send(f"**Please {me.mention}, inform a word to search!**")
+      return await interaction.send(f"**Please {me.mention}, inform a word to search!**", hidden=True)
     if not word_type:
-      return await ctx.send("**Inform the word type!**")
+      return await interaction.send("**Inform the word type!**", hidden=True)
 
-    if word_type.lower() in ['noun', 'n']:
+    if word_type == 'noun':
       root = 'https://cooljugator.com/fin'
-    elif word_type.lower() in ['adjective', 'adj']:
+    elif word_type == 'adjective':
       root = 'https://cooljugator.com/fia'
     else:
-      return await ctx.send("**Invalid word type!**")    
+      return await interaction.send("**Invalid word type!**", hidden=True)
 
     # Request part
     req = f"{root}/{word.lower()}"
@@ -261,15 +289,15 @@ class Declension(commands.Cog):
                   pass
 
         except AttributeError:
-          return await ctx.send("**Nothing found! Make sure to type correct parameters!**")
+          return await interaction.send("**Nothing found! Make sure to type correct parameters!**", hidden=True)
 
       try:
         # Embed part
         embed = discord.Embed(
           title=f"Finnish Declension",
           description=f"**Word:** {word}\n**Type:** {word_type}",
-          color=ctx.author.color,
-          timestamp=ctx.message.created_at,
+          color=interaction.author.color,
+          timestamp=interaction.created_at,
           url=req
         )
         count = 0
@@ -286,25 +314,29 @@ class Declension(commands.Cog):
             inline=True
           )
           count += 1
-        await ctx.send(embed=embed)
-      except Exception:
-        return await ctx.send("**I couldn't do this request, make sure to type things correctly!**")
+        await interaction.send(embed=embed, hidden=True)
+      except Exception as e:
+        print(e)
+        return await interaction.send("**I couldn't do this request, make sure to type things correctly!**", hidden=True)
 
-  @decline.command(aliases=['deutsch', 'ger', 'de'])
-  @commands.cooldown(1, 5, commands.BucketType.user)
+#   # @decline.command(aliases=['deutsch', 'ger', 'de'])
+#   # @commands.cooldown(1, 5, commands.BucketType.user)
+  # @cog_ext.cog_subcommand(
+  #   base='decline', name='german',
+  #   description="Declines a German word; showing a table with its full declension forms", options=[
+  #     create_option(name='word', description='The word to decline', option_type=3, required=True)
+  #   ], guild_ids=TEST_GUILDS
+  # )
   async def german(self, ctx, word: str = None):
-    """Declines a German word; showing a table with its full declension forms.\n:param word: The word to decline.```
-    
-    🇩🇪 __**Example:**__
-    ```ini\n[1] dec!dec german mann\n[2] dec!dec de groß\n[3] dec!dec deutsch lecker\n[4] dec!dec ger frau"""
-    if not word:
-      return await ctx.send("**Inform a word to decline!**")
 
-    root = 'https://www.verbformen.com/declension/'
+    if not word:
+      return await ctx.send("**Inform a word to decline!**", hidden=True)
+
+    root = 'https://www.verbformen.com/declension/nouns'
     req = f"{root}/?w={word}"
     async with self.session.get(req) as response:
       if not response.status == 200:
-        return await ctx.send("**Something went wrong with that search!**")
+        return await ctx.send("**Something went wrong with that search!**", hidden=True)
 
       embed_table = discord.Embed(
         title=f"__Declension Table__",
@@ -361,19 +393,18 @@ class Declension(commands.Cog):
               )
             master_dict[decl_name].append(copy.deepcopy(case_dict))
 
-    def check(r, u):
-      if u.id == ctx.author.id and r.message.id == msg.id and str(r.emoji) in ['⬅️', '➡️']:
-        return True
-      else:
-        return False
 
     master_list = [[k, v] for k, v in master_dict.items()]
     user_index = 0
     lenmaster = len(master_list)
-    msg = await ctx.send(embed=discord.Embed(title='🇩🇪'))
-    await asyncio.sleep(0.5)
-    await msg.add_reaction('⬅️')
-    await msg.add_reaction('➡️')
+    msg = await ctx.defer(hidden=True)
+
+    components = [
+      create_actionrow(
+        create_button(style=ButtonStyle.blurple, label="Left", custom_id="left_btn"),
+        create_button(style=ButtonStyle.blurple, label="Right", custom_id="right_btn")
+      )]
+
     while True:
       template = master_list[user_index]
       title = template[0]
@@ -381,7 +412,7 @@ class Declension(commands.Cog):
         title=f"Declension table - ({title})",
         description=f"**Word:** {word}",
         color=ctx.author.color,
-        timestamp=ctx.message.created_at,
+        timestamp=ctx.created_at,
         url=req)
       for gender_dict in template[1]:
         for key, values in gender_dict.items():
@@ -394,24 +425,21 @@ class Declension(commands.Cog):
             value=f"```apache\n{text}```",
             inline=True
           )
-      await msg.edit(embed=new_embed)
-      try: 
-        reaction, user = await self.client.wait_for('reaction_add', timeout=60, check=check)
-      except asyncio.TimeoutError:
-        await msg.remove_reaction('➡️', self.client.user)
-        await msg.remove_reaction('⬅️', self.client.user)
-      else:
-        emoji = str(reaction.emoji)
-        await msg.remove_reaction(emoji, user)
-        if emoji == '⬅️':
-          if user_index > 0:
-            user_index -= 1
-          continue
+      await msg.edit(embed=new_embed, components=[components])
+      button_ctx = await wait_for_component(self.client, components=components)
 
-        elif emoji == '➡️':
-          if user_index < lenmaster -1:
-            user_index += 1
-          continue
+      # await button_ctx.defer(hidden=True)
+      await button_ctx.edit_origin(content="You pressed a button!")
+
+      if button_ctx.custom_id == 'left_btn':
+        if user_index > 0:
+          user_index -= 1
+        continue
+
+      elif button_ctx.custom_id == 'right_btn':
+        if user_index < lenmaster -1:
+          user_index += 1
+        continue
 
         
       

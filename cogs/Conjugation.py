@@ -37,20 +37,20 @@ class Conjugation(commands.Cog):
 			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
-	async def dutch(self, ctx, *, verb: str = None) -> None:
+	async def dutch(self, interaction, *, verb: str = None) -> None:
 		
 		if not verb:
-			return await ctx.send("**Please, type a word**")
+			return await interaction.send("**Please, type a word**")
 
 		if len(verb) > 50:
-			return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
 
 		temp_verb = '%20'.join(verb.split())
 
 		root = f'https://www.mijnwoordenboek.nl/werkwoord/{temp_verb.lower()}'
 		async with self.session.get(root) as response:
 			if response.status != 200:
-				return await ctx.send("**Something went wrong with that search!**")
+				return await interaction.send("**Something went wrong with that search!**")
 
 		
 			# Gets the html, the conjugation table div and table
@@ -59,12 +59,12 @@ class Conjugation(commands.Cog):
 			table_rows = [row for row in content_box.select('table tr')[1:]]
 			lenro = len(table_rows)
 			if lenro == 0:
-				return await ctx.send("**Nothing found for the informed value!**")
+				return await interaction.send("**Nothing found for the informed value!**")
 
 			# Creates the initial embed
 			embed = discord.Embed(
-				color=ctx.author.color,
-				timestamp=ctx.created_at,
+				color=interaction.author.color,
+				timestamp=interaction.created_at,
 				url=root
 			)
 			
@@ -102,7 +102,7 @@ class Conjugation(commands.Cog):
 
 
 				if button_ctx is None:
-						await ctx.send(embed=embed, components=[action_row], hidden=True)
+						await interaction.send(embed=embed, components=[action_row], hidden=True)
 				else:
 						await button_ctx.edit_origin(embed=embed, components=[action_row])
 					# Send a message with buttons
@@ -133,19 +133,19 @@ class Conjugation(commands.Cog):
 			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
-	async def japanese(self, ctx, *, verb: str = None) -> None:
+	async def japanese(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
-			return await ctx.send("**Please, type a word**")
+			return await interaction.send("**Please, type a word**")
 
 		if len(verb) > 50:
-			return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
 
 		temp_verb = '%20'.join(verb.split())
 
 		root = f'https://conjugator.reverso.net/conjugation-japanese-verb-{temp_verb.lower()}.html'
 		emoji_title = '🇯🇵'
-		return await self.__conjugate(ctx=ctx, root=root, 
+		return await self.__conjugate(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Japanese', space=True, aligned=False)
 
 	@cog_ext.cog_subcommand(
@@ -157,19 +157,19 @@ class Conjugation(commands.Cog):
 			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
-	async def arabic(self, ctx, *, verb: str = None) -> None:
+	async def arabic(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
-			return await ctx.send("**Please, type a word**")
+			return await interaction.send("**Please, type a word**")
 
 		if len(verb) > 50:
-			return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
 
 		temp_verb = '%20'.join(verb.split())
 
 		root = f'https://conjugator.reverso.net/conjugation-arabic-verb-{temp_verb.lower()}.html'
 		emoji_title = '🇸🇦-🇪🇬'
-		return await self.__conjugate(ctx=ctx, root=root, 
+		return await self.__conjugate(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Arabic', space=True, aligned=False)
 
 	@cog_ext.cog_subcommand(
@@ -181,20 +181,20 @@ class Conjugation(commands.Cog):
 			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
-	async def portuguese(self, ctx, *, verb: str = None) -> None:
+	async def portuguese(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
-			return await ctx.send("**Please, type a word**")
+			return await interaction.send("**Please, type a word**")
 
 		if len(verb) > 50:
-			return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
 
 		temp_verb = '%20'.join(verb.split())
 
 		root = f'https://conjugator.reverso.net/conjugation-portuguese-verb-{temp_verb.lower()}.html'
 		emoji_title = '🇧🇷-🇵🇹'
 		language_title = 'Portuguese'
-		return await self.__conjugate(ctx=ctx, root=root, 
+		return await self.__conjugate(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title=language_title, space=True)
 
 	@cog_ext.cog_subcommand(
@@ -206,19 +206,19 @@ class Conjugation(commands.Cog):
 			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
-	async def italian(self, ctx, *, verb: str = None) -> None:
+	async def italian(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
-			return await ctx.send("**Please, type a word**")
+			return await interaction.send("**Please, type a word**")
 
 		if len(verb) > 50:
-			return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
 
 		temp_verb = '%20'.join(verb.split())
 
 		root = f'https://conjugator.reverso.net/conjugation-italian-verb-{temp_verb.lower()}.html'
 		emoji_title = '🇮🇹-🇨🇭'
-		return await self.__conjugate(ctx=ctx, root=root, 
+		return await self.__conjugate(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Italian')
 
 	@cog_ext.cog_subcommand(
@@ -230,19 +230,19 @@ class Conjugation(commands.Cog):
 			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
-	async def french(self, ctx, *, verb: str = None) -> None:
+	async def french(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
-			return await ctx.send("**Please, type a word**")
+			return await interaction.send("**Please, type a word**")
 
 		if len(verb) > 50:
-			return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
 
 		temp_verb = '%20'.join(verb.split())
 
 		root = f'https://conjugator.reverso.net/conjugation-french-verb-{temp_verb.lower()}.html'
 		emoji_title = '🇫🇷-🇧🇪'
-		return await self.__conjugate(ctx=ctx, root=root, 
+		return await self.__conjugate(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='French')
 	
 	@cog_ext.cog_subcommand(
@@ -254,20 +254,20 @@ class Conjugation(commands.Cog):
 			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
-	async def spanish(self, ctx, *, verb: str = None) -> None:
+	async def spanish(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
-			return await ctx.send("**Please, type a word**")
+			return await interaction.send("**Please, type a word**")
 
 		if len(verb) > 50:
-			return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
 
 		temp_verb = '%20'.join(verb.split())
 
 		root = f'https://conjugator.reverso.net/conjugation-spanish-verb-{temp_verb.lower()}.html'
 
 		emoji_title = '🇪🇸-🇲🇽'
-		return await self.__conjugate(ctx=ctx, root=root, 
+		return await self.__conjugate(interaction=interaction, root=root, 
 	verb=verb, emoji_title=emoji_title, language_title='Spanish')
 
 	@cog_ext.cog_subcommand(
@@ -279,36 +279,36 @@ class Conjugation(commands.Cog):
 			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
-	async def english(self, ctx, verb: str) -> None:
+	async def english(self, interaction, verb: str) -> None:
 
 		if len(verb) > 50:
-			return await ctx.send("**Wow, you informed a very long value,I'm not using it!**", hidden=True)
+			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**", hidden=True)
 
 		temp_verb = '%20'.join(verb.split())
 
 		root = f'https://conjugator.reverso.net/conjugation-english-verb-{temp_verb.lower()}.html'
 		emoji_title = "🇺🇸-🇬🇧"
-		return await self.__conjugate(ctx=ctx, root=root, 
+		return await self.__conjugate(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='English')
 
-	async def __conjugate(self, ctx, root: str, verb: str, emoji_title: str, language_title: str, space: bool = False, aligned: bool = True) -> None:
+	async def __conjugate(self, interaction, root: str, verb: str, emoji_title: str, language_title: str, space: bool = False, aligned: bool = True) -> None:
 		""" Conjugates a verb.
 		:param root: The language endpoint from which to do the HTTP request.
 		:param verb: The verb that is being conjugated.
 		"""
 
-		await ctx.defer(hidden=True)
+		await interaction.defer(hidden=True)
 
 		async with self.session.get(root) as response:
 			if response.status != 200:
-				return await ctx.send("**Something went wrong with that search!**", ephemeral=True)
+				return await interaction.send("**Something went wrong with that search!**", ephemeral=True)
 
 		
 			# Gets the html and the table div
 			html = BeautifulSoup(await response.read(), 'html.parser')
 			subhead = html.select_one('.subHead.subHead-res.clearfix')
 			if not subhead:
-				return await ctx.send("**Invalid request!**", ephemeral=True)
+				return await interaction.send("**Invalid request!**", ephemeral=True)
 
 			# Translation options
 			#-> Word translation
@@ -319,13 +319,13 @@ class Conjugation(commands.Cog):
 				title=f"{emoji_title} Conjugation",
 				description=f"""**Searched:** {verb}
 				**Found:** {found_verb}""",
-				color=ctx.author.color,
-				timestamp=ctx.created_at,
+				color=interaction.author.color,
+				timestamp=interaction.created_at,
 				url=root
 			)
 			embed.set_footer(
-				text=f"Requested by {ctx.author}",
-				icon_url=ctx.author.avatar_url)
+				text=f"Requested by {interaction.author}",
+				icon_url=interaction.author.avatar_url)
 
 
 			# Conjugation table divs
@@ -407,7 +407,7 @@ class Conjugation(commands.Cog):
 
 
 				if button_ctx is None:
-					await ctx.send(embed=embed, components=[action_row], hidden=True)
+					await interaction.send(embed=embed, components=[action_row], hidden=True)
 				else:
 					await button_ctx.edit_origin(embed=embed, components=[action_row])
 				# Send a message with buttons
@@ -436,22 +436,22 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def german(self, ctx, *, verb: str = None) -> None:
+	async def german(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a word**")
+	    return await interaction.send("**Please, type a word**")
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 
 	  root = f'https://conjugator.reverso.net/conjugation-german-verb-{temp_verb.lower()}.html'
 	  emoji_title = '🇩🇪|🇦🇹'
-	  return await self.__conjugate(ctx=ctx, root=root, 
+	  return await self.__conjugate(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='German')
 
-	async def __cooljugator(self, ctx, root: str, verb: str, emoji_title: str, language_title: str, space: bool = False, aligned: bool = True) -> None:
+	async def __cooljugator(self, interaction, root: str, verb: str, emoji_title: str, language_title: str, space: bool = False, aligned: bool = True) -> None:
 	  """ Conjugates a verb using the Cooljugator website. 
 	  :param root: The url to make the GET request from.
 	  :param verb: The verb to cog_ext.
@@ -464,13 +464,13 @@ class Conjugation(commands.Cog):
 	  # Performs the GET request to the endpoint
 	  async with self.session.get(root) as response:
 	    if response.status != 200:
-	      return await ctx.send("**Something went wrong with that search!**", ephemeral=True)
+	      return await interaction.send("**Something went wrong with that search!**", ephemeral=True)
 
 	    # Gets the html and the container div
 	    html = BeautifulSoup(await response.read(), 'html.parser')
 	    container = html.select_one('#conjugationDivs.fourteen.wide.column')
 	    if not container:
-	      return await ctx.send("**Couldn't find anything for it!**", ephemeral=True)
+	      return await interaction.send("**Couldn't find anything for it!**", ephemeral=True)
 
 			
 	    title = html.select_one('#conjugation-data.ui.segment > .centered > h1').get_text().strip()
@@ -480,8 +480,8 @@ class Conjugation(commands.Cog):
 	    # Makes initial embed
 	    embed = discord.Embed(
 	      description=title,
-	      color=ctx.author.color,
-	      timestamp=ctx.created_at,
+	      color=interaction.author.color,
+	      timestamp=interaction.created_at,
 	      url=root
 	    )
 	    # Gets all useful information
@@ -535,7 +535,7 @@ class Conjugation(commands.Cog):
 	  # Initial index
 	  index = 0
 	  # Sends initial msg
-	  msg = await ctx.send(embed=discord.Embed(title=emoji_title), ephemeral=True)
+	  msg = await interaction.send(embed=discord.Embed(title=emoji_title), ephemeral=True)
 	  await asyncio.sleep(0.5)
 	  await msg.add_reaction('⬅️')
 	  await msg.add_reaction('➡️')
@@ -559,7 +559,7 @@ class Conjugation(commands.Cog):
 	      r, u = await self.client.wait_for(
 	        'reaction_add',
 	        timeout=60,
-	        check=lambda r, u: r.message.id == msg.id and u.id == ctx.author.id and \
+	        check=lambda r, u: r.message.id == msg.id and u.id == interaction.author.id and \
 	        str(r.emoji) in ['⬅️', '➡️']
 	      )
 	    except asyncio.TimeoutError:
@@ -587,19 +587,19 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def polish(self, ctx, *, verb: str = None) -> None:
+	async def polish(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 
 	  root = f'https://cooljugator.com/pl/{temp_verb.lower()}'
 	  emoji_title = '🇵🇱'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Polish', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -611,19 +611,19 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def russian(self, ctx, *, verb: str = None) -> None:
+	async def russian(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a word**")
+	    return await interaction.send("**Please, type a word**")
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 
 	  root = f'https://cooljugator.com/ru/{temp_verb}'
 	  emoji_title = '🇷🇺|🇧🇾'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Russian', space=True)
 
 
@@ -636,12 +636,12 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def esperanto(self, ctx, *, verb: str = None) -> None:
+	async def esperanto(self, interaction, *, verb: str = None) -> None:
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 
@@ -649,7 +649,7 @@ class Conjugation(commands.Cog):
 	  root =f'https://cooljugator.com/eo/{temp_verb.lower()}'
 
 	  emoji_title = '🟩'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Esperanto', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -661,13 +661,13 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def estonian(self, ctx, *, verb: str = None) -> None:
+	async def estonian(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 
@@ -675,7 +675,7 @@ class Conjugation(commands.Cog):
 	  root =f'https://cooljugator.com/ee/{temp_verb.lower()}'
 
 	  emoji_title = '🇪🇪'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Estonian', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -687,14 +687,14 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def turkish(self, ctx, verb: str = None) -> None:
+	async def turkish(self, interaction, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value,I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 
@@ -702,7 +702,7 @@ class Conjugation(commands.Cog):
 	  root =f'https://cooljugator.com/tr/{temp_verb.lower()}'
 
 	  emoji_title = '🇹🇷'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Turkish', space=True)
 
 	# North Germanic languages - Scandinavian languages
@@ -715,21 +715,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def danish(self, ctx, verb: str = None) -> None:
+	async def danish(self, interaction, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 
 	  root =f'https://cooljugator.com/da/{temp_verb.lower()}'
 
 	  emoji_title = '🇩🇰'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Danish', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -741,21 +741,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def swedish(self, ctx, verb: str = None) -> None:
+	async def swedish(self, interaction, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/sv/{temp_verb.lower()}'
 
 	  emoji_title = '🇸🇪'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Swedish', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -767,21 +767,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def norwegian(self, ctx, verb: str = None) -> None:
+	async def norwegian(self, interaction, verb: str = None) -> None:
 		
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/no/{temp_verb.lower()}'
 
 	  emoji_title = '🇳🇴'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Norwegian', space=True)
 
 
@@ -794,21 +794,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def faroese(self, ctx, verb: str = None) -> None:
+	async def faroese(self, interaction, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/fo/{temp_verb.lower()}'
 
 	  emoji_title = '🇫🇴'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Faroese', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -820,21 +820,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def icelandic(self, ctx, verb: str = None) -> None:
+	async def icelandic(self, interaction, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/is/{temp_verb.lower()}'
 
 	  emoji_title = '🇮🇸'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Icelandic', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -846,21 +846,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def finnish(self, ctx, *, verb: str = None) -> None:
+	async def finnish(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/fi/{temp_verb.lower()}'
 
 	  emoji_title = '🇫🇮'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Finnish', space=True)
 
 
@@ -874,21 +874,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def indonesian(self, ctx, *, verb: str = None) -> None:
+	async def indonesian(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/id/{temp_verb.lower()}'
 
 	  emoji_title = '🇮🇩'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Indonesian', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -900,21 +900,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def maltese(self, ctx, *, verb: str = None) -> None:
+	async def maltese(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/mt/{temp_verb.lower()}'
 
 	  emoji_title = '🇲🇹'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Maltese', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -926,21 +926,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def thai(self, ctx, *, verb: str = None) -> None:
+	async def thai(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/th/{temp_verb.lower()}'
 
 	  emoji_title = '🇹🇭'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Thai', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -952,21 +952,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def vietnamese(self, ctx, *, verb: str = None) -> None:
+	async def vietnamese(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/vi/{temp_verb.lower()}'
 
 	  emoji_title = '🇻🇳'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Vietnamese', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -978,21 +978,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def malay(self, ctx, *, verb: str = None) -> None:
+	async def malay(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/ms/{temp_verb.lower()}'
 
 	  emoji_title = '🇲🇾'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Malay', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -1004,21 +1004,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def catalan(self, ctx, *, verb: str = None) -> None:
+	async def catalan(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/ca/{temp_verb.lower()}'
 
 	  emoji_title = '🟨'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Catalan', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -1030,21 +1030,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def romanian(self, ctx, *, verb: str = None) -> None:
+	async def romanian(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/ro/{temp_verb.lower()}'
 
 	  emoji_title = '🇷🇴'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Romanian', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -1056,21 +1056,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def greek(self, ctx, *, verb: str = None) -> None:
+	async def greek(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/gr/{temp_verb.lower()}'
 
 	  emoji_title = '🇬🇷'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Greek', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -1082,21 +1082,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def afrikaans(self, ctx, *, verb: str = None) -> None:
+	async def afrikaans(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/af/{temp_verb.lower()}'
 
 	  emoji_title = '🇿🇦'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Afrikaans', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -1108,21 +1108,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def lithuanian(self, ctx, *, verb: str = None) -> None:
+	async def lithuanian(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/lt/{temp_verb.lower()}'
 
 	  emoji_title = '🇱🇹'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Lithuanian', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -1134,21 +1134,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def latvian(self, ctx, *, verb: str = None) -> None:
+	async def latvian(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/lv/{temp_verb.lower()}'
 
 	  emoji_title = '🇱🇻'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Latvian', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -1160,21 +1160,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def macedonian(self, ctx, *, verb: str = None) -> None:
+	async def macedonian(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/mk/{temp_verb.lower()}'
 
 	  emoji_title = '🇲🇰'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Macedonian', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -1186,21 +1186,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def persian(self, ctx, *, verb: str = None) -> None:
+	async def persian(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/fa/{temp_verb.lower()}'
 
 	  emoji_title = '🇮🇷'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Persian', space=True)
 
 	@cog_ext.cog_subcommand(
@@ -1212,21 +1212,21 @@ class Conjugation(commands.Cog):
 	    create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
-	async def hebrew(self, ctx, *, verb: str = None) -> None:
+	async def hebrew(self, interaction, *, verb: str = None) -> None:
 
 	  if not verb:
-	    return await ctx.send("**Please, type a verb**")
+	    return await interaction.send("**Please, type a verb**")
 
 
 	  if len(verb) > 50:
-	    return await ctx.send("**Wow, you informed a very long value, I'm not using it!**")
+	    return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
 
 	  temp_verb = '%20'.join(verb.split())
 		
 	  root =f'https://cooljugator.com/he/{temp_verb.lower()}'
 
 	  emoji_title = '🇮🇱'
-	  return await self.__cooljugator(ctx=ctx, root=root, 
+	  return await self.__cooljugator(interaction=interaction, root=root, 
 	  verb=verb, emoji_title=emoji_title, language_title='Hebrew', space=True)
 
 

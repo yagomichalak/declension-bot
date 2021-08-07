@@ -1,5 +1,7 @@
 import discord
-from discord.ext import commands, menus
+from discord.ext import commands
+from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_option
 import aiohttp
 import requests
 import json
@@ -8,6 +10,7 @@ from typing import Any, List, Dict, Union
 from others.menu import SwitchPages
 import os
 
+TEST_GUILDS = [792401342969675787]
 
 class Dictionaries(commands.Cog):
 	""" A category for word dictionaries. """
@@ -26,65 +29,40 @@ class Dictionaries(commands.Cog):
 		print("Dictionary cog is online")
 
 
-	@commands.group(aliases=['dict'])
-	async def dictionary(self, ctx) -> None:
-		""" A command for getting definitions in specific languages. """
+	@cog_ext.cog_subcommand(
+		base="dictionary", name="english",
+		description="Searches something in the Cambridge dictionary", options=[
+			create_option(name="search", description="What you want to search there.", option_type=3, required=True)
+		], guild_ids=TEST_GUILDS
+	)
+	async def english(self, interaction, search: str) -> None:
 
-		if ctx.invoked_subcommand:
-		  return
-
-		cmd = self.client.get_command('dictionary')
-		prefix = self.client.command_prefix
-		subcommands = [f"{prefix}{c.qualified_name}" for c in cmd.commands
-			  ]
-
-		subcommands = '\n'.join(subcommands)
-		embed = discord.Embed(
-		  title="Subcommads",
-		  description=f"```apache\n{subcommands}```",
-		  color=ctx.author.color,
-		  timestamp=ctx.message.created_at
-		)
-		await ctx.send(embed=embed)
-
-	@dictionary.command(aliases=['en', 'eng'])
-	@commands.cooldown(1, 15, commands.BucketType.user)
-	async def english(self, ctx, *, search: str = None) -> None:
-		""" Searches something in the Cambridge dictionary.
-		:param search: What you want to search there.```
-	
-		🇺🇸-🇬🇧 __**Example:**__
-		```ini\n[1] dec!dictionary en hello\n[2] dec!dict english flee """
-
-		member = ctx.author
-		if not search:
-			return await ctx.send(f"**{member.mention}, please, inform a search!**")
+		member = interaction.author
 
 		req = f"https://dictionary.cambridge.org/us/dictionary/english/{search.strip().replace(' ', '%20')}"
 		async with self.session.get(req, headers={'User-Agent': 'Mozilla/5.0'}) as response:
 			if response.status != 200:
-				self.english.reset_cooldown(ctx)
-				return await ctx.send(f"**{member.mention}, something went wrong with that search!**")
+				return await interaction.send(f"**{member.mention}, something went wrong with that search!**", hidden=True)
 
 			html = BeautifulSoup(await response.read(), 'html.parser')
 
 			page = html.select_one('.page')
 
 			if not page:
-				self.english.reset_cooldown(ctx)
-				return await ctx.send(f"**{member.mention}, nothing found for the given search!**")
+				return await interaction.send(f"**{member.mention}, nothing found for the given search!**", hidden=True)
 				
 			examples = page.select('.pr .dictionary')
 
 
 			# Additional data:
 			additional = {
+				'client': self.client,
 				'req': req,
 				'search': search,
 				'change_embed': self.make_embed
 			}
-			pages = menus.MenuPages(source=SwitchPages(examples, **additional), clear_reactions_after=True)
-			await pages.start(ctx)
+			pages = SwitchPages(examples, **additional)
+			await pages.start(interaction)
 
 	async def get_header(self, example) -> Dict[str, str]:
 		""" Gets a header for the example. 
@@ -158,10 +136,10 @@ class Dictionaries(commands.Cog):
 
 		return examples
 
-	async def make_embed(self, req: str, ctx: commands.Context, search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
+	async def make_embed(self, req: str, interaction: SlashContext, search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
 		""" Makes an embed for the current search example.
 		:param req: The request URL link.
-		:param ctx: The Discord context of the command.
+		:param interaction: The Discord context of the command.
 		:param search: The search that was performed.
 		:param example: The current search example.
 		:param offset: The current page of the total entries.
@@ -173,8 +151,8 @@ class Dictionaries(commands.Cog):
 		embed = discord.Embed(
 			title=f"Search for __{search}__",
 			description=f"**Title:** `{header['title']}`\n**Kind:** `{header['kind']}`\n**Phonetics:** `{header['phonetics']}`",
-			color=ctx.author.color,
-			timestamp=ctx.message.created_at,
+			color=interaction.author.color,
+			timestamp=interaction.created_at,
 			url=req
 			)
 
@@ -189,26 +167,22 @@ class Dictionaries(commands.Cog):
 			embed.add_field(name=f"Example {i+1}", value=f"```{example}```", inline=True)
 
 		# Sets the author of the search
-		embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
+		embed.set_author(name=interaction.author, icon_url=interaction.author.avatar_url)
 		# Makes a footer with the a current page and total page counter
-		embed.set_footer(text=f"{offset}/{lentries}", icon_url=ctx.guild.icon_url)
+		embed.set_footer(text=f"{offset}/{lentries}", icon_url=interaction.guild.icon_url)
 
 		return embed
 
 
-	@dictionary.command(aliases=['fr', 'français', 'francês', 'francés', 'frances'])
-	@commands.cooldown(1, 15, commands.BucketType.user)
-	async def french(self, ctx, *, search: str = None) -> None:
-		""" Searches a word in a French dictionary.
-		:param search: The word you are looking for.```
-	
-		🇫🇷-🇧🇪 __**Example:**__
-		```ini\n[1] dec!dictionary fr cheval\n[2] dec!dict french méchant """
+	@cog_ext.cog_subcommand(
+		base="dictionary", name="french",
+		description="Searches a word in a French dictionary.", options=[
+			create_option(name="search", description="The word you are looking for.", option_type=3, required=True)
+		], guild_ids=TEST_GUILDS
+	)
+	async def french(self, interaction, search: str) -> None:
 
-		member = ctx.author
-
-		if not search:
-			return await ctx.send(f"**Please, {member.mention}, inform a word!**")
+		member = interaction.author
 
 
 		url = f"https://dicolink.p.rapidapi.com/mot/{search.strip().replace(' ', '%20')}/definitions"
@@ -220,25 +194,25 @@ class Dictionaries(commands.Cog):
 
 		async with self.session.get(url=url, headers=headers) as response:
 			if response.status != 200:
-				self.french.reset_cooldown(ctx)
-				return await ctx.send(f"**Nothing found, {member.mention}!**")
+				return await interaction.send(f"**Nothing found, {member.mention}!**", hidden=True)
 
 			data = json.loads(await response.read())
 
 			# Additional data:
 			additional = {
+				'client': self.client,
 				'req': response,
 				'search': search,
 				'change_embed': self.make_french_embed
 			}
-			pages = menus.MenuPages(source=SwitchPages(data, **additional), clear_reactions_after=True)
-			await pages.start(ctx)
+			pages = SwitchPages(data, **additional)
+			await pages.start(interaction)
 
 
-	async def make_french_embed(self, req: str, ctx: commands.Context, search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
+	async def make_french_embed(self, req: str, interaction: SlashContext, search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
 		""" Makes an embed for the current search example.
 		:param req: The request URL link.
-		:param ctx: The Discord context of the command.
+		:param interaction: The Discord context of the command.
 		:param search: The search that was performed.
 		:param example: The current search example.
 		:param offset: The current page of the total entries.
@@ -248,8 +222,8 @@ class Dictionaries(commands.Cog):
 		embed = discord.Embed(
 			title="__French Dictionary__",
 			description=f"Showing results for: {example['mot']}",
-			color=ctx.author.color,
-			timestamp=ctx.message.created_at,
+			color=interaction.author.color,
+			timestamp=interaction.created_at,
 			url=example['dicolinkUrl']
 		)
 
@@ -261,9 +235,9 @@ class Dictionaries(commands.Cog):
 		embed.add_field(name="__Definition__", value=example['definition'], inline=False)
 
 		# Sets the author of the search
-		embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
+		embed.set_author(name=interaction.author, icon_url=interaction.author.avatar_url)
 		# Makes a footer with the a current page and total page counter
-		embed.set_footer(text=f"{offset}/{lentries}", icon_url=ctx.guild.icon_url)
+		embed.set_footer(text=f"{offset}/{lentries}", icon_url=interaction.guild.icon_url)
 
 		return embed
 

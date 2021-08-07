@@ -37,42 +37,6 @@ class Declension(commands.Cog):
   async def on_ready(self):
     print('Declension cog is online!')
 
-  # # @commands.group(aliases=['dec', 'decl', 'declination'])
-  # @cog_ext.cog_slash(
-  #   guild_ids=TEST_GUILDS,
-  #   description="Has subcommands"
-  # )
-  # async def decline(self, interaction):
-  #   """ A command for declinating specific languages.
-    
-  #   PS: Since we have 2 dinstinct commands (conjugation, declension) for some languages,
-  #   we will need to use this for specifying which one we want to use.```
-    
-  #   __**Example:**__
-  #   ```ini\n[Declension] dec!dec polish kobieta\n[Conjugation] dec!conj polish dać"""
-
-  #   # print(interaction)
-  #   # if ctx.invoked_subcommand:
-  #   #   return
-
-  #   # cmd = self.client.get_command('decline')
-  #   # prefix = self.client.command_prefix
-  #   # subcommands = [f"{prefix}{c.qualified_name}" for c in cmd.commands
-  #   #       ]
-
-  #   # subcommands = '\n'.join(subcommands)
-  #   # embed = discord.Embed(
-  #   #   title="Subcommads",
-  #   #   description=f"```apache\n{subcommands}```",
-  #   #   color=ctx.author.color,
-  #   #   timestamp=ctx.created_at
-  #   # )
-  #   # await ctx.send(embed=embed)
-  #   pass
-
-  
-  # @decline.command(aliases=['polski', 'pl', 'pol', 'po'])
-  # @commands.cooldown(1, 5, commands.BucketType.user)
   @cog_ext.cog_subcommand(
     base='decline', name='polish',
     description="Declines a Polish word; showing a table with its full declension forms.",
@@ -327,22 +291,22 @@ class Declension(commands.Cog):
   #     create_option(name='word', description='The word to decline', option_type=3, required=True)
   #   ], guild_ids=TEST_GUILDS
   # )
-  async def german(self, ctx, word: str = None):
+  async def german(self, interaction, word: str = None):
 
     if not word:
-      return await ctx.send("**Inform a word to decline!**", hidden=True)
+      return await interaction.send("**Inform a word to decline!**", hidden=True)
 
     root = 'https://www.verbformen.com/declension/nouns'
     req = f"{root}/?w={word}"
     async with self.session.get(req) as response:
       if not response.status == 200:
-        return await ctx.send("**Something went wrong with that search!**", hidden=True)
+        return await interaction.send("**Something went wrong with that search!**", hidden=True)
 
       embed_table = discord.Embed(
         title=f"__Declension Table__",
         description=f'''
         **Word:** {word.title()}''',
-        color=ctx.author.color,
+        color=interaction.author.color,
         url = req
       )
 
@@ -397,7 +361,7 @@ class Declension(commands.Cog):
     master_list = [[k, v] for k, v in master_dict.items()]
     user_index = 0
     lenmaster = len(master_list)
-    msg = await ctx.defer(hidden=True)
+    msg = await interaction.defer(hidden=True)
 
     components = [
       create_actionrow(
@@ -411,8 +375,8 @@ class Declension(commands.Cog):
       new_embed = discord.Embed(
         title=f"Declension table - ({title})",
         description=f"**Word:** {word}",
-        color=ctx.author.color,
-        timestamp=ctx.created_at,
+        color=interaction.author.color,
+        timestamp=interaction.created_at,
         url=req)
       for gender_dict in template[1]:
         for key, values in gender_dict.items():
@@ -428,7 +392,7 @@ class Declension(commands.Cog):
       await msg.edit(embed=new_embed, components=[components])
       button_ctx = await wait_for_component(self.client, components=components)
 
-      # await button_ctx.defer(hidden=True)
+      # await button_interaction.defer(hidden=True)
       await button_ctx.edit_origin(content="You pressed a button!")
 
       if button_ctx.custom_id == 'left_btn':

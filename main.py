@@ -367,7 +367,7 @@ async def vote(ctx):
 
 for file_name in os.listdir('./cogs'):
 	
-	if file_name not in ['Declension.py', 'Conjugation.py', 'Dictionaries.py']: continue
+	if file_name not in ['Declension.py', 'Conjugation.py', 'Dictionaries.py', 'Tools.py']: continue
 	if str(file_name).endswith(".py"):
 		print(file_name)
 		client.load_extension(f"cogs.{file_name[:-3]}")

@@ -1,11 +1,14 @@
 import discord
-from discord.ext import commands, menus
+from discord.ext import commands
 import aiohttp
 import asyncio
+from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_option
 from others.menu import SwitchPages
 from bs4 import BeautifulSoup
 from typing import Any
 
+TEST_GUILDS = [792401342969675787]
 
 class Songs(commands.Cog):
 	""" A category for commands related to finding songs. """
@@ -20,41 +23,15 @@ class Songs(commands.Cog):
 	async def on_ready(self) -> None:
 		print('Songs cog is online!')
 
+	@cog_ext.cog_subcommand(
+		base="find_by", name="lyrics",
+		description="Searches a song by a given lyrics", options=[
+			create_option(name="value", description=" The lyrics value.", option_type=3, required=True)
+		], guild_ids=TEST_GUILDS
+	)
+	async def _lyrics(self, interaction, value: str) -> None:
 
-	@commands.group(aliases=['find'])
-	async def find_by(self, ctx) -> None:
-		""" A command for finding songs by something. """
-
-		if ctx.invoked_subcommand:
-			return
-
-		cmd = self.client.get_command('find_by')
-		prefix = self.client.command_prefix
-		subcommands = [f"{prefix}{c.qualified_name}" for c in cmd.commands
-			  ]
-
-		subcommands = '\n'.join(subcommands)
-		embed = discord.Embed(
-		  title="Subcommads",
-		  description=f"```apache\n{subcommands}```",
-		  color=ctx.author.color,
-		  timestamp=ctx.message.created_at
-		)
-		await ctx.send(embed=embed)
-
-
-	@find_by.command(hidden=True)
-	async def title(self, ctx, *, value: str = None) -> None: pass
-
-	@find_by.command()
-	async def lyrics(self, ctx, *, value: str = None) -> None:
-		""" Searches a song by a given lyrics.
-		:param value: The lyrics value. """
-
-		member = ctx.author
-
-		if not value:
-			return await ctx.send(f"**Please, you need to inform a `value` for your search, {member.mention}!**")
+		member = interaction.author
 
 
 		query = await self.clean_url(value)
@@ -62,29 +39,29 @@ class Songs(commands.Cog):
 		async with self.session.get(req) as response:
 
 			if response.status != 200:
-				return await ctx.send(f"**Something went wrong with that search, {member.mention}!**")
+				return await interaction.send(f"**Something went wrong with that search, {member.mention}!**", hidden=True)
 
 			html = BeautifulSoup(await response.read(), 'html.parser')
 
 			songs = html.select('.sec-lyric.clearfix')
 			if not songs:
-				return await ctx.send(f"**Nothing found for that search, {member.mention}!**")
+				return await interaction.send(f"**Nothing found for that search, {member.mention}!**", hidden=True)
 
 			# Additional data:
 			additional = {
+				'client': self.client,
 				'req': req,
 				'search': value,
 				'change_embed': self.make_embed
 			}
-			await ctx.send("**Good!**")
-			pages = menus.MenuPages(source=SwitchPages(songs, **additional), clear_reactions_after=True)
-			await pages.start(ctx)
+			pages = SwitchPages(songs, **additional)
+			await pages.start(interaction)
 
 
-	async def make_embed(self, req: str, ctx: commands.Context, search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
+	async def make_embed(self, req: str, interaction: SlashContext, search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
 		""" Makes an embed for the current search example.
 		:param req: The request URL link.
-		:param ctx: The Discord context of the command.
+		:param interaction: The Discord context of the command.
 		:param search: The search that was performed.
 		:param example: The current search example.
 		:param offset: The current page of the total entries.
@@ -94,8 +71,8 @@ class Songs(commands.Cog):
 		embed = discord.Embed(
 			title=f"Search for __{search}__",
 			description="",
-			color=ctx.author.color,
-			timestamp=ctx.message.created_at,
+			color=interaction.author.color,
+			timestamp=interaction.created_at,
 			url=req
 			)
 
@@ -112,9 +89,9 @@ class Songs(commands.Cog):
 			embed.set_thumbnail(url=image)
 	
 		# Sets the author of the search
-		embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
+		embed.set_author(name=interaction.author, icon_url=interaction.author.avatar_url)
 		# Makes a footer with the a current page and total page counter
-		embed.set_footer(text=f"{offset}/{lentries}", icon_url=ctx.guild.icon_url)
+		embed.set_footer(text=f"{offset}/{lentries}", icon_url=interaction.guild.icon_url)
 
 		return embed
 

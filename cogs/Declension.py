@@ -44,7 +44,7 @@ class Declension(commands.Cog):
       create_option(name='word', description='The word to decline', option_type=3, required=True)
     ], guild_ids=TEST_GUILDS
   )
-  # @slash_commands.cooldown(1, 5, commands.BucketType.user)
+  @commands.cooldown(1, 10, commands.BucketType.user)
   async def polish(self, interaction, word: str = None):
 
     await interaction.defer()
@@ -117,7 +117,7 @@ class Declension(commands.Cog):
       create_option(name='word', description='The word to decline', option_type=3, required=True)
     ], guild_ids=TEST_GUILDS
   )
-  # @slash_commands.cooldown(1, 5, commands.BucketType.user)
+  @commands.cooldown(1, 10, commands.BucketType.user)
   async def russian(self, interaction, word: str = None):
 
     if not word:
@@ -202,6 +202,7 @@ class Declension(commands.Cog):
         ])
     ], guild_ids=TEST_GUILDS
   )
+  @commands.cooldown(1, 10, commands.BucketType.user)
   async def finnish(self, interaction, word: str = None, word_type: str = None):
 
     me = interaction.author
@@ -291,6 +292,7 @@ class Declension(commands.Cog):
   #     create_option(name='word', description='The word to decline', option_type=3, required=True)
   #   ], guild_ids=TEST_GUILDS
   # )
+  # @commands.cooldown(1, 10, commands.BucketType.user)
   async def german(self, interaction, word: str):
 
     root = 'https://www.verbformen.com/declension/nouns'

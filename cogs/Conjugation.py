@@ -38,6 +38,7 @@ class Conjugation(commands.Cog):
 			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def dutch(self, interaction, *, verb: str = None) -> None:
 		
 		if not verb:
@@ -135,6 +136,7 @@ class Conjugation(commands.Cog):
 			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def japanese(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -159,6 +161,7 @@ class Conjugation(commands.Cog):
 			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def arabic(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -183,6 +186,7 @@ class Conjugation(commands.Cog):
 			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def portuguese(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -208,6 +212,7 @@ class Conjugation(commands.Cog):
 			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def italian(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -232,6 +237,7 @@ class Conjugation(commands.Cog):
 			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def french(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -256,6 +262,7 @@ class Conjugation(commands.Cog):
 			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def spanish(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -281,6 +288,7 @@ class Conjugation(commands.Cog):
 			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def english(self, interaction, verb: str) -> None:
 
 		if len(verb) > 50:
@@ -439,6 +447,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 	  ], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def german(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -594,6 +603,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def polish(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -618,6 +628,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def russian(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -643,6 +654,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def esperanto(self, interaction, *, verb: str = None) -> None:
 		if not verb:
 			return await interaction.send("**Please, type a verb**")
@@ -668,6 +680,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def estonian(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -694,6 +707,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def turkish(self, interaction, verb: str = None) -> None:
 
 		if not verb:
@@ -722,6 +736,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def danish(self, interaction, verb: str = None) -> None:
 
 		if not verb:
@@ -748,6 +763,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def swedish(self, interaction, verb: str = None) -> None:
 
 		if not verb:
@@ -774,6 +790,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def norwegian(self, interaction, verb: str = None) -> None:
 		
 		if not verb:
@@ -801,6 +818,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def faroese(self, interaction, verb: str = None) -> None:
 
 		if not verb:
@@ -827,6 +845,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def icelandic(self, interaction, verb: str = None) -> None:
 
 		if not verb:
@@ -853,6 +872,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def finnish(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -881,6 +901,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def indonesian(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -907,6 +928,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def maltese(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -933,6 +955,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def thai(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -959,6 +982,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def vietnamese(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -985,6 +1009,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def malay(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -1011,6 +1036,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def catalan(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -1037,6 +1063,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def romanian(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -1063,6 +1090,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def greek(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -1089,6 +1117,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def afrikaans(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -1115,6 +1144,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def lithuanian(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -1141,6 +1171,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def latvian(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -1167,6 +1198,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def macedonian(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:
@@ -1193,6 +1225,7 @@ class Conjugation(commands.Cog):
 			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def persian(self, interaction, verb: str) -> None:
 
 
@@ -1216,6 +1249,7 @@ class Conjugation(commands.Cog):
 		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def hebrew(self, interaction, *, verb: str = None) -> None:
 
 		if not verb:

@@ -35,6 +35,7 @@ class Dictionaries(commands.Cog):
 			create_option(name="search", description="What you want to search there.", option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def english(self, interaction, search: str) -> None:
 
 		member = interaction.author
@@ -180,6 +181,7 @@ class Dictionaries(commands.Cog):
 			create_option(name="search", description="The word you are looking for.", option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def french(self, interaction, search: str) -> None:
 
 		member = interaction.author

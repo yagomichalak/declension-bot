@@ -29,6 +29,7 @@ class Songs(commands.Cog):
 			create_option(name="value", description=" The lyrics value.", option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def _lyrics(self, interaction, value: str) -> None:
 
 		member = interaction.author

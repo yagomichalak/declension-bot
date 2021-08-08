@@ -38,6 +38,7 @@ class ReversoContext(commands.Cog):
 			create_option(name="search", description="What to search.", option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+  @commands.cooldown(1, 10, commands.BucketType.user)
   async def spanish(self, interaction: SlashContext, search: str) -> None:
 
     if len(search) > 100:
@@ -54,6 +55,7 @@ class ReversoContext(commands.Cog):
 			create_option(name="search", description="The word you are looking for.", option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+  @commands.cooldown(1, 10, commands.BucketType.user)
   async def italian(self, interaction: SlashContext, search: str) -> None:
 
     if len(search) > 100:
@@ -70,6 +72,7 @@ class ReversoContext(commands.Cog):
 			create_option(name="search", description="The word you are looking for.", option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+  @commands.cooldown(1, 10, commands.BucketType.user)
   async def french(self, interaction: SlashContext, search: str) -> None:
 
     if len(search) > 100:
@@ -86,6 +89,7 @@ class ReversoContext(commands.Cog):
 			create_option(name="search", description="The word you are looking for.", option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+  @commands.cooldown(1, 10, commands.BucketType.user)
   async def german(self, interaction: SlashContext, search: str) -> None:
 
     if len(search) > 100:
@@ -102,6 +106,7 @@ class ReversoContext(commands.Cog):
 			create_option(name="search", description="The word you are looking for.", option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+  @commands.cooldown(1, 10, commands.BucketType.user)
   async def polish(self, interaction: SlashContext, search: str) -> None:
 
     if len(search) > 100:

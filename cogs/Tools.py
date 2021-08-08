@@ -31,6 +31,7 @@ class Tools(commands.Cog):
 			create_option(name="language", description="The language to translate the message to..", option_type=3, required=True),
 			create_option(name="message", description="The message to translate.", option_type=3, required=True),
 		], guild_ids=TEST_GUILDS)
+	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def translate(self, interaction, language: str = None, *, message: str = None):
 		await interaction.defer(hidden=True)
 
@@ -52,6 +53,7 @@ class Tools(commands.Cog):
 			create_option(name="search", description="The word you are looking for.", option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 15, commands.BucketType.user)
 	async def synonym_french(self, interaction, search: str) -> None:
 
 		await interaction.defer(hidden=True)
@@ -95,6 +97,7 @@ class Tools(commands.Cog):
 			create_option(name="search", description="The word you are looking for.", option_type=3, required=True)
 		], guild_ids=TEST_GUILDS
 	)
+	@commands.cooldown(1, 15, commands.BucketType.user)
 	async def antonym_french(self, interaction, search: str) -> None:
 
 		await interaction.defer(hidden=True)

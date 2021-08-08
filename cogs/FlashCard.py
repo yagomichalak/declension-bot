@@ -52,6 +52,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
 			create_option(name="back", description="The value for the back part of the card.", option_type=3, required=True),
 		], guild_ids=TEST_GUILDS
 	)
+  @commands.cooldown(1, 15, commands.BucketType.user)
   async def add_card(self, interaction, front: str, back: str) -> None:
 
     await interaction.defer(hidden=True)
@@ -110,6 +111,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
 			create_option(name="card_id", description="The ID of the card that is gonna be deleted", option_type=4, required=True),
 		], guild_ids=TEST_GUILDS
 	)
+  @commands.cooldown(1, 5, commands.BucketType.user)
   async def delete_card(self, interaction, card_id: int) -> None:
 
     await interaction.defer(hidden=True)
@@ -129,6 +131,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
 		base="card", name="list",
 		description="Deletes a card from the user's deck.", guild_ids=TEST_GUILDS
 	)
+  @commands.cooldown(1, 15, commands.BucketType.user)
   async def cards(self, interaction):
     """ Shows all cards of a particular user. """
 
@@ -145,6 +148,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
 			create_option(name="values", description="What is gonna be searched in the DB.", option_type=3, required=True),
 		], guild_ids=TEST_GUILDS
 	)
+  @commands.cooldown(1, 15, commands.BucketType.user)
   async def search_cards(self, interaction, values: str) -> None:
 
     if not interaction.guild_id or interaction.guild_id not in self.whitelist:
@@ -158,7 +162,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     if values := await self.fetch_values(member.id, values):
       return await self.pagination_looping(interaction, member, values)
     else:
-      await interaction.send(f"**Nothing found with the given values, {member.mention}!**", hidden=True )
+      await interaction.send(f"**Nothing found with the given values, {member.mention}!**", hidden=True)
 
 
   async def pagination_looping(self, interaction: SlashContext, member: discord.Member, the_list: List[List[Any]]) -> None:

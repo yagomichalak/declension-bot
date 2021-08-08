@@ -177,7 +177,7 @@ async def info(ctx):
 )
 async def invite(ctx):
 
-	invite = 'https://discord.com/api/oauth2/authorize?client_id=753754955005034497&permissions=59456&scope=bot applications.commands'
+	invite = 'https://discord.com/api/oauth2/authorize?client_id=753754955005034497&permissions=105226750976&scope=bot%20applications.commands'
 	await ctx.send(f"Here's my invite:\n{invite}", hidden=True)
 
 

@@ -291,10 +291,7 @@ class Declension(commands.Cog):
   #     create_option(name='word', description='The word to decline', option_type=3, required=True)
   #   ], guild_ids=TEST_GUILDS
   # )
-  async def german(self, interaction, word: str = None):
-
-    if not word:
-      return await interaction.send("**Inform a word to decline!**", hidden=True)
+  async def german(self, interaction, word: str):
 
     root = 'https://www.verbformen.com/declension/nouns'
     req = f"{root}/?w={word}"
@@ -361,9 +358,11 @@ class Declension(commands.Cog):
     master_list = [[k, v] for k, v in master_dict.items()]
     user_index = 0
     lenmaster = len(master_list)
-    msg = await interaction.defer(hidden=True)
+    await interaction.defer(hidden=True)
 
-    components = [
+    button_ctx = None
+
+    action_row = [
       create_actionrow(
         create_button(style=ButtonStyle.blurple, label="Left", custom_id="left_btn"),
         create_button(style=ButtonStyle.blurple, label="Right", custom_id="right_btn")
@@ -389,11 +388,16 @@ class Declension(commands.Cog):
             value=f"```apache\n{text}```",
             inline=True
           )
-      await msg.edit(embed=new_embed, components=[components])
-      button_ctx = await wait_for_component(self.client, components=components)
+      if button_ctx is None:
+        await interaction.send(embed=new_embed, components=[action_row], hidden=True)
+        # Wait for someone to click on them
+        button_ctx = await wait_for_component(self.client, components=action_row)
+      else:
+        await button_ctx.edit_origin(embed=new_embed, components=[action_row])
+        # Wait for someone to click on them
+        button_ctx = await wait_for_component(self.client, components=action_row, messages=button_ctx.origin_message_id)
 
-      # await button_interaction.defer(hidden=True)
-      await button_ctx.edit_origin(content="You pressed a button!")
+      await button_ctx.defer(edit_origin=True)
 
       if button_ctx.custom_id == 'left_btn':
         if user_index > 0:

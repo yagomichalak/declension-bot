@@ -42,11 +42,12 @@ class SwitchPages:
 
 			if button_ctx is None:
 				await interaction.send(embed=embed, components=[action_row], hidden=True)
+				# Wait for someone to click on them
+				button_ctx = await wait_for_component(self.client, components=action_row)
 			else:
 				await button_ctx.edit_origin(embed=embed, components=[action_row])
-			# Send a message with buttons
-			# Wait for someone to click on them
-			button_ctx = await wait_for_component(self.client, components=action_row)
+				# Wait for someone to click on them
+				button_ctx = await wait_for_component(self.client, components=action_row, messages=button_ctx.origin_message_id)
 
 			await button_ctx.defer(edit_origin=True)
 			

@@ -177,6 +177,11 @@ class ReversoContext(commands.Cog):
 
       # Main loop, for switching pages
       while True:
+        # if button_ctx:
+        #   await button_ctx.defer(edit_origin=True)
+
+        print(embed)
+
         embed.title = f"{emoji} {language} Context - ({index+1}/{len(groups)})"
         embed.clear_fields()
         embed.add_field(
@@ -190,33 +195,36 @@ class ReversoContext(commands.Cog):
           inline=False
         )
         # Sends to Discord the current state of the embed
-
         if button_ctx is None:
-          msg = await interaction.send(embed=embed, components=[action_row], hidden=True)
+          await interaction.send(embed=embed, components=[action_row], hidden=True)
+          # Wait for someone to click on them
+          button_ctx = await wait_for_component(self.client, components=action_row)
         else:
-          msg = await button_ctx.edit_origin(embed=embed, components=[action_row])
-        # Send a message with buttons
-        # Wait for someone to click on them
-        button_ctx = await wait_for_component(self.client, components=action_row)
-
-        await button_ctx.defer(edit_origin=True)
+          await button_ctx.edit_origin(embed=embed, components=[action_row])
+          # Wait for someone to click on them
+          button_ctx = await wait_for_component(self.client, components=action_row, messages=button_ctx.origin_message_id)
 
         # Waits for user reaction to switch pages
         if button_ctx.custom_id == 'left_btn':
+          await button_ctx.defer(edit_origin=True)
           if index > 0:
             index -= 1
           continue
         elif button_ctx.custom_id == 'right_btn':
+          print('ici?')
+          await button_ctx.defer(edit_origin=True)
+          print('oui, bien là au-dessus !')
           if index < len(groups) - 1:
             index += 1
           continue
         elif button_ctx.custom_id == 'add_btn':
-          # if interaction.guild and interaction.guild.id == self.server_id:
+          await button_ctx.defer(edit_origin=True)
           front = groups[index]['original']
           back = groups[index]['translation']
           await self._add_card(interaction, interaction.author, front, back)
           continue
         elif button_ctx.custom_id == 'stop_btn':
+          await button_ctx.defer(edit_origin=True)
           
           for button in action_row['components']:
             button['disabled'] = True
@@ -233,14 +241,14 @@ class ReversoContext(commands.Cog):
     try:
       the_time = await utils.get_timestamp()
       flashcard = self.client.get_cog('FlashCard')
-      inserted = await flashcard._insert_card(interaction.guild.id, member.id, front, back, the_time)
+      inserted = await flashcard._insert_card(interaction.guild_id, member.id, front, back, the_time)
 
       if inserted:
-        return await interaction.send(f"**Added card into the DB, {member.mention}!**", delete_after=3)
+        await interaction.reply(f"**Added card into the DB, {member.mention}!**", hidden=True)
       else: 
-        await interaction.send("**This server is not whitelisted!**", delete_after=3)
+        await interaction.reply("**This server is not whitelisted!**", hidden=True)
     except Exception as e:
-      return await interaction.send(f"**For some reason I couldn't add it into the DB, {member.mention}!**", delete_after=3)
+      await interaction.reply(f"**For some reason I couldn't add it into the DB, {member.mention}!**", hidden=True)
 
 def setup(client) -> None:
   """ Cog's setup function."""

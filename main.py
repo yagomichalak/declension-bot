@@ -85,6 +85,13 @@ async def on_command_error(ctx, error):
 	else:
 		print(error)
 
+@client.event
+async def on_slash_command_error(ctx, error) -> None:
+
+	if isinstance(error, commands.CommandOnCooldown):
+		secs = int(float(error.retry_after))
+		await ctx.send(content=f"You are on cooldown! Try again in {secs} seconds!", hidden=True)
+
 
 @client.event
 async def on_message(message):
@@ -353,6 +360,7 @@ async def support(ctx):
 
 
 @slash.slash(name="vote", description="Vote for me on TopGG", guild_ids=TEST_GUILDS)
+@commands.cooldown(1, 15, commands.BucketType.user)
 async def vote(ctx):
 
 	link = 'https://top.gg/bot/753754955005034497/vote'
@@ -368,7 +376,7 @@ async def vote(ctx):
 for file_name in os.listdir('./cogs'):
 	
 	if file_name not in [
-		'Declension.py', 'Conjugation.py', 'Dictionaries.py', 'Tools.py', 'ReversoContext.py', 'Songs.py']: continue
+		'Declension.py', 'Conjugation.py', 'Dictionaries.py', 'Tools.py', 'ReversoContext.py', 'Songs.py', 'FlashCard.py']: continue
 	if str(file_name).endswith(".py"):
 		print(file_name)
 		client.load_extension(f"cogs.{file_name[:-3]}")

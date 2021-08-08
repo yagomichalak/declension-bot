@@ -43,7 +43,7 @@ class Tools(commands.Cog):
 
 		embed = discord.Embed(title="__Translator__",
 			description=f"**Translated from `{translation.src}` to `{translation.dest}`**\n\n{translation.text}",
-			color=discord.Color.dark_red(), timestamp=interaction.created_at)
+			color=interaction.author.color, timestamp=interaction.created_at)
 		embed.set_author(name=interaction.author, icon_url=interaction.author.avatar_url)
 		await interaction.send(embed=embed, hidden=True)
 

@@ -1,11 +1,14 @@
 import discord
-from discord.ext import commands, menus
+from discord.ext import commands
+from discord_slash import cog_ext, SlashContext
+from discord_slash.utils.manage_commands import create_option, create_permission
 import json
 import aiohttp
 import os
 from others.menu import SwitchPages
 from typing import Any
 
+TEST_GUILDS = [792401342969675787]
 
 class Expressions(commands.Cog):
 	""" A category for commands related to language 
@@ -23,43 +26,16 @@ class Expressions(commands.Cog):
 
 		print('Expression cog is online!')
 
-	@commands.group(aliases=['xp', 'exp'])
-	async def expression(self, ctx) -> None:
-		""" A command for getting expressions in specific languages. """
-
-		if ctx.invoked_subcommand:
-		  return
-
-		cmd = self.client.get_command('expression')
-		prefix = self.client.command_prefix
-		subcommands = [f"{prefix}{c.qualified_name}" for c in cmd.commands
-			  ]
-
-		subcommands = '\n'.join(subcommands)
-		embed = discord.Embed(
-		  title="Subcommads",
-		  description=f"```apache\n{subcommands}```",
-		  color=ctx.author.color,
-		  timestamp=ctx.message.created_at
-		)
-		await ctx.send(embed=embed)
-
-
-	@expression.command(aliases=['fr', 'français', 'francês', 'francés', 'frances'])
+	@cog_ext.cog_subcommand(
+		base="expression", name="french",
+		description="Searches for an expression with the given word.", options=[
+		create_option(name="search", description="The word you wanna look for.", option_type=3, required=True),
+		], guild_ids=TEST_GUILDS
+	)
 	@commands.cooldown(1, 15, commands.BucketType.user)
-	async def french(self, ctx, *, search: str = None) -> None:
-		""" Searches for an expression with the given word.
-		:param search: The word you wanna look for.```
-	
-		🇫🇷-🇧🇪 __**Example:**__
-		```ini\n[1] dec!expression fr cheval\n[2] dec!exp french canard """
+	async def french(self, interaction, search: str) -> None:
 
-
-		member = ctx.author
-
-		if not search:
-			return await ctx.send(f"**Please, {member.mention}, inform a word!**")
-
+		member = interaction.author
 
 		url = f"https://dicolink.p.rapidapi.com/mot/{search.strip().replace(' ', '%20')}/expressions"
 
@@ -73,8 +49,8 @@ class Expressions(commands.Cog):
 		async with self.session.get(url=url, headers=headers, params=querystring) as response:
 
 			if response.status != 200:
-				self.french.reset_cooldown(ctx)
-				return await ctx.send(f"**Nothing found, {member.mention}!**")
+				self.french.reset_cooldown(interaction)
+				return await interaction.send(f"**Nothing found, {member.mention}!**")
 
 			data = json.loads(await response.read())
 
@@ -84,13 +60,13 @@ class Expressions(commands.Cog):
 				'search': search,
 				'change_embed': self.make_french_embed
 			}
-			pages = menus.MenuPages(source=SwitchPages(data, **additional), clear_reactions_after=True)
-			await pages.start(ctx)
+			pages = SwitchPages(data, **additional)
+			await pages.start(interaction)
 
-	async def make_french_embed(self, req: str, ctx: commands.Context, search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
+	async def make_french_embed(self, req: str, interaction: commands.Context, search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
 		""" Makes an embed for the current search example.
 		:param req: The request URL link.
-		:param ctx: The Discord context of the command.
+		:param interaction: The Discord context of the command.
 		:param search: The search that was performed.
 		:param example: The current search example.
 		:param offset: The current page of the total entries.
@@ -100,8 +76,8 @@ class Expressions(commands.Cog):
 		embed = discord.Embed(
 			title="__French Expression__",
 			description=f"Showing results for: {example['mot']}",
-			color=ctx.author.color,
-			timestamp=ctx.message.created_at,
+			color=interaction.author.color,
+			timestamp=interaction.message.created_at,
 		)
 
 		
@@ -116,9 +92,9 @@ class Expressions(commands.Cog):
 			embed.add_field(name="__Context__", value=context, inline=False)
 
 		# Sets the author of the search
-		embed.set_author(name=ctx.author, icon_url=ctx.author.avatar_url)
+		embed.set_author(name=interaction.author, icon_url=interaction.author.avatar_url)
 		# Makes a footer with the a current page and total page counter
-		embed.set_footer(text=f"{offset}/{lentries}", icon_url=ctx.guild.icon_url)
+		embed.set_footer(text=f"{offset}/{lentries}", icon_url=interaction.guild.icon_url)
 
 		return embed
 

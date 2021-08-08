@@ -21,7 +21,7 @@ import copy
 from itertools import zip_longest
 from others import utils
 
-TEST_GUILDS = [792401342969675787]
+TEST_GUILDS = [459195345419763713]
 
 class Declension(commands.Cog):
   '''
@@ -42,7 +42,7 @@ class Declension(commands.Cog):
     description="Declines a Polish word; showing a table with its full declension forms.",
     options=[
       create_option(name='word', description='The word to decline', option_type=3, required=True)
-    ], guild_ids=TEST_GUILDS
+    ]#, guild_ids=TEST_GUILDS
   )
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def polish(self, interaction, word: str = None):
@@ -115,7 +115,7 @@ class Declension(commands.Cog):
     description="Declines a Russian word; showing a table with its full declension forms.",
     options=[
       create_option(name='word', description='The word to decline', option_type=3, required=True)
-    ], guild_ids=TEST_GUILDS
+    ]#, guild_ids=TEST_GUILDS
   )
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def russian(self, interaction, word: str = None):
@@ -200,7 +200,7 @@ class Declension(commands.Cog):
         choices=[
             create_choice(name="Adjective", value="adjetctive"), create_choice(name="Noun", value="noun"),
         ])
-    ], guild_ids=TEST_GUILDS
+    ]#, guild_ids=TEST_GUILDS
   )
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def finnish(self, interaction, word: str = None, word_type: str = None):
@@ -290,7 +290,7 @@ class Declension(commands.Cog):
   #   base='decline', name='german',
   #   description="Declines a German word; showing a table with its full declension forms", options=[
   #     create_option(name='word', description='The word to decline', option_type=3, required=True)
-  #   ], guild_ids=TEST_GUILDS
+  #   ]#, guild_ids=TEST_GUILDS
   # )
   # @commands.cooldown(1, 10, commands.BucketType.user)
   async def german(self, interaction, word: str):

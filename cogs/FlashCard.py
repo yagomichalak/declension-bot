@@ -13,7 +13,7 @@ from datetime import datetime
 from others.customerrors import NotInWhitelist
 from others import utils
 
-TEST_GUILDS = [792401342969675787]
+TEST_GUILDS = [459195345419763713]
 
 class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
   """ A category for creating, editing, deleting and showing 'FlashCard'. """
@@ -50,7 +50,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
 		description="Adds a card into the database.", options=[
 			create_option(name="front", description="The value for the front part of the card.", option_type=3, required=True),
 			create_option(name="back", description="The value for the back part of the card.", option_type=3, required=True),
-		], guild_ids=TEST_GUILDS
+		]#, guild_ids=TEST_GUILDS
 	)
   @commands.cooldown(1, 15, commands.BucketType.user)
   async def add_card(self, interaction, front: str, back: str) -> None:
@@ -109,7 +109,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
 		base="card", name="delete",
 		description="Deletes a card from the user's deck.", options=[
 			create_option(name="card_id", description="The ID of the card that is gonna be deleted", option_type=4, required=True),
-		], guild_ids=TEST_GUILDS
+		]#, guild_ids=TEST_GUILDS
 	)
   @commands.cooldown(1, 5, commands.BucketType.user)
   async def delete_card(self, interaction, card_id: int) -> None:
@@ -129,7 +129,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
 
   @cog_ext.cog_subcommand(
 		base="card", name="list",
-		description="Deletes a card from the user's deck.", guild_ids=TEST_GUILDS
+		description="Deletes a card from the user's deck."#, guild_ids=TEST_GUILDS
 	)
   @commands.cooldown(1, 15, commands.BucketType.user)
   async def cards(self, interaction):
@@ -146,7 +146,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
 		base="card", name="search",
 		description="Searches for cards in the user's deck with the given search values.", options=[
 			create_option(name="values", description="What is gonna be searched in the DB.", option_type=3, required=True),
-		], guild_ids=TEST_GUILDS
+		]#, guild_ids=TEST_GUILDS
 	)
   @commands.cooldown(1, 15, commands.BucketType.user)
   async def search_cards(self, interaction, values: str) -> None:
@@ -365,7 +365,8 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
   @cog_ext.cog_slash(
     name="addserver", description="Adds a server into the whitelist.", options=[
 			create_option(name="server_id", description="The ID of the server to whitelist.", option_type=3, required=True),
-		], guild_ids=TEST_GUILDS, default_permission=False, permissions={
+		]#, guild_ids=TEST_GUILDS
+    , default_permission=False, permissions={
       TEST_GUILDS[0]: [create_permission(647452832852869120, SlashCommandPermissionType.USER, True)]})
   async def insert_server(self, interaction, server_id: str) -> None:
 
@@ -388,7 +389,8 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
   @cog_ext.cog_slash(
     name="removeserver", description="Adds a server into the whitelist.", options=[
 			create_option(name="server_id", description="The ID of the server to whitelist.", option_type=3, required=True),
-		], guild_ids=TEST_GUILDS, default_permission=False, permissions={
+		]#, guild_ids=TEST_GUILDS
+    , default_permission=False, permissions={
       TEST_GUILDS[0]: [create_permission(647452832852869120, SlashCommandPermissionType.USER, True)]})
   async def delete_server(self, interaction, server_id: str) -> None:
 

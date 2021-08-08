@@ -8,7 +8,7 @@ from others.menu import SwitchPages
 from bs4 import BeautifulSoup
 from typing import Any
 
-TEST_GUILDS = [792401342969675787]
+TEST_GUILDS = [459195345419763713]
 
 class Songs(commands.Cog):
 	""" A category for commands related to finding songs. """
@@ -27,7 +27,7 @@ class Songs(commands.Cog):
 		base="find_by", name="lyrics",
 		description="Searches a song by a given lyrics", options=[
 			create_option(name="value", description=" The lyrics value.", option_type=3, required=True)
-		], guild_ids=TEST_GUILDS
+		]#, guild_ids=TEST_GUILDS
 	)
 	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def _lyrics(self, interaction, value: str) -> None:

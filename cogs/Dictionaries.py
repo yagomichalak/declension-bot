@@ -10,7 +10,7 @@ from typing import Any, List, Dict, Union
 from others.menu import SwitchPages
 import os
 
-TEST_GUILDS = [792401342969675787]
+TEST_GUILDS = [459195345419763713]
 
 class Dictionaries(commands.Cog):
 	""" A category for word dictionaries. """
@@ -33,7 +33,7 @@ class Dictionaries(commands.Cog):
 		base="dictionary", name="english",
 		description="Searches something in the Cambridge dictionary", options=[
 			create_option(name="search", description="What you want to search there.", option_type=3, required=True)
-		], guild_ids=TEST_GUILDS
+		]#, guild_ids=TEST_GUILDS
 	)
 	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def english(self, interaction, search: str) -> None:
@@ -179,7 +179,7 @@ class Dictionaries(commands.Cog):
 		base="dictionary", name="french",
 		description="Searches a word in a French dictionary.", options=[
 			create_option(name="search", description="The word you are looking for.", option_type=3, required=True)
-		], guild_ids=TEST_GUILDS
+		]#, guild_ids=TEST_GUILDS
 	)
 	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def french(self, interaction, search: str) -> None:

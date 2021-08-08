@@ -8,7 +8,7 @@ import os
 from others.menu import SwitchPages
 from typing import Any
 
-TEST_GUILDS = [792401342969675787]
+TEST_GUILDS = [459195345419763713]
 
 class Expressions(commands.Cog):
 	""" A category for commands related to language 
@@ -30,7 +30,7 @@ class Expressions(commands.Cog):
 		base="expression", name="french",
 		description="Searches for an expression with the given word.", options=[
 		create_option(name="search", description="The word you wanna look for.", option_type=3, required=True),
-		], guild_ids=TEST_GUILDS
+		]#, guild_ids=TEST_GUILDS
 	)
 	@commands.cooldown(1, 15, commands.BucketType.user)
 	async def french(self, interaction, search: str) -> None:

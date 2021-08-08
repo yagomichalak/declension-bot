@@ -12,7 +12,7 @@ from others.customerrors import NotInWhitelist
 from dotenv import load_dotenv
 load_dotenv()
 
-TEST_GUILDS = [792401342969675787]
+TEST_GUILDS = [459195345419763713]
 
 status = cycle([
 	"Russian declensions", "German declensions", "Finnish declensions", "Polish declensions",
@@ -138,13 +138,17 @@ async def on_guild_remove(guild):
 	if guild_log:
 		await guild_log.send(embed=embed)
 
-@slash.slash(name="ping", description="Shows the bot's latency.", guild_ids=TEST_GUILDS)
+@slash.slash(name="ping", description="Shows the bot's latency."
+	#, guild_ids=TEST_GUILDS
+)
 async def ping(ctx):
 
 	await ctx.send(f"**Ping: __{round(client.latency * 1000)}__ ms**", hidden=True)
 
 
-@slash.slash(name="info", description="Shows some information about the bot itself.", guild_ids=TEST_GUILDS)
+@slash.slash(name="info", description="Shows some information about the bot itself."
+	#, guild_ids=TEST_GUILDS
+)
 # @commands.cooldown(1, 10, type=commands.BucketType.guild)
 async def info(ctx):
 
@@ -168,7 +172,9 @@ async def info(ctx):
 								icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720289112040669284/DNK_icon.png')
 	await ctx.send(embed=embed, hidden=True)
 
-@slash.slash(name="invite", description="SSends the bot's invite.", guild_ids=TEST_GUILDS)
+@slash.slash(name="invite", description="SSends the bot's invite."
+	#, guild_ids=TEST_GUILDS
+)
 async def invite(ctx):
 
 	invite = 'https://discord.com/api/oauth2/authorize?client_id=753754955005034497&permissions=59456&scope=bot'
@@ -250,7 +256,9 @@ async def help(ctx, *, cmd: str = None):
 			await ctx.send(f"**Invalid parameter! `{cmd}` is neither a command nor a cog!**")
 
 
-@slash.slash(name="servers", description="Shows how many servers the bot is in.", guild_ids=TEST_GUILDS)
+@slash.slash(name="servers", description="Shows how many servers the bot is in."
+	#, guild_ids=TEST_GUILDS
+)
 async def servers(ctx):
 
 	await ctx.send(f"**I'm currently declining in {len(client.guilds)} servers!**", hidden=True)
@@ -329,7 +337,9 @@ async def reload_all(ctx):
 			pass
 	await ctx.send(f"**Cogs reloaded!**")
 
-@slash.slash(name="patreon", description="Support the creator on Patreon.", guild_ids=TEST_GUILDS)
+@slash.slash(name="patreon", description="Support the creator on Patreon."
+	#, guild_ids=TEST_GUILDS
+)
 async def patreon(ctx):
 
 	link = 'https://www.patreon.com/dnk'
@@ -343,7 +353,9 @@ async def patreon(ctx):
 	)
 	await ctx.send(embed=embed, hidden=True)
 
-@slash.slash(name="support", description="Support for the bot and its commands.", guild_ids=TEST_GUILDS)
+@slash.slash(name="support", description="Support for the bot and its commands."
+	#, guild_ids=TEST_GUILDS
+)
 async def support(ctx):
 
 	link = 'https://discord.gg/languages'
@@ -359,7 +371,9 @@ async def support(ctx):
 
 
 
-@slash.slash(name="vote", description="Vote for me on TopGG", guild_ids=TEST_GUILDS)
+@slash.slash(name="vote", description="Vote for me on TopGG"
+	#, guild_ids=TEST_GUILDS
+)
 @commands.cooldown(1, 15, commands.BucketType.user)
 async def vote(ctx):
 

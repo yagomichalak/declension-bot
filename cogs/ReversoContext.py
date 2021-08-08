@@ -13,7 +13,7 @@ from cogs.FlashCard import FlashCard
 import os
 from others import utils
 
-TEST_GUILDS = [792401342969675787]
+TEST_GUILDS = [459195345419763713]
 
 class ReversoContext(commands.Cog):
   """ A category regarding the acquisition of words in context for different languages. """
@@ -36,7 +36,7 @@ class ReversoContext(commands.Cog):
 		base="context", name="spanish",
 		description="Searches and shows examples of X words and sentences in context.", options=[
 			create_option(name="search", description="What to search.", option_type=3, required=True)
-		], guild_ids=TEST_GUILDS
+		]#, guild_ids=TEST_GUILDS
 	)
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def spanish(self, interaction: SlashContext, search: str) -> None:
@@ -53,7 +53,7 @@ class ReversoContext(commands.Cog):
 		base="context", name="italian",
 		description="Searches and shows examples of X words and sentences in context.", options=[
 			create_option(name="search", description="The word you are looking for.", option_type=3, required=True)
-		], guild_ids=TEST_GUILDS
+		]#, guild_ids=TEST_GUILDS
 	)
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def italian(self, interaction: SlashContext, search: str) -> None:
@@ -70,7 +70,7 @@ class ReversoContext(commands.Cog):
 		base="context", name="french",
 		description="Searches and shows examples of X words and sentences in context.", options=[
 			create_option(name="search", description="The word you are looking for.", option_type=3, required=True)
-		], guild_ids=TEST_GUILDS
+		]#, guild_ids=TEST_GUILDS
 	)
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def french(self, interaction: SlashContext, search: str) -> None:
@@ -87,7 +87,7 @@ class ReversoContext(commands.Cog):
 		base="context", name="german",
 		description="Searches and shows examples of X words and sentences in context.", options=[
 			create_option(name="search", description="The word you are looking for.", option_type=3, required=True)
-		], guild_ids=TEST_GUILDS
+		]#, guild_ids=TEST_GUILDS
 	)
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def german(self, interaction: SlashContext, search: str) -> None:
@@ -104,7 +104,7 @@ class ReversoContext(commands.Cog):
 		base="context", name="polish",
 		description="Searches and shows examples of X words and sentences in context.", options=[
 			create_option(name="search", description="The word you are looking for.", option_type=3, required=True)
-		], guild_ids=TEST_GUILDS
+		]#, guild_ids=TEST_GUILDS
 	)
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def polish(self, interaction: SlashContext, search: str) -> None:

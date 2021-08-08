@@ -7,7 +7,7 @@ import os
 import aiohttp
 import json
 
-TEST_GUILDS = [792401342969675787]
+TEST_GUILDS = [459195345419763713]
 
 class Tools(commands.Cog):
 	""" A command for tool commands. """
@@ -30,7 +30,8 @@ class Tools(commands.Cog):
 		description="Translates a message into another language.", options=[
 			create_option(name="language", description="The language to translate the message to..", option_type=3, required=True),
 			create_option(name="message", description="The message to translate.", option_type=3, required=True),
-		], guild_ids=TEST_GUILDS)
+		]#, guild_ids=TEST_GUILDS
+		)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def translate(self, interaction, language: str = None, *, message: str = None):
 		await interaction.defer(hidden=True)
@@ -51,7 +52,7 @@ class Tools(commands.Cog):
 		base="synonym", name="french",
 		description="Searches synonyms of a French word.", options=[
 			create_option(name="search", description="The word you are looking for.", option_type=3, required=True)
-		], guild_ids=TEST_GUILDS
+		]#, guild_ids=TEST_GUILDS
 	)
 	@commands.cooldown(1, 15, commands.BucketType.user)
 	async def synonym_french(self, interaction, search: str) -> None:
@@ -95,7 +96,7 @@ class Tools(commands.Cog):
 		base="antonym", name="french",
 		description="Searches antonyms of a French word", options=[
 			create_option(name="search", description="The word you are looking for.", option_type=3, required=True)
-		], guild_ids=TEST_GUILDS
+		]#, guild_ids=TEST_GUILDS
 	)
 	@commands.cooldown(1, 15, commands.BucketType.user)
 	async def antonym_french(self, interaction, search: str) -> None:

@@ -192,9 +192,9 @@ class ReversoContext(commands.Cog):
         # Sends to Discord the current state of the embed
 
         if button_ctx is None:
-          await interaction.send(embed=embed, components=[action_row], hidden=True)
+          msg = await interaction.send(embed=embed, components=[action_row], hidden=True)
         else:
-          await button_ctx.edit_origin(embed=embed, components=[action_row])
+          msg = await button_ctx.edit_origin(embed=embed, components=[action_row])
         # Send a message with buttons
         # Wait for someone to click on them
         button_ctx = await wait_for_component(self.client, components=action_row)
@@ -217,7 +217,11 @@ class ReversoContext(commands.Cog):
           await self._add_card(interaction, interaction.author, front, back)
           continue
         elif button_ctx.custom_id == 'stop_btn':
-          break
+          
+          for button in action_row['components']:
+            button['disabled'] = True
+
+          return await button_ctx.edit_origin(embed=embed, components=[action_row])
 
   async def _add_card(self, interaction: SlashContext, member: discord.Member, front: str, back: str) -> None:
     """" Adds a card from the context list into the DB. 

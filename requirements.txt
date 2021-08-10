@@ -1,5 +1,5 @@
 requests==2.24.0
-discord-py-slash-command==2.4.0
+discord-py-slash-command==2.4.1
 aiohttp==3.7.4
 convertapi==1.4.0
 aiomysql==0.0.21

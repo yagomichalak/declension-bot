@@ -1,9 +1,10 @@
 import discord
 from discord.ext import commands, tasks
 from discord_slash import SlashCommand, SlashContext
-from discord_slash.model import SlashCommandPermissionType
+from discord_slash.model import SlashCommandPermissionType, ButtonStyle
 from discord_slash.utils.manage_commands import create_option, create_choice, create_permission
-from discord_slash.model import CogBaseCommandObject
+from discord_slash.utils.manage_components import create_button, create_actionrow, wait_for_component
+
 import os
 import asyncio
 from re import match
@@ -302,6 +303,8 @@ async def support(ctx):
 @commands.cooldown(1, 15, commands.BucketType.user)
 async def vote(ctx):
 
+	widget = f'https://top.gg/api/widget/753754955005034497.png?{randint(0, 2147483647)}topcolor=2C2F33&middlecolor=23272A&usernamecolor=FFFFF0&certifiedcolor=FFFFFF&datacolor=F0F0F0&labelcolor=99AAB5&highlightcolor=2C2F33'
+
 	link = 'https://top.gg/bot/753754955005034497/vote'
 	embed = discord.Embed(
 		title="__Vote__",
@@ -309,7 +312,15 @@ async def vote(ctx):
 		url=link,
 		color=ctx.author.color
 	)
-	await ctx.send(embed=embed, hidden=True)
+	embed.set_thumbnail(url=client.user.avatar_url)
+	embed.set_image(url=widget)
+
+	action_row = create_actionrow(
+		create_button(
+				style=ButtonStyle.URL, label="Previous", custom_id="left_button", emoji='🆙', url=link
+		)
+	)
+	await ctx.send(embed=embed, components=[action_row], hidden=True)
 
 
 for file_name in os.listdir('./cogs'):

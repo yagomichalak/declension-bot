@@ -6,7 +6,7 @@ from discord_slash.utils.manage_commands import create_option, create_choice, cr
 from discord_slash.utils.manage_components import create_button, create_actionrow, wait_for_component
 
 import os
-import asyncio
+from random import randint
 from re import match
 from itertools import cycle
 from others.customerrors import NotInWhitelist
@@ -92,6 +92,9 @@ async def on_slash_command_error(ctx, error) -> None:
 	if isinstance(error, commands.CommandOnCooldown):
 		secs = int(float(error.retry_after))
 		await ctx.send(content=f"You are on cooldown! Try again in {secs} seconds!", hidden=True)
+
+	else:
+		print(error)
 
 
 @client.event
@@ -317,7 +320,7 @@ async def vote(ctx):
 
 	action_row = create_actionrow(
 		create_button(
-				style=ButtonStyle.URL, label="Previous", custom_id="left_button", emoji='🆙', url=link
+				style=ButtonStyle.URL, label="Previous", emoji='🆙', url=link
 		)
 	)
 	await ctx.send(embed=embed, components=[action_row], hidden=True)

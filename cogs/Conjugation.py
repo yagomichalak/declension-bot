@@ -506,16 +506,16 @@ class Conjugation(commands.Cog):
 				]
 				# Gets all tenses
 				tenses = [
-				tense.get_text().strip() 
-				for tense in conj_div.select(
-					'.conjugation-cell.conjugation-cell-four.tense-title'
-				) if tense.get_text()
+					tense.get_text().strip() 
+					for tense in conj_div.select(
+						'.conjugation-cell.conjugation-cell-four.tense-title'
+					) if tense.get_text()
 				]
 				# Gets all conjugations
 				conjs = [
-				conj.get_text(separator='  ').strip() if conj.get_text() else '' 
-				for conj in conj_div.select(
-					'.conjugation-cell.conjugation-cell-four'
+					conj.get_text(separator='  ').strip() if conj.get_text() else '' 
+					for conj in conj_div.select(
+						'.conjugation-cell.conjugation-cell-four'
 				)
 				][1:]
 				# Filters the conjugations a bit
@@ -535,7 +535,7 @@ class Conjugation(commands.Cog):
 						except Exception as e:
 							temp = f"- {conj}"
 
-					rows.append(temp)
+						rows.append(temp)
 					
 				# Unify the tenses with the rows
 				n = round(len(rows)/len(tenses))

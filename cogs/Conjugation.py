@@ -311,14 +311,14 @@ class Conjugation(commands.Cog):
 
 		async with self.session.get(root) as response:
 			if response.status != 200:
-				return await interaction.send("**Something went wrong with that search!**", ephemeral=True)
+				return await interaction.send("**Something went wrong with that search!**", hidden=True)
 
 		
 			# Gets the html and the table div
 			html = BeautifulSoup(await response.read(), 'html.parser')
 			subhead = html.select_one('.subHead.subHead-res.clearfix')
 			if not subhead:
-				return await interaction.send("**Invalid request!**", ephemeral=True)
+				return await interaction.send("**Invalid request!**", hidden=True)
 
 			# Translation options
 			#-> Word translation
@@ -472,17 +472,16 @@ class Conjugation(commands.Cog):
 		:param space: If you want a space separator into a specific section. 
 		:param aligned: If the fields will be inline."""
 
-
 		# Performs the GET request to the endpoint
 		async with self.session.get(root) as response:
 			if response.status != 200:
-				return await interaction.send("**Something went wrong with that search!**", ephemeral=True)
+				return await interaction.send("**Something went wrong with that search!**", hidden=True)
 
 			# Gets the html and the container div
 			html = BeautifulSoup(await response.read(), 'html.parser')
 			container = html.select_one('#conjugationDivs.fourteen.wide.column')
 			if not container:
-				return await interaction.send("**Couldn't find anything for it!**", ephemeral=True)
+				return await interaction.send("**Couldn't find anything for it!**", hidden=True)
 
 			title = html.select_one('#conjugation-data.ui.segment > .centered > h1').get_text().strip()
 

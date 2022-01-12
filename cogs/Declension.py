@@ -159,7 +159,6 @@ class Declension(commands.Cog):
       for case in div.select('tbody tr'):
         row_values = []
         for row in case.select('td'):
-          print(row.get_text("", strip=True))
           if value := row.get_text(" | ", strip=True):
             row_values.append(value.strip())
 
@@ -167,11 +166,10 @@ class Declension(commands.Cog):
 
 
       tds = [td for td in div.select('tbody tr')]
-      word_type = html.select_one('.info').get_text(", ", strip=True)
       # Makes the embedded message
       embed = discord.Embed(
         title="Russian Declension",
-        description=f"**Word:** {word.lower()}\n**Description:** {word_type}",
+        description=f"**Word:** {word.lower()}",
         color=interaction.author.color,
         url=req,
         timestamp=interaction.created_at

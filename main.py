@@ -5,11 +5,12 @@ import os
 from random import randint
 from re import match
 from itertools import cycle
+from others import utils
 from others.customerrors import NotInWhitelist
 from dotenv import load_dotenv
 load_dotenv()
 
-TEST_GUILDS = [459195345419763713, 777886754761605140]
+TEST_GUILDS = [777886754761605140]
 
 status = cycle([
 	"Russian declensions", "German declensions", "Finnish declensions", "Polish declensions",
@@ -34,7 +35,7 @@ status = cycle([
 	"Italian context", "German context"
 	])
 
-client = commands.Bot(command_prefix='dec!', intents=discord.Intents.all(), help_command=None)
+client = commands.Bot(command_prefix='dec!', intents=discord.Intents.default(), help_command=None)
 on_guild_log_id = os.getenv('ON_GUILD_LOG_ID')
 
 @client.event
@@ -118,7 +119,7 @@ async def on_guild_join(guild):
 	#Logs it in the bot's support server on_guild log
 	guild_log = client.get_channel(int(on_guild_log_id))
 	if guild_log:
-		embed.set_thumbnail(url=guild.icon_url)
+		embed.set_thumbnail(url=guild.icon.url)
 		await guild_log.send(embed=embed)
 	
 
@@ -128,27 +129,28 @@ async def on_guild_remove(guild):
 			description=f"Our server number {len(client.guilds)+1}, called **{guild.name}**, gave up on declining languages... LOL!",
 			color=discord.Color.red()
 			)
-	embed.set_thumbnail(url=guild.icon_url)
+	embed.set_thumbnail(url=guild.icon.url)
 	#Logs it in the bot's support server's on_guild log
 	guild_log = client.get_channel(int(on_guild_log_id))
 	if guild_log:
 		await guild_log.send(embed=embed)
 
-@slash_command(name="ping", guild_ids=TEST_GUILDS)
+@client.slash_command(name="ping", guild_ids=TEST_GUILDS)
 async def ping(ctx):
 	""" Shows the bot's latency. """
 
-	await ctx.send(f"**Ping: __{round(client.latency * 1000)}__ ms**", ephemeral=True)
+	await ctx.respond(f"**Ping: __{round(client.latency * 1000)}__ ms**", ephemeral=True)
 
 
-@slash_command(name="info", guild_ids=TEST_GUILDS)
+@client.slash_command(name="info", guild_ids=TEST_GUILDS)
 @commands.cooldown(1, 10, type=commands.BucketType.guild)
 async def info(ctx):
 	"""  "Shows some information about the bot itself. """
 
+	current_time = await utils.get_time_now()
 	embed = discord.Embed(
 		title='Declinator Bot', description=" __**WHAT IS IT?:**__```Hello, the Declinator bot is an open source bot based on word declensions, verb conjugations and words in context.\nPS: declensions are all forms of a word in a language that contains a grammatical case system.```", 
-		colour=ctx.author.color, url="https://thelanguagesloth.com/", timestamp=ctx.created_at )
+		colour=ctx.author.color, url="https://thelanguagesloth.com/", timestamp=current_time)
 	embed.add_field(name="📚 __**Language declinators**__",
 								value="So far, there are `4` different languages to decline, `34` to conjugate and `4` to get context.",
 								inline=True)
@@ -163,24 +165,24 @@ async def info(ctx):
 	embed.set_footer(text=ctx.guild.name,
 								icon_url='https://cdn.discordapp.com/icons/459195345419763713/a_dff4456b872c84146a78be8422e33cc2.gif?size=1024')
 	embed.set_thumbnail(
-		url=client.user.avatar_url)
+		url=client.user.display_avatar)
 	embed.set_author(name='DNK#6725', url='https://discord.gg/languages',
 								icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720289112040669284/DNK_icon.png')
-	await ctx.send(embed=embed, ephemeral=True)
+	await ctx.respond(embed=embed, ephemeral=True)
 
-@slash_command(name="invite", guild_ids=[777886754761605140])
+@client.slash_command(name="invite", guild_ids=TEST_GUILDS)
 async def invite(ctx):
-	""" SSends the bot's invite. """
+	""" Sends the bot's invite. """
 
 	invite = 'https://discord.com/api/oauth2/authorize?client_id=753754955005034497&permissions=105226750976&scope=bot%20applications.commands'
 	await ctx.respond(f"Here's my invite:\n{invite}", ephemeral=True)
 
 
-@slash_command(name="servers", guild_ids=TEST_GUILDS)
+@client.slash_command(name="servers", guild_ids=TEST_GUILDS)
 async def servers(ctx):
 	""" Shows how many servers the bot is in. """
 
-	await ctx.send(f"**I'm currently declining in {len(client.guilds)} servers!**", ephemeral=True)
+	await ctx.respond(f"**I'm currently declining in {len(client.guilds)} servers!**", ephemeral=True)
 
 @client.command(ephemeral=True)
 @commands.is_owner()
@@ -256,55 +258,39 @@ async def reload_all(ctx):
 			pass
 	await ctx.send(f"**Cogs reloaded!**")
 
-@slash_command(name="patreon", guild_ids=TEST_GUILDS)
+@client.slash_command(name="patreon", guild_ids=TEST_GUILDS)
 async def patreon(ctx):
 	""" Support the creator on Patreon. """
 
 	link = 'https://www.patreon.com/dnk'
 
+	current_time = await utils.get_time_now()
 	embed = discord.Embed(
 	title="__Patreon__",
 	description=f"If you want to finacially support my work and motivate me to keep adding more features, put more effort and time into this and other bots, click [here]({link})",
-	timestamp=ctx.created_at,
-	url=link,
-	color=ctx.author.color
-	)
-	await ctx.send(embed=embed, ephemeral=True)
-
-@slash_command(name="support", guild_ids=TEST_GUILDS)
-async def support(ctx):
-	""" Support for the bot and its commands. """
-
-	link = 'https://discord.gg/languages'
-
-	embed = discord.Embed(
-	title="__Support__",
-	description=f"For any support; in other words, questions, suggestions or doubts concerning the bot and its commands, contact me **DNK#6725**, or join our support server by clicking [here]({link})",
-	timestamp=ctx.created_at,
-	url=link,
-	color=ctx.author.color
-	)
-	await ctx.send(embed=embed, ephemeral=True)
-
-
-@slash_command(name="supportar", guild_ids=TEST_GUILDS)
-async def _supportar(ctx):
-	""" Support for the bot and its commands. """
-
-	link = 'https://discord.gg/languages'
-
-	embed = discord.Embed(
-	title="__Support__",
-	description=f"For any support; in other words, questions, suggestions or doubts concerning the bot and its commands, contact me **DNK#6725**, or join our support server by clicking [here]({link})",
-	timestamp=ctx.created_at,
+	timestamp=current_time,
 	url=link,
 	color=ctx.author.color
 	)
 	await ctx.respond(embed=embed, ephemeral=True)
 
+@client.slash_command(name="support", guild_ids=TEST_GUILDS)
+async def support(ctx):
+	""" Support for the bot and its commands. """
 
+	link = 'https://discord.gg/languages'
 
-@slash_command(name="vote", guild_ids=TEST_GUILDS)
+	current_time = await utils.get_time_now()
+	embed = discord.Embed(
+	title="__Support__",
+	description=f"For any support; in other words, questions, suggestions or doubts concerning the bot and its commands, contact me **DNK#6725**, or join our support server by clicking [here]({link})",
+	timestamp=current_time,
+	url=link,
+	color=ctx.author.color
+	)
+	await ctx.respond(embed=embed, ephemeral=True)
+
+@client.slash_command(name="vote", guild_ids=TEST_GUILDS)
 @commands.cooldown(1, 15, commands.BucketType.user)
 async def vote(ctx):
 	""" Vote for me on TopGG """
@@ -318,13 +304,13 @@ async def vote(ctx):
 		url=link,
 		color=ctx.author.color
 	)
-	embed.set_thumbnail(url=client.user.avatar_url)
+	embed.set_thumbnail(url=client.user.display_avatar)
 	embed.set_image(url=widget)
 
 	view: discord.ui.View = discord.ui.View()
 	view.add_item(discord.ui.Button(style=discord.ButtonStyle.link, label="Previous", emoji='🆙', url=link))
 
-	await ctx.send(embed=embed, view=view, ephemeral=True)
+	await ctx.respond(embed=embed, view=view, ephemeral=True)
 
 
 for file_name in os.listdir('./cogs'):

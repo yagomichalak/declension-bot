@@ -1,10 +1,6 @@
 import discord
 from discord.ext import commands, tasks
-from discord_slash import SlashCommand, SlashContext
-from discord_slash.model import SlashCommandPermissionType, ButtonStyle
-from discord_slash.utils.manage_commands import create_option, create_choice, create_permission
-from discord_slash.utils.manage_components import create_button, create_actionrow, wait_for_component
-
+from discord import slash_command, option, Option
 import os
 from random import randint
 from re import match
@@ -13,7 +9,7 @@ from others.customerrors import NotInWhitelist
 from dotenv import load_dotenv
 load_dotenv()
 
-TEST_GUILDS = [459195345419763713]
+TEST_GUILDS = [459195345419763713, 777886754761605140]
 
 status = cycle([
 	"Russian declensions", "German declensions", "Finnish declensions", "Polish declensions",
@@ -38,11 +34,7 @@ status = cycle([
 	"Italian context", "German context"
 	])
 
-intents = discord.Intents.default()
-client = commands.Bot(command_prefix='dec!', intents=intents)
-slash = SlashCommand(client, sync_commands=True, sync_on_cog_reload=True)
-client.remove_command('help')
-token = os.getenv('TOKEN')
+client = commands.Bot(command_prefix='dec!', intents=discord.Intents.all(), help_command=None)
 on_guild_log_id = os.getenv('ON_GUILD_LOG_ID')
 
 @client.event
@@ -87,11 +79,11 @@ async def on_command_error(ctx, error):
 		print(error)
 
 @client.event
-async def on_slash_command_error(ctx, error) -> None:
+async def on_application_command_error(ctx, error) -> None:
 
 	if isinstance(error, commands.CommandOnCooldown):
 		secs = int(float(error.retry_after))
-		await ctx.send(content=f"You are on cooldown! Try again in {secs} seconds!", hidden=True)
+		await ctx.respond(content=f"You are on cooldown! Try again in {secs} seconds!", ephemeral=True)
 
 	else:
 		print(error)
@@ -102,7 +94,7 @@ async def on_message(message):
 	if message.author.bot:
 		return
 	if match(f"<@!?{client.user.id}>", message.content) is not None:
-		await message.channel.send(f"**{message.author.mention}, my prefix is `{client.command_prefix}`**")
+		await message.channel.send(f"**{message.author.mention}, my prefix is `/`**")
 
 	await client.process_commands(message)
 
@@ -142,21 +134,21 @@ async def on_guild_remove(guild):
 	if guild_log:
 		await guild_log.send(embed=embed)
 
-@slash.slash(name="ping", description="Shows the bot's latency."
-	#, guild_ids=TEST_GUILDS
-)
+@slash_command(name="ping", guild_ids=TEST_GUILDS)
 async def ping(ctx):
+	""" Shows the bot's latency. """
 
-	await ctx.send(f"**Ping: __{round(client.latency * 1000)}__ ms**", hidden=True)
+	await ctx.send(f"**Ping: __{round(client.latency * 1000)}__ ms**", ephemeral=True)
 
 
-@slash.slash(name="info", description="Shows some information about the bot itself."
-	#, guild_ids=TEST_GUILDS
-)
-# @commands.cooldown(1, 10, type=commands.BucketType.guild)
+@slash_command(name="info", guild_ids=TEST_GUILDS)
+@commands.cooldown(1, 10, type=commands.BucketType.guild)
 async def info(ctx):
+	"""  "Shows some information about the bot itself. """
 
-	embed = discord.Embed(title='Declinator Bot', description="__**WHAT IS IT?:**__```Hello, the Declinator bot is an open source bot based on word declensions, verb conjugations and words in context.\nPS: declensions are all forms of a word in a language that contains a grammatical case system.```", colour=ctx.author.color, url="http://193.70.127.179/", timestamp=ctx.created_at)
+	embed = discord.Embed(
+		title='Declinator Bot', description=" __**WHAT IS IT?:**__```Hello, the Declinator bot is an open source bot based on word declensions, verb conjugations and words in context.\nPS: declensions are all forms of a word in a language that contains a grammatical case system.```", 
+		colour=ctx.author.color, url="https://thelanguagesloth.com/", timestamp=ctx.created_at )
 	embed.add_field(name="📚 __**Language declinators**__",
 								value="So far, there are `4` different languages to decline, `34` to conjugate and `4` to get context.",
 								inline=True)
@@ -174,25 +166,23 @@ async def info(ctx):
 		url=client.user.avatar_url)
 	embed.set_author(name='DNK#6725', url='https://discord.gg/languages',
 								icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720289112040669284/DNK_icon.png')
-	await ctx.send(embed=embed, hidden=True)
+	await ctx.send(embed=embed, ephemeral=True)
 
-@slash.slash(name="invite", description="SSends the bot's invite."
-	#, guild_ids=TEST_GUILDS
-)
+@slash_command(name="invite", guild_ids=[777886754761605140])
 async def invite(ctx):
+	""" SSends the bot's invite. """
 
 	invite = 'https://discord.com/api/oauth2/authorize?client_id=753754955005034497&permissions=105226750976&scope=bot%20applications.commands'
-	await ctx.send(f"Here's my invite:\n{invite}", hidden=True)
+	await ctx.respond(f"Here's my invite:\n{invite}", ephemeral=True)
 
 
-@slash.slash(name="servers", description="Shows how many servers the bot is in."
-	#, guild_ids=TEST_GUILDS
-)
+@slash_command(name="servers", guild_ids=TEST_GUILDS)
 async def servers(ctx):
+	""" Shows how many servers the bot is in. """
 
-	await ctx.send(f"**I'm currently declining in {len(client.guilds)} servers!**", hidden=True)
+	await ctx.send(f"**I'm currently declining in {len(client.guilds)} servers!**", ephemeral=True)
 
-@client.command(hidden=True)
+@client.command(ephemeral=True)
 @commands.is_owner()
 async def load(ctx, extension: str):
 	'''
@@ -211,7 +201,7 @@ async def load(ctx, extension: str):
 		await ctx.send(f"**`{extension}` is not a cog!**")
 
 
-@client.command(hidden=True)
+@client.command(ephemeral=True)
 @commands.is_owner()
 async def unload(ctx, extension: str):
 	'''
@@ -230,7 +220,7 @@ async def unload(ctx, extension: str):
 		await ctx.send(f"**`{extension}` is not a cog!**")
 
 
-@client.command(hidden=True)
+@client.command(ephemeral=True)
 @commands.is_owner()
 async def reload(ctx, extension: str):
 	'''
@@ -251,7 +241,7 @@ async def reload(ctx, extension: str):
 		await ctx.send(f"**`{extension}` is not a cog!**")
 
 
-@client.command(hidden=True)
+@client.command(ephemeral=True)
 @commands.is_owner()
 async def reload_all(ctx):
 	'''
@@ -266,10 +256,9 @@ async def reload_all(ctx):
 			pass
 	await ctx.send(f"**Cogs reloaded!**")
 
-@slash.slash(name="patreon", description="Support the creator on Patreon."
-	#, guild_ids=TEST_GUILDS
-)
+@slash_command(name="patreon", guild_ids=TEST_GUILDS)
 async def patreon(ctx):
+	""" Support the creator on Patreon. """
 
 	link = 'https://www.patreon.com/dnk'
 
@@ -280,12 +269,11 @@ async def patreon(ctx):
 	url=link,
 	color=ctx.author.color
 	)
-	await ctx.send(embed=embed, hidden=True)
+	await ctx.send(embed=embed, ephemeral=True)
 
-@slash.slash(name="support", description="Support for the bot and its commands."
-	#, guild_ids=TEST_GUILDS
-)
+@slash_command(name="support", guild_ids=TEST_GUILDS)
 async def support(ctx):
+	""" Support for the bot and its commands. """
 
 	link = 'https://discord.gg/languages'
 
@@ -296,15 +284,30 @@ async def support(ctx):
 	url=link,
 	color=ctx.author.color
 	)
-	await ctx.send(embed=embed, hidden=True)
+	await ctx.send(embed=embed, ephemeral=True)
+
+
+@slash_command(name="supportar", guild_ids=TEST_GUILDS)
+async def _supportar(ctx):
+	""" Support for the bot and its commands. """
+
+	link = 'https://discord.gg/languages'
+
+	embed = discord.Embed(
+	title="__Support__",
+	description=f"For any support; in other words, questions, suggestions or doubts concerning the bot and its commands, contact me **DNK#6725**, or join our support server by clicking [here]({link})",
+	timestamp=ctx.created_at,
+	url=link,
+	color=ctx.author.color
+	)
+	await ctx.respond(embed=embed, ephemeral=True)
 
 
 
-@slash.slash(name="vote", description="Vote for me on TopGG"
-	#, guild_ids=TEST_GUILDS
-)
+@slash_command(name="vote", guild_ids=TEST_GUILDS)
 @commands.cooldown(1, 15, commands.BucketType.user)
 async def vote(ctx):
+	""" Vote for me on TopGG """
 
 	widget = f'https://top.gg/api/widget/753754955005034497.png?{randint(0, 2147483647)}topcolor=2C2F33&middlecolor=23272A&usernamecolor=FFFFF0&certifiedcolor=FFFFFF&datacolor=F0F0F0&labelcolor=99AAB5&highlightcolor=2C2F33'
 
@@ -318,21 +321,19 @@ async def vote(ctx):
 	embed.set_thumbnail(url=client.user.avatar_url)
 	embed.set_image(url=widget)
 
-	action_row = create_actionrow(
-		create_button(
-				style=ButtonStyle.URL, label="Previous", emoji='🆙', url=link
-		)
-	)
-	await ctx.send(embed=embed, components=[action_row], hidden=True)
+	view: discord.ui.View = discord.ui.View()
+	view.add_item(discord.ui.Button(style=discord.ButtonStyle.link, label="Previous", emoji='🆙', url=link))
+
+	await ctx.send(embed=embed, view=view, ephemeral=True)
 
 
 for file_name in os.listdir('./cogs'):
 	
-	if file_name not in [
+	if file_name in [
 		'Declension.py', 'Conjugation.py', 'Dictionaries.py', 'Tools.py', 'ReversoContext.py', 'Songs.py', 'FlashCard.py', 'Expressions.py']: continue
 	if str(file_name).endswith(".py"):
 		print(file_name)
 		client.load_extension(f"cogs.{file_name[:-3]}")
 		
 
-client.run(token)
+client.run(os.getenv('TOKEN'))

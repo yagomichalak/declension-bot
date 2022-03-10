@@ -194,7 +194,7 @@ class Declension(commands.Cog):
   async def _decline_finnish(self, ctx, word: str = None, word_type: str = None):
     """ Declines a Finnish word; showing a table with its full declension forms. """
 
-    await ctx.defer()
+    await ctx.defer(ephemeral=True)
 
     me = ctx.author
     if not word:

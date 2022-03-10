@@ -335,7 +335,7 @@ class Conjugation(commands.Cog):
 			)
 			embed.set_footer(
 				text=f"Requested by {interaction.author}",
-				icon_url=interaction.author.avatar_url)
+				icon_url=interaction.author.display_avatar)
 
 
 			# Conjugation table divs

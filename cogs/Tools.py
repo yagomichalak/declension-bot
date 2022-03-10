@@ -45,7 +45,7 @@ class Tools(commands.Cog):
 		embed = discord.Embed(title="__Translator__",
 			description=f"**Translated from `{translation.src}` to `{translation.dest}`**\n\n{translation.text}",
 			color=interaction.author.color, timestamp=interaction.created_at)
-		embed.set_author(name=interaction.author, icon_url=interaction.author.avatar_url)
+		embed.set_author(name=interaction.author, icon_url=interaction.author.display_avatar)
 		await interaction.send(embed=embed, hidden=True)
 
 	@cog_ext.cog_subcommand(
@@ -88,7 +88,7 @@ class Tools(commands.Cog):
 			embed.add_field(name=f"__Words__", value=words, inline=False)
 
 			# Sets the author of the search
-			embed.set_author(name=member, icon_url=member.avatar_url)
+			embed.set_author(name=member, icon_url=member.display_avatar)
 			await interaction.send(embed=embed, hidden=True)
 
 
@@ -132,7 +132,7 @@ class Tools(commands.Cog):
 			embed.add_field(name=f"__Words__", value=words, inline=False)
 
 			# Sets the author of the search
-			embed.set_author(name=member, icon_url=member.avatar_url)
+			embed.set_author(name=member, icon_url=member.display_avatar)
 			await interaction.send(embed=embed, hidden=True)
 
 

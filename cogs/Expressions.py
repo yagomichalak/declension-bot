@@ -1,3 +1,4 @@
+from ctypes import Union
 import discord
 from discord.ext import commands
 from discord import ApplicationContext, slash_command, Option, SlashCommandGroup
@@ -6,8 +7,8 @@ import json
 import aiohttp
 import os
 
-from typing import Any
-from others.menu import SwitchPages
+from typing import Any, Union
+from others.views import PaginatorView
 from others import utils
 
 TEST_GUILDS = [777886754761605140]
@@ -61,13 +62,14 @@ class Expressions(commands.Cog):
 				'search': search,
 				'change_embed': self.make_french_embed
 			}
-			pages = SwitchPages(data, **additional)
-			await pages.start(interaction)
+			view = PaginatorView(data, **additional)
+			embed = await view.make_embed(interaction.author)
+			await interaction.respond(embed=embed, view=view)
 
-	async def make_french_embed(self, req: str, interaction: ApplicationContext, search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
+	async def make_french_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
 		""" Makes an embed for the current search example.
 		:param req: The request URL link.
-		:param interaction: The Discord context of the command.
+		:param member: The member who triggered the command.
 		:param search: The search that was performed.
 		:param example: The current search example.
 		:param offset: The current page of the total entries.
@@ -79,7 +81,7 @@ class Expressions(commands.Cog):
 		embed = discord.Embed(
 			title="__French Expression__",
 			description=f"Showing results for: {example['mot']}",
-			color=interaction.author.color,
+			color=member.color,
 			timestamp=current_time,
 		)
 		
@@ -94,9 +96,9 @@ class Expressions(commands.Cog):
 			embed.add_field(name="__Context__", value=context, inline=False)
 
 		# Sets the author of the search
-		embed.set_author(name=interaction.author, icon_url=interaction.author.avatar_url)
+		embed.set_author(name=member, icon_url=member.display_avatar)
 		# Makes a footer with the a current page and total page counter
-		embed.set_footer(text=f"{offset}/{lentries}", icon_url=interaction.guild.icon_url)
+		embed.set_footer(text=f"{offset}/{lentries}", icon_url=member.guild.icon.url)
 
 		return embed
 

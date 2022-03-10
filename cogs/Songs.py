@@ -90,9 +90,9 @@ class Songs(commands.Cog):
 			embed.set_thumbnail(url=image)
 	
 		# Sets the author of the search
-		embed.set_author(name=interaction.author, icon_url=interaction.author.avatar_url)
+		embed.set_author(name=interaction.author, icon_url=interaction.author.display_avatar)
 		# Makes a footer with the a current page and total page counter
-		embed.set_footer(text=f"{offset}/{lentries}", icon_url=interaction.guild.icon_url)
+		embed.set_footer(text=f"{offset}/{lentries}", icon_url=interaction.guild.icon.url)
 
 		return embed
 

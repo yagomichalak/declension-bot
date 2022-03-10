@@ -10,7 +10,7 @@ import os
 
 from typing import Any, List, Dict, Union
 from others import utils
-from others.menu import SwitchPages
+from others.views import PaginatorView
 
 TEST_GUILDS = [777886754761605140]
 
@@ -37,6 +37,7 @@ class Dictionaries(commands.Cog):
 		""" Searches something in the Cambridge dictionary. """
 
 		member = interaction.author
+		await interaction.defer(ephemeral=True)
 
 		req = f"https://dictionary.cambridge.org/us/dictionary/english/{search.strip().replace(' ', '%20')}"
 		async with self.session.get(req, headers={'User-Agent': 'Mozilla/5.0'}) as response:
@@ -60,8 +61,9 @@ class Dictionaries(commands.Cog):
 				'search': search,
 				'change_embed': self.make_embed
 			}
-			pages = SwitchPages(examples, **additional)
-			await pages.start(interaction)
+			view = PaginatorView(examples, **additional)
+			embed = await view.make_embed(interaction.author)
+			await interaction.respond(embed=embed, view=view)
 
 	async def get_header(self, example) -> Dict[str, str]:
 		""" Gets a header for the example. 
@@ -135,10 +137,10 @@ class Dictionaries(commands.Cog):
 
 		return examples
 
-	async def make_embed(self, req: str, interaction: ApplicationContext, search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
+	async def make_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
 		""" Makes an embed for the current search example.
 		:param req: The request URL link.
-		:param interaction: The Discord context of the command.
+		:param member: The member who triggered the command.
 		:param search: The search that was performed.
 		:param example: The current search example.
 		:param offset: The current page of the total entries.
@@ -151,7 +153,7 @@ class Dictionaries(commands.Cog):
 		embed = discord.Embed(
 			title=f"Search for __{search}__",
 			description=f"**Title:** `{header['title']}`\n**Kind:** `{header['kind']}`\n**Phonetics:** `{header['phonetics']}`",
-			color=interaction.author.color,
+			color=member.color,
 			timestamp=current_time,
 			url=req
 			)
@@ -167,9 +169,9 @@ class Dictionaries(commands.Cog):
 			embed.add_field(name=f"Example {i+1}", value=f"```{example}```", inline=True)
 
 		# Sets the author of the search
-		embed.set_author(name=interaction.author, icon_url=interaction.author.avatar_url)
+		embed.set_author(name=member, icon_url=member.display_avatar)
 		# Makes a footer with the a current page and total page counter
-		embed.set_footer(text=f"{offset}/{lentries}", icon_url=interaction.guild.icon_url)
+		embed.set_footer(text=f"{offset}/{lentries}", icon_url=member.guild.icon.url)
 
 		return embed
 
@@ -203,14 +205,15 @@ class Dictionaries(commands.Cog):
 				'search': search,
 				'change_embed': self.make_french_embed
 			}
-			pages = SwitchPages(data, **additional)
-			await pages.start(interaction)
+			view = PaginatorView(data, **additional)
+			embed = await view.make_embed(interaction.author)
+			await interaction.respond(embed=embed, view=view)
 
 
-	async def make_french_embed(self, req: str, interaction: ApplicationContext, search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
+	async def make_french_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
 		""" Makes an embed for the current search example.
 		:param req: The request URL link.
-		:param interaction: The Discord context of the command.
+		:param member: The member who triggered the command.
 		:param search: The search that was performed.
 		:param example: The current search example.
 		:param offset: The current page of the total entries.
@@ -222,7 +225,7 @@ class Dictionaries(commands.Cog):
 		embed = discord.Embed(
 			title="__French Dictionary__",
 			description=f"Showing results for: {example['mot']}",
-			color=interaction.author.color,
+			color=member.color,
 			timestamp=current_time,
 			url=example['dicolinkUrl']
 		)
@@ -235,9 +238,9 @@ class Dictionaries(commands.Cog):
 		embed.add_field(name="__Definition__", value=example['definition'], inline=False)
 
 		# Sets the author of the search
-		embed.set_author(name=interaction.author, icon_url=interaction.author.avatar_url)
+		embed.set_author(name=member, icon_url=member.display_avatar)
 		# Makes a footer with the a current page and total page counter
-		embed.set_footer(text=f"{offset}/{lentries}", icon_url=interaction.guild.icon_url)
+		embed.set_footer(text=f"{offset}/{lentries}", icon_url=member.guild.icon.url)
 
 		return embed
 

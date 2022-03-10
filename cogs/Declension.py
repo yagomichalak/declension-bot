@@ -18,7 +18,7 @@ import copy
 from itertools import zip_longest
 from others import utils
 
-TEST_GUILDS = [459195345419763713, 777886754761605140]
+TEST_GUILDS = [777886754761605140]
 
 class Declension(commands.Cog):
   '''
@@ -30,20 +30,20 @@ class Declension(commands.Cog):
     self.session = aiohttp.ClientSession(loop=client.loop)
     self.pdf_token = getenv('PDF_API_TOKEN')
 
-  decline = SlashCommandGroup("decline", "Declines a word in a given language", guild_ids=TEST_GUILDS)
+  _decline = SlashCommandGroup("decline", "Declines a word in a given language", guild_ids=TEST_GUILDS)
 
   @commands.Cog.listener()
   async def on_ready(self):
     print('Declension cog is online!')
 
-  @decline.command(name='polish', choices=[
+  @_decline.command(name='polish', choices=[
       Option(str, name='word', description='The word to decline', required=True)
     ]
   )
   @commands.cooldown(1, 10, commands.BucketType.user)
   async def _decline_polish(self, ctx, word: str = None):
 
-    await ctx.response.defer()
+    await ctx.response.defer(ephemeral=True)
 
     me = ctx.author
     if not word:
@@ -104,7 +104,7 @@ class Declension(commands.Cog):
     os.remove(f"files/{me.id}.pdf")
     os.remove(f"files/{me.id}.png")    
   
-  @decline.command(name='russian', options=[
+  @_decline.command(name='russian', options=[
       Option(str, name='word', description='The word to decline', required=True)
     ]
   )
@@ -116,13 +116,13 @@ class Declension(commands.Cog):
     if not word:
       return await ctx.send("**Please, type a word**", ephemeral=True)
 
+    current_time = await utils.get_time_now()
     root = 'https://en.openrussian.org/ru'
 
     req = f"{root}/{word.lower()}"
     async with self.session.get(req) as response:
       if response.status != 200:
         return await ctx.respond("**Something went wrong with that search!**", ephemeral=True)
-
     
       # Gets the html and the table div
       html = BeautifulSoup(await response.read(), 'html.parser')
@@ -147,6 +147,9 @@ class Declension(commands.Cog):
         return await ctx.respond("**I can't decline this word, maybe this is a verb!**", ephemeral=True)
       # Gets all case names
       case_names = [case.text.strip() for case in div.select('tbody tr th .short') if case.text]
+      if not case_names:
+        return await ctx.respond("**No cases found for this word, maybe this is a verb!**", ephemeral=True)
+
       # Gets all values
       case_values = []
       for case in div.select('tbody tr'):
@@ -157,7 +160,6 @@ class Declension(commands.Cog):
 
         case_values.append(row_values)
 
-
       tds = [td for td in div.select('tbody tr')]
       # Makes the embedded message
       embed = discord.Embed(
@@ -165,7 +167,7 @@ class Declension(commands.Cog):
         description=f"**Word:** {word.lower()}",
         color=ctx.author.color,
         url=req,
-        timestamp=ctx.created_at
+        timestamp=current_time
       )
       # Loops through the word modes and get equivalent cases and values
       for i, word_mode in enumerate(word_modes):
@@ -180,9 +182,9 @@ class Declension(commands.Cog):
           inline=True)
       await ctx.respond(embed=embed, ephemeral=True)
 
-#   # @decline.command(aliases=['fi', 'fin', 'suomi'])
+#   # @_decline.command(aliases=['fi', 'fin', 'suomi'])
 #   # @commands.cooldown(1, 5, commands.BucketType.user)
-  @decline.command(name='finnish', options=[
+  @_decline.command(name='finnish', options=[
       Option(str, name='word', description='The word to decline', required=True),
       Option(str, name='word_type', description='The word type', required=True,
         choices=[
@@ -276,7 +278,7 @@ class Declension(commands.Cog):
         print(e)
         return await ctx.respond("**I couldn't do this request, make sure to type things correctly!**", ephemeral=True)
 
-#   # @decline.command(aliases=['deutsch', 'ger', 'de'])
+#   # @_decline.command(aliases=['deutsch', 'ger', 'de'])
 #   # @commands.cooldown(1, 5, commands.BucketType.user)
   # @cog_ext.cog_subcommand(
   #   base='decline', name='german',

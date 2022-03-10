@@ -262,6 +262,7 @@ async def reload_all(ctx):
 async def patreon(ctx):
 	""" Support the creator on Patreon. """
 
+	await ctx.defer(ephemeral=True)
 	link = 'https://www.patreon.com/dnk'
 
 	current_time = await utils.get_time_now()
@@ -278,6 +279,7 @@ async def patreon(ctx):
 async def support(ctx):
 	""" Support for the bot and its commands. """
 
+	await ctx.defer(ephemeral=True)
 	link = 'https://discord.gg/languages'
 
 	current_time = await utils.get_time_now()
@@ -295,6 +297,7 @@ async def support(ctx):
 async def vote(ctx):
 	""" Vote for me on TopGG """
 
+	await ctx.defer(ephemeral=True)
 	widget = f'https://top.gg/api/widget/753754955005034497.png?{randint(0, 2147483647)}topcolor=2C2F33&middlecolor=23272A&usernamecolor=FFFFF0&certifiedcolor=FFFFFF&datacolor=F0F0F0&labelcolor=99AAB5&highlightcolor=2C2F33'
 
 	link = 'https://top.gg/bot/753754955005034497/vote'
@@ -316,7 +319,7 @@ async def vote(ctx):
 for file_name in os.listdir('./cogs'):
 	
 	if file_name in [
-		'Declension.py', 'Conjugation.py', 'Dictionaries.py', 'Tools.py', 'ReversoContext.py', 'Songs.py', 'FlashCard.py', 'Expressions.py']: continue
+		'Conjugation.py', 'Dictionaries.py', 'Tools.py', 'ReversoContext.py', 'Songs.py', 'FlashCard.py', 'Expressions.py']: continue
 	if str(file_name).endswith(".py"):
 		print(file_name)
 		client.load_extension(f"cogs.{file_name[:-3]}")

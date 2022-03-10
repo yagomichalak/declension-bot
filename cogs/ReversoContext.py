@@ -13,7 +13,7 @@ from cogs.FlashCard import FlashCard
 import os
 from others import utils
 
-TEST_GUILDS = [459195345419763713]
+TEST_GUILDS = [777886754761605140]
 
 class ReversoContext(commands.Cog):
   """ A category regarding the acquisition of words in context for different languages. """

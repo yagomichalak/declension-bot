@@ -8,7 +8,7 @@ from others.menu import SwitchPages
 from bs4 import BeautifulSoup
 from typing import Any
 
-TEST_GUILDS = [459195345419763713]
+TEST_GUILDS = [777886754761605140]
 
 class Songs(commands.Cog):
 	""" A category for commands related to finding songs. """

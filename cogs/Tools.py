@@ -7,7 +7,7 @@ import os
 import aiohttp
 import json
 
-TEST_GUILDS = [459195345419763713]
+TEST_GUILDS = [777886754761605140]
 
 class Tools(commands.Cog):
 	""" A command for tool commands. """

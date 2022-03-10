@@ -23,7 +23,7 @@ class Dictionaries(commands.Cog):
 		self.client = client
 		self.session = aiohttp.ClientSession(loop=client.loop)
 
-	# _dictionary = SlashCommandGroup("dictionary", "Searches something in the Cambridge dictionary", guild_ids=TEST_GUILDS)
+	_dictionary = SlashCommandGroup("dictionary", "Searches something in the Cambridge dictionary", guild_ids=TEST_GUILDS)
 
 	@commands.Cog.listener()
 	async def on_ready(self) -> None:
@@ -31,15 +31,10 @@ class Dictionaries(commands.Cog):
 
 		print("Dictionary cog is online")
 
-
-	@_dictionary.command(
-		name="english",
-		description="Searches something in the Cambridge dictionary", options=[
-			Option(str, name="search", description="What you want to search there.", required=True)
-		]
-	)
+	@_dictionary.command(name="english")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def english(self, interaction, search: str) -> None:
+	async def _dictionary_english(self, interaction, search: Option(str, name="search", description="What you want to search there.", required=True)) -> None:
+		""" Searches something in the Cambridge dictionary. """
 
 		member = interaction.author
 
@@ -179,14 +174,10 @@ class Dictionaries(commands.Cog):
 		return embed
 
 
-	@_dictionary.command(
-		name="french",
-		description="Searches a word in a French dictionary.", options=[
-			Option(str, name="search", description="The word you are looking for.", required=True)
-		]
-	)
+	@_dictionary.command(name="french")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def french(self, interaction, search: str) -> None:
+	async def _dictionary_french(self, interaction, search: Option(str, name="search", description="The word you are looking for.", required=True)) -> None:
+		""" Searches a word in a French dictionary. """
 
 		member = interaction.author
 

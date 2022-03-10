@@ -1,14 +1,16 @@
 import discord
 from discord.ext import commands
-from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option, create_permission
+from discord import ApplicationContext, slash_command, Option, SlashCommandGroup
+
 import json
 import aiohttp
 import os
-from others.menu import SwitchPages
-from typing import Any
 
-TEST_GUILDS = [459195345419763713]
+from typing import Any
+from others.menu import SwitchPages
+from others import utils
+
+TEST_GUILDS = [777886754761605140]
 
 class Expressions(commands.Cog):
 	""" A category for commands related to language 
@@ -20,21 +22,20 @@ class Expressions(commands.Cog):
 		self.client = client
 		self.session = aiohttp.ClientSession(loop=client.loop)
 
+	_expression = SlashCommandGroup("expression", "Searches for an expression in a given language.", guild_ids=TEST_GUILDS)
+
 	@commands.Cog.listener()
 	async def on_ready(self) -> None:
 		""" Tells when the cog is ready to use. """
 
 		print('Expression cog is online!')
 
-	@cog_ext.cog_subcommand(
-		base="expression", name="french",
-		description="Searches for an expression with the given word.", options=[
-		create_option(name="search", description="The word you wanna look for.", option_type=3, required=True),
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_expression.command(name="french")
 	@commands.cooldown(1, 15, commands.BucketType.user)
-	async def french(self, interaction, search: str) -> None:
+	async def _expression_french(self, interaction, search: Option(str, name="search", description="The word you wanna look for.", required=True)) -> None:
+		""" Searches for an expression with the given word. """
 
+		await interaction.defer(ephemeral=True)
 		member = interaction.author
 
 		url = f"https://dicolink.p.rapidapi.com/mot/{search.strip().replace(' ', '%20')}/expressions"
@@ -50,7 +51,7 @@ class Expressions(commands.Cog):
 
 			if response.status != 200:
 				self.french.reset_cooldown(interaction)
-				return await interaction.send(f"**Nothing found, {member.mention}!**")
+				return await interaction.respond(f"**Nothing found, {member.mention}!**", ephemeral=True)
 
 			data = json.loads(await response.read())
 
@@ -63,7 +64,7 @@ class Expressions(commands.Cog):
 			pages = SwitchPages(data, **additional)
 			await pages.start(interaction)
 
-	async def make_french_embed(self, req: str, interaction: commands.Context, search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
+	async def make_french_embed(self, req: str, interaction: ApplicationContext, search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
 		""" Makes an embed for the current search example.
 		:param req: The request URL link.
 		:param interaction: The Discord context of the command.
@@ -72,14 +73,15 @@ class Expressions(commands.Cog):
 		:param offset: The current page of the total entries.
 		:param lentries: The length of entries for the given search. """
 
+		current_time = await utils.get_time_now()
+
 		# Makes the embed's header
 		embed = discord.Embed(
 			title="__French Expression__",
 			description=f"Showing results for: {example['mot']}",
 			color=interaction.author.color,
-			timestamp=interaction.message.created_at,
+			timestamp=current_time,
 		)
-
 		
 		# General info
 		embed.add_field(name="__Information__", inline=False,

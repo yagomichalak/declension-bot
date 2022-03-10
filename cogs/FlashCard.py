@@ -13,7 +13,7 @@ from datetime import datetime
 from others.customerrors import NotInWhitelist
 from others import utils
 
-TEST_GUILDS = [459195345419763713]
+TEST_GUILDS = [777886754761605140]
 
 class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
   """ A category for creating, editing, deleting and showing 'FlashCard'. """

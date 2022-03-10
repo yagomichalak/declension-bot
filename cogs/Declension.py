@@ -182,8 +182,6 @@ class Declension(commands.Cog):
           inline=True)
       await ctx.respond(embed=embed, ephemeral=True)
 
-#   # @_decline.command(aliases=['fi', 'fin', 'suomi'])
-#   # @commands.cooldown(1, 5, commands.BucketType.user)
   @_decline.command(name='finnish', options=[
       Option(str, name='word', description='The word to decline', required=True),
       Option(str, name='word_type', description='The word type', required=True,
@@ -278,8 +276,6 @@ class Declension(commands.Cog):
         print(e)
         return await ctx.respond("**I couldn't do this request, make sure to type things correctly!**", ephemeral=True)
 
-#   # @_decline.command(aliases=['deutsch', 'ger', 'de'])
-#   # @commands.cooldown(1, 5, commands.BucketType.user)
   # @cog_ext.cog_subcommand(
   #   base='decline', name='german',
   #   description="Declines a German word; showing a table with its full declension forms", options=[

@@ -1,6 +1,4 @@
 import discord
-from discord_slash.utils.manage_components import create_button, create_actionrow, wait_for_component
-from discord_slash.model import ButtonStyle
 
 class SwitchPages:
 	""" A class for switching dictionary page. """
@@ -17,21 +15,18 @@ class SwitchPages:
 	async def start(self, interaction) -> None:
 
 
-		action_row = create_actionrow(
-			create_button(
-					style=ButtonStyle.blurple, label="Previous", custom_id="left_button", emoji='⬅️'
-			),
-			create_button(
-					style=ButtonStyle.blurple, label="Next", custom_id="right_button", emoji='➡️'
-			)
-		)
+		view = discord.ui.View
 
+		view.add_item(discord.ui.Button(
+			style=discord.ButtonStyle.blurple, label="Previous", custom_id="left_button", emoji='⬅️'))
+		view.add_item(discord.ui.Button(
+			style=discord.ButtonStyle.blurple, label="Next", custom_id="right_button", emoji='➡️'))
 		
 		button_ctx = None
 
 		index = 0
 
-		await interaction.defer(hidden=True)
+		# await interaction.defer(ephemeral=True)
 
 		while True:
 
@@ -41,13 +36,13 @@ class SwitchPages:
 			)
 
 			if button_ctx is None:
-				await interaction.send(embed=embed, components=[action_row], hidden=True)
+				await interaction.respond(embed=embed, view=view, ephemeral=True)
 				# Wait for someone to click on them
-				button_ctx = await wait_for_component(self.client, components=action_row)
+				button_ctx = await wait_for_component(self.client, view=view)
 			else:
-				await button_ctx.edit_origin(embed=embed, components=[action_row])
+				await button_ctx.edit_origin(embed=embed, view=view)
 				# Wait for someone to click on them
-				button_ctx = await wait_for_component(self.client, components=action_row, messages=button_ctx.origin_message_id)
+				button_ctx = await wait_for_component(self.client, view=view, messages=button_ctx.origin_message_id)
 
 			await button_ctx.defer(edit_origin=True)
 			

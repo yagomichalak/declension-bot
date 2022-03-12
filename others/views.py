@@ -14,6 +14,8 @@ class PaginatorView(discord.ui.View):
         self.client = kwargs.get('client')
         self.req = kwargs.get('req')
         self.search = kwargs.get('search')
+        self.result = kwargs.get('result', None)
+        self.title = kwargs.get('title', None)
         self.change_embed = kwargs.get('change_embed')
         self.index: int = 0
         self.increment = increment
@@ -49,6 +51,6 @@ class PaginatorView(discord.ui.View):
         embed = await self.change_embed(
             req=self.req, member=member, search=self.search, 
             example=self.data[self.index], offset=self.index+1, 
-            lentries=len(self.data), entries=self.data
+            lentries=len(self.data), entries=self.data, title=self.title, result=self.result
         )
         return embed

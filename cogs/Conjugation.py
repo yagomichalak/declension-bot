@@ -73,6 +73,8 @@ class Conjugation(commands.Cog):
 				'client': self.client,
 				'req': root,
 				'search': verb,
+				'result': verb,
+				'title': 'Dutch',
 				'change_embed': self.make_specific_embed
 			}
 			view = PaginatorView(table_rows, increment=12, **additional)
@@ -281,20 +283,6 @@ class Conjugation(commands.Cog):
 		#-> Word translation
 		tr_div = subhead.select_one('.word-transl-options')
 		found_verb = tr_div.select_one('.targetted-word-wrap').get_text().strip()
-		
-		embed = discord.Embed(
-			title=f"{emoji_title} Conjugation",
-			description=f"""**Searched:** {verb}
-			**Found:** {found_verb}""",
-			color=interaction.author.color,
-			timestamp=current_time,
-			url=root
-		)
-		embed.set_footer(
-			text=f"Requested by {interaction.author}",
-			icon_url=interaction.author.display_avatar)
-
-
 		# Conjugation table divs
 		verb_div = html.select_one('.word-wrap')
 		word_wraps = verb_div.select_one('.result-block-api')
@@ -306,7 +294,6 @@ class Conjugation(commands.Cog):
 		conjugations = {}
 		for i, current_row in enumerate(word_wrap_rows):
 			conjugations[f'page{i}'] = []
-			print('aaa')
 			# Loops through the rows
 			for table in current_row.select('.wrap-three-col'):
 				# Specifies the verbal tense if there is one
@@ -347,16 +334,18 @@ class Conjugation(commands.Cog):
 			'client': self.client,
 			'req': root,
 			'search': verb,
+			'result': found_verb,
+			'title': language_title,
 			'change_embed': self.make_embed
 		}
-		view = PaginatorView(conjugations, increment=12, **additional)
+		view = PaginatorView(list(conjugations.items()), **additional)
 		embed = await view.make_embed(interaction.author)
 		await interaction.respond(embed=embed, view=view)
 		return embed
 
 
 	async def make_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, 
-		offset: int, lentries: int, entries: Dict[str, Any]) -> discord.Embed:
+		offset: int, lentries: int, entries: Dict[str, Any], title: str = None, result: str = None) -> discord.Embed:
 		""" Makes an embed for the current search example.
 		:param req: The request URL link.
 		:param member: The member who triggered the command.
@@ -365,32 +354,32 @@ class Conjugation(commands.Cog):
 		:param offset: The current page of the total entries.
 		:param lentries: The length of entries for the given search. """
 
-		print('what')
 		current_time = await utils.get_time_now()
 
 		# Makes the embed's header
 		embed = discord.Embed(
-			title=f"{search} Conjugation ({offset+1}/{lentries})",
+			title=f"{title} Conjugation ({offset}/{lentries})",
+			description=f"""**Searched:** {search}
+			**Found:** {result}""",
 			color=member.color,
 			timestamp=current_time,
 			url=req
 		)
-		print('example.', example)
-		for page, values in example.items():
-			embed.add_field(
-				name=values[1],
-				value=values[0],
-				inline=values[2]
-			)
 
-		print('what then')
+		entries = dict(entries)
+
+		the_key = list(entries.keys())[offset-1]
+		for a_dict in entries[the_key]:
+			for page, values in dict(a_dict).items():
+				embed.add_field(
+					name=values[1],
+					value=values[0],
+					inline=values[2])
 
 		# Sets the author of the search
 		embed.set_author(name=member, icon_url=member.display_avatar)
-		print('what dsada')
 		# Makes a footer with the a current page and total page counter
-		embed.set_footer(text=f"{offset}/{lentries}", icon_url=member.guild.icon.url)
-		print('gggg')
+		embed.set_footer(text=f"Requested by {member}", icon_url=member.display_avatar)
 
 		return embed
 

@@ -267,7 +267,6 @@ class Conjugation(commands.Cog):
 		:param verb: The verb that is being conjugated. """
 
 		current_time = await utils.get_time_now()
-		print('tyo aqui')
 		async with self.session.get(root) as response:
 			if response.status != 200:
 				return await interaction.respond("**Something went wrong with that search!**", ephemeral=True)
@@ -343,7 +342,6 @@ class Conjugation(commands.Cog):
 		await interaction.respond(embed=embed, view=view)
 		return embed
 
-
 	async def make_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, 
 		offset: int, lentries: int, entries: Dict[str, Any], title: str = None, result: str = None) -> discord.Embed:
 		""" Makes an embed for the current search example.
@@ -375,6 +373,43 @@ class Conjugation(commands.Cog):
 					name=values[1],
 					value=values[0],
 					inline=values[2])
+
+		# Sets the author of the search
+		embed.set_author(name=member, icon_url=member.display_avatar)
+		# Makes a footer with the a current page and total page counter
+		embed.set_footer(text=f"Requested by {member}", icon_url=member.display_avatar)
+
+		return embed
+
+	async def make_cooljugator_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, 
+		offset: int, lentries: int, entries: Dict[str, Any], title: str = None, result: str = None) -> discord.Embed:
+		""" Makes an embed for the current search example.
+		:param req: The request URL link.
+		:param member: The member who triggered the command.
+		:param search: The search that was performed.
+		:param example: The current search example.
+		:param offset: The current page of the total entries.
+		:param lentries: The length of entries for the given search. """
+
+		current_time = await utils.get_time_now()
+
+		# Makes the embed's header
+		embed = discord.Embed(
+			title=f"{title} Conjugation ({offset}/{lentries})",
+			color=member.color,
+			timestamp=current_time,
+			url=req
+		)
+
+		current = entries[offset-1]
+		# Adds a field for each conjugation table of the current tense
+		for conj in current:
+			temp_text = '\n'.join(conj[1])
+			embed.add_field(
+				name=conj[0],
+				value=f"```apache\n{temp_text}```\n",
+				inline=True
+			)
 
 		# Sets the author of the search
 		embed.set_author(name=member, icon_url=member.display_avatar)
@@ -429,13 +464,7 @@ class Conjugation(commands.Cog):
 
 			conjugations = []
 			conj_divs = container.select('.conjugation-table.collapsable')
-			# Makes initial embed
-			embed = discord.Embed(
-				description=title,
-				color=interaction.author.color,
-				timestamp=current_time,
-				url=root
-			)
+
 			# Gets all useful information
 			for i, conj_div in enumerate(conj_divs):
 				# Gets all pronouns
@@ -484,56 +513,20 @@ class Conjugation(commands.Cog):
 				pairs = list(zip_longest(tenses, rows, fillvalue='_'))
 				conjugations.append(pairs)
 
-		action_row = create_actionrow(
-			create_button(
-				style=ButtonStyle.blurple, label="Previous", custom_id="left_button", emoji='⬅️'
-			),
-			create_button(
-				style=ButtonStyle.blurple, label="Next", custom_id="right_button", emoji='➡️'
-			)
-		)
 
-		# Initial index and btn ctx
-		index = 0
-		button_ctx = None
-
-		await interaction.defer(ephemeral=True)
-
-		# Main loop for switching pages
-		while True:
-			current = conjugations[index]
-			embed.clear_fields()
-			embed.title = f"{language_title} conjugation ({index+1}/{len(conjugations)})"
-			# Adds a field for each conjugation table of the current tense
-			for conj in current:
-				temp_text = '\n'.join(conj[1])
-				embed.add_field(
-					name=conj[0],
-					value=f"```apache\n{temp_text}```\n",
-					inline=True
-				)
-			
-
-			# Sends a message with buttons
-			if button_ctx is None:
-				await interaction.respond(embed=embed, components=[action_row], ephemeral=True)
-				# Wait for someone to click on them
-				button_ctx = await wait_for_component(self.client, components=action_row)
-			else:
-				await button_ctx.edit_origin(embed=embed, components=[action_row])
-				# Wait for someone to click on them
-				button_ctx = await wait_for_component(self.client, components=action_row, messages=button_ctx.origin_message_id)
-
-			await button_ctx.defer(edit_origin=True)
-
-			if button_ctx.custom_id == 'right_button':
-				if index < len(conjugations) - 1:
-					index += 1
-				continue
-			elif button_ctx.custom_id == 'left_button':
-				if index > 0:
-					index -= 1
-				continue
+		# Additional data:
+		additional = {
+			'client': self.client,
+			'req': root,
+			'search': verb,
+			'result': verb,
+			'title': language_title,
+			'change_embed': self.make_cooljugator_embed
+		}
+		view = PaginatorView(conjugations, **additional)
+		embed = await view.make_embed(interaction.author)
+		await interaction.respond(embed=embed, view=view)
+		return embed
 
 	@_slavic.command(name="polish")
 	@commands.cooldown(1, 10, commands.BucketType.user)

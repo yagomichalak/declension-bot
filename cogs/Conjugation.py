@@ -1,14 +1,17 @@
-import re
 import discord
-from discord import message
 from discord.ext import commands
-from discord import slash_command, SlashCommandGroup, Option, ApplicationContext
+from discord import SlashCommandGroup, Option, ApplicationContext
 
 import asyncio
 import aiohttp
 import json
 from bs4 import BeautifulSoup
 from itertools import zip_longest, cycle
+
+from others.views import PaginatorView
+from others import utils
+from typing import Union, Any, Dict
+from pprint import pprint
 
 TEST_GUILDS = [777886754761605140]
 
@@ -23,20 +26,20 @@ class Conjugation(commands.Cog):
 
 
 	_conjugate = SlashCommandGroup("conjugate", "Conjugates a verb in a given language.", guild_ids=TEST_GUILDS)
-	_germanic = _conjugate.create_subgroup("germanic", "Conjugates a verb in a germanic language.")
-	_slavic = _conjugate.create_subgroup("slavic", "Conjugates a verb in a slavic language.")
-	_asian = _conjugate.create_subgroup("asian", "Conjugates a verb in an asian language.")
-	_romance = _conjugate.create_subgroup("romance", "Conjugates a verb in a romance language.")
-	_turkic = _conjugate.create_subgroup("turkic", "Conjugates a verb in a turkic language.")
-	_uralic = _conjugate.create_subgroup("uralic", "Conjugates a verb in a uralic language.")
-	_other = _conjugate.create_subgroup("other", "Conjugates a verb in another language.")
+	_germanic = _conjugate.create_subgroup("germanic", "Conjugates a verb in a germanic language.", guild_ids=TEST_GUILDS)
+	_slavic = _conjugate.create_subgroup("slavic", "Conjugates a verb in a slavic language.", guild_ids=TEST_GUILDS)
+	_asian = _conjugate.create_subgroup("asian", "Conjugates a verb in an asian language.", guild_ids=TEST_GUILDS)
+	_romance = _conjugate.create_subgroup("romance", "Conjugates a verb in a romance language.", guild_ids=TEST_GUILDS)
+	_turkic = _conjugate.create_subgroup("turkic", "Conjugates a verb in a turkic language.", guild_ids=TEST_GUILDS)
+	_uralic = _conjugate.create_subgroup("uralic", "Conjugates a verb in a uralic language.", guild_ids=TEST_GUILDS)
+	_other = _conjugate.create_subgroup("other", "Conjugates a verb in another language.", guild_ids=TEST_GUILDS)
 
 	@commands.Cog.listener()
 	async def on_ready(self):
 		print('Conjugations cog is online!')
 
-	# @_germanic.command(name="dutch")
-	# @commands.cooldown(1, 10, commands.BucketType.user)
+	@_germanic.command(name="dutch", guild_ids=TEST_GUILDS)
+	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def _conjugate_germanic_dutch(self, interaction, 
 		verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Dutch. """
@@ -65,68 +68,59 @@ class Conjugation(commands.Cog):
 			if lenro == 0:
 				return await interaction.respond("**Nothing found for the informed value!**", ephemeral=True)
 
-			# Creates the initial embed
-			embed = discord.Embed(
-				color=interaction.author.color,
-				timestamp=interaction.created_at,
-				url=root
+			# Additional data:
+			additional = {
+				'client': self.client,
+				'req': root,
+				'search': verb,
+				'change_embed': self.make_specific_embed
+			}
+			view = PaginatorView(table_rows, increment=12, **additional)
+			embed = await view.make_embed(interaction.author)
+			await interaction.respond(embed=embed, view=view)
+
+	async def make_specific_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, 
+		offset: int, lentries: int, entries: Dict[str, Any]) -> discord.Embed:
+		""" Makes an embed for the current search example.
+		:param req: The request URL link.
+		:param member: The member who triggered the command.
+		:param search: The search that was performed.
+		:param example: The current search example.
+		:param offset: The current page of the total entries.
+		:param lentries: The length of entries for the given search. """
+
+		current_time = await utils.get_time_now()
+
+		# Makes the embed's header
+		embed = discord.Embed(
+			title=f"Search for __{search}__",
+			description=f"Dutch Conjugation",
+			color=member.color,
+			timestamp=current_time,
+			url=req
 			)
-			
-			index = 0
 
-			action_row = create_actionrow(
-					create_button(
-							style=ButtonStyle.blurple, label="Previous", custom_id="left_button", emoji='⬅️'
-					),
-					create_button(
-							style=ButtonStyle.blurple, label="Next", custom_id="right_button", emoji='➡️'
-					)
+		embed.clear_fields()
+		for i in range(0, 12, 2):
+			if offset + i + 1< lentries:
+				tense_name = entries[offset+i].get_text().strip()
+				conjugation = entries[offset+i+1].get_text().strip().split('  ')
+				conjugation = '\n'.join(conjugation)
+			else:
+				break
+
+			# Adds a field for each table
+			embed.add_field(
+				name=tense_name,
+				value=f"```apache\n{conjugation}```",
+				inline=True
 			)
 
-			button_ctx = None
-
-			# Loops through each row of the conjugation tables
-			while True:
-				embed.title = f"Dutch Conjugation ({round(lenro/(lenro-index))}/{round(lenro/11)})"
-				embed.clear_fields()
-				for i in range(0, 12, 2):
-					if index + i + 1< len(table_rows):
-						tense_name = table_rows[index+i].get_text().strip()
-						conjugation = table_rows[index+i+1].get_text().strip().split('  ')
-						conjugation = '\n'.join(conjugation)
-					else:
-						break
-
-					# Adds a field for each table
-					embed.add_field(
-						name=tense_name,
-						value=f"```apache\n{conjugation}```",
-						inline=True
-					)
-
-
-				if button_ctx is None:
-					await interaction.respond(embed=embed, components=[action_row], ephemeral=True)
-					# Wait for someone to click on them
-					button_ctx = await wait_for_component(self.client, components=action_row)
-				else:
-					await button_ctx.edit_origin(embed=embed, components=[action_row])
-					# Wait for someone to click on them
-					button_ctx = await wait_for_component(self.client, components=action_row, messages=button_ctx.origin_message_id)
-
-				await button_ctx.defer(edit_origin=True)
-					
-				# Send what you received
-
-				if button_ctx.custom_id == 'right_button':
-
-					if index + 11 <= len(table_rows) / 2:
-							index += 12
-					continue
-				elif button_ctx.custom_id == 'left_button':
-					if index > 0:
-							index -= 12
-					continue
+		# Sets the author of the search
+		embed.set_author(name=member, icon_url=member.display_avatar)
+		# Makes a footer with the a current page and total page counter
+		embed.set_footer(text=f"{offset}/{lentries}", icon_url=member.guild.icon.url)
+		return embed
 	
 	# Conjugators based on Reverso's website
 	@_asian.command(name="japanese")
@@ -270,8 +264,8 @@ class Conjugation(commands.Cog):
 		:param root: The language endpoint from which to do the HTTP request.
 		:param verb: The verb that is being conjugated. """
 
-		await interaction.defer(hidden=True)
-
+		current_time = await utils.get_time_now()
+		print('tyo aqui')
 		async with self.session.get(root) as response:
 			if response.status != 200:
 				return await interaction.respond("**Something went wrong with that search!**", ephemeral=True)
@@ -283,123 +277,122 @@ class Conjugation(commands.Cog):
 			if not subhead:
 				return await interaction.respond("**Invalid request!**", ephemeral=True)
 
-			# Translation options
-			#-> Word translation
-			tr_div = subhead.select_one('.word-transl-options')
-			found_verb = tr_div.select_one('.targetted-word-wrap').get_text().strip()
+		# Translation options
+		#-> Word translation
+		tr_div = subhead.select_one('.word-transl-options')
+		found_verb = tr_div.select_one('.targetted-word-wrap').get_text().strip()
+		
+		embed = discord.Embed(
+			title=f"{emoji_title} Conjugation",
+			description=f"""**Searched:** {verb}
+			**Found:** {found_verb}""",
+			color=interaction.author.color,
+			timestamp=current_time,
+			url=root
+		)
+		embed.set_footer(
+			text=f"Requested by {interaction.author}",
+			icon_url=interaction.author.display_avatar)
 
-			embed = discord.Embed(
-				title=f"{emoji_title} Conjugation",
-				description=f"""**Searched:** {verb}
-				**Found:** {found_verb}""",
-				color=interaction.author.color,
-				timestamp=interaction.created_at,
-				url=root
-			)
-			embed.set_footer(
-				text=f"Requested by {interaction.author}",
-				icon_url=interaction.author.display_avatar)
 
+		# Conjugation table divs
+		verb_div = html.select_one('.word-wrap')
+		word_wraps = verb_div.select_one('.result-block-api')
+		word_wrap_rows = word_wraps.select('.word-wrap-row')
 
-			# Conjugation table divs
-			verb_div = html.select_one('.word-wrap')
-			word_wraps = verb_div.select_one('.result-block-api')
-			word_wrap_rows = word_wraps.select('.word-wrap-row')
+		
+		verbal_mode = ''
 
-			
-			verbal_mode = ''
+		conjugations = {}
+		for i, current_row in enumerate(word_wrap_rows):
+			conjugations[f'page{i}'] = []
+			print('aaa')
+			# Loops through the rows
+			for table in current_row.select('.wrap-three-col'):
+				# Specifies the verbal tense if there is one
+				if temp_tense_name := table.select_one('p'):
+					tense_name = temp_tense_name.get_text()
 
-			conjugations = {}
-			for i, current_row in enumerate(word_wrap_rows):
-				conjugations[f'page{i}'] = []
-
-				# Loops through the rows
-				for table in current_row.select('.wrap-three-col'):
-					# Specifies the verbal tense if there is one
-					if temp_tense_name := table.select_one('p'):
-						tense_name = temp_tense_name.get_text()
-
-						# Changes verbal mode if it's time to change it
-						if (temp_title := table.select_one('.word-wrap-title')):
-							title = temp_title.get_text().strip()
-							verbal_mode = title
-						elif (temp_title := current_row.select_one('.word-wrap-title')):
-							title = temp_title.get_text().strip()
-							verbal_mode = title
-
+					# Changes verbal mode if it's time to change it
+					if (temp_title := table.select_one('.word-wrap-title')):
+						title = temp_title.get_text().strip()
+						verbal_mode = title
+					elif (temp_title := current_row.select_one('.word-wrap-title')):
+						title = temp_title.get_text().strip()
 						verbal_mode = title
 
-					# If there isn't, it shows '...' instead
+					verbal_mode = title
+
+				# If there isn't, it shows '...' instead
+				else:
+					tense_name = '...'
+					verbal_mode = table.select_one('.word-wrap-title').get_text().strip()
+
+				temp_text = ""
+
+				# Loops through each tense row
+				for li in table.select('.wrap-verbs-listing li'):
+					# Makes a temp text with all conjugations
+					if space:
+						temp_text += f"{li.get_text(separator=' ')}\n"
 					else:
-						tense_name = '...'
-						verbal_mode = table.select_one('.word-wrap-title').get_text().strip()
+						temp_text += f"{li.get_text()}\n"
+				# Specifies the verbal mode
+				temp_text += f"""\nmode="{verbal_mode}"\n"""
+				temp_text = f"```apache\n{temp_text}```"
+				conjugations[f'page{i}'].append({'tense': [temp_text, tense_name, aligned]})
 
-					temp_text = ""
+		# Additional data:
+		additional = {
+			'client': self.client,
+			'req': root,
+			'search': verb,
+			'change_embed': self.make_embed
+		}
+		view = PaginatorView(conjugations, increment=12, **additional)
+		embed = await view.make_embed(interaction.author)
+		await interaction.respond(embed=embed, view=view)
+		return embed
 
-					# Loops through each tense row
-					for li in table.select('.wrap-verbs-listing li'):
-						# Makes a temp text with all conjugations
-						if space:
-							temp_text += f"{li.get_text(separator=' ')}\n"
-						else:
-							temp_text += f"{li.get_text()}\n"
-					# Specifies the verbal mode
-					temp_text += f"""\nmode="{verbal_mode}"\n"""
-					temp_text = f"```apache\n{temp_text}```"
-					conjugations[f'page{i}'].append({'tense': [temp_text, tense_name, aligned]})
 
-			index = 0
-			# Creates the Pagination buttons
+	async def make_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, 
+		offset: int, lentries: int, entries: Dict[str, Any]) -> discord.Embed:
+		""" Makes an embed for the current search example.
+		:param req: The request URL link.
+		:param member: The member who triggered the command.
+		:param search: The search that was performed.
+		:param example: The current search example.
+		:param offset: The current page of the total entries.
+		:param lentries: The length of entries for the given search. """
 
-			action_row = create_actionrow(
-					create_button(
-							style=ButtonStyle.blurple, label="Previous", custom_id="left_button", emoji='⬅️'
-					),
-					create_button(
-							style=ButtonStyle.blurple, label="Next", custom_id="right_button", emoji='➡️'
-					)
+		print('what')
+		current_time = await utils.get_time_now()
+
+		# Makes the embed's header
+		embed = discord.Embed(
+			title=f"{search} Conjugation ({offset+1}/{lentries})",
+			color=member.color,
+			timestamp=current_time,
+			url=req
+		)
+		print('example.', example)
+		for page, values in example.items():
+			embed.add_field(
+				name=values[1],
+				value=values[0],
+				inline=values[2]
 			)
 
-			# Sends initial embed and adds the arrow emojis to it 
+		print('what then')
 
-			button_ctx = None
+		# Sets the author of the search
+		embed.set_author(name=member, icon_url=member.display_avatar)
+		print('what dsada')
+		# Makes a footer with the a current page and total page counter
+		embed.set_footer(text=f"{offset}/{lentries}", icon_url=member.guild.icon.url)
+		print('gggg')
 
-			while True:
-				embed.title = f"{language_title} Conjugation ({index+1}/{len(conjugations)})"
-				embed.clear_fields()
-				the_key = list(conjugations.keys())[index]
-				for a_dict in conjugations[the_key]:
-					for page, values in dict(a_dict).items():
-						embed.add_field(
-							name=values[1],
-							value=values[0],
-							inline=values[2]
-						)
-
-				# Sends to Discord the current state of the embed
-
-
-				if button_ctx is None:
-					await interaction.respond(embed=embed, components=[action_row], ephemeral=True)
-					# Wait for someone to click on them
-					button_ctx = await wait_for_component(self.client, components=action_row)
-				else:
-					await button_ctx.edit_origin(embed=embed, components=[action_row])
-					# Wait for someone to click on them
-					button_ctx = await wait_for_component(self.client, components=action_row, messages=button_ctx.origin_message_id)
-
-				await button_ctx.defer(edit_origin=True)
-				
-				# Send what you received
-
-				if button_ctx.custom_id == 'left_button':
-					if index > 0:
-						index -= 1
-					continue
-				elif button_ctx.custom_id == 'right_button':
-					if index < len(conjugations) - 1:
-						index += 1
-					continue
+		return embed
 
 	@_germanic.command(name="german")
 	@commands.cooldown(1, 10, commands.BucketType.user)
@@ -430,6 +423,8 @@ class Conjugation(commands.Cog):
 		:param space: If you want a space separator into a specific section. 
 		:param aligned: If the fields will be inline."""
 
+		current_time = await utils.get_time_now()
+
 		# Performs the GET request to the endpoint
 		async with self.session.get(root) as response:
 			if response.status != 200:
@@ -449,7 +444,7 @@ class Conjugation(commands.Cog):
 			embed = discord.Embed(
 				description=title,
 				color=interaction.author.color,
-				timestamp=interaction.created_at,
+				timestamp=current_time,
 				url=root
 			)
 			# Gets all useful information
@@ -513,7 +508,7 @@ class Conjugation(commands.Cog):
 		index = 0
 		button_ctx = None
 
-		await interaction.defer(hidden=True)
+		await interaction.defer(ephemeral=True)
 
 		# Main loop for switching pages
 		while True:

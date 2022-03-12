@@ -319,7 +319,7 @@ async def vote(ctx):
 for file_name in os.listdir('./cogs'):
 	
 	if file_name in [
-		'Conjugation.py', 'ReversoContext.py', 'FlashCard.py']: continue
+		'ReversoContext.py', 'FlashCard.py']: continue
 	if str(file_name).endswith(".py"):
 		print(file_name)
 		client.load_extension(f"cogs.{file_name[:-3]}")

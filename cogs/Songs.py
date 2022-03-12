@@ -8,7 +8,7 @@ from bs4 import BeautifulSoup
 
 from others import utils
 from others.views import PaginatorView
-from typing import Any, Union
+from typing import Any, Union, Dict
 
 TEST_GUILDS = [777886754761605140]
 
@@ -58,7 +58,8 @@ class Songs(commands.Cog):
 			embed = await view.make_embed(interaction.author)
 			await interaction.respond(embed=embed, view=view)
 
-	async def make_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
+	async def make_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, 
+		offset: int, lentries: int, entries: Dict[str, Any]) -> discord.Embed:
 		""" Makes an embed for the current search example.
 		:param req: The request URL link.
 		:param member: The member who triggered the command.

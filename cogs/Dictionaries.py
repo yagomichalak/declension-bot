@@ -137,7 +137,8 @@ class Dictionaries(commands.Cog):
 
 		return examples
 
-	async def make_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
+	async def make_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, 
+		offset: int, lentries: int, entries: Dict[str, Any]) -> discord.Embed:
 		""" Makes an embed for the current search example.
 		:param req: The request URL link.
 		:param member: The member who triggered the command.
@@ -156,7 +157,7 @@ class Dictionaries(commands.Cog):
 			color=member.color,
 			timestamp=current_time,
 			url=req
-			)
+		)
 
 		# Adds a content field with the search value description
 		content = await self.get_content(example)

@@ -6,7 +6,7 @@ from typing import Optional, Any, Union
 class PaginatorView(discord.ui.View):
     """ View for the embed paginator. """
 
-    def __init__(self, data, timeout: Optional[float] = 180, **kwargs: Any) -> None:
+    def __init__(self, data, timeout: Optional[float] = 180, increment: int = 1, **kwargs: Any) -> None:
         """ Class init method. """
 
         super().__init__(timeout=timeout)
@@ -16,6 +16,7 @@ class PaginatorView(discord.ui.View):
         self.search = kwargs.get('search')
         self.change_embed = kwargs.get('change_embed')
         self.index: int = 0
+        self.increment = increment
 
     @discord.ui.button(label="Left", emoji="⬅", style=discord.ButtonStyle.blurple, custom_id="left_button_id")
     async def button_left(self, button: discord.ui.button, interaction: discord.Interaction) -> None:
@@ -24,7 +25,7 @@ class PaginatorView(discord.ui.View):
         await interaction.response.defer()
         
         if self.index > 0:
-            self.index -= 1
+            self.index -= self.increment
 
         embed = await self.make_embed(interaction.user)
         await interaction.followup.edit_message(interaction.message.id, embed=embed)
@@ -35,8 +36,8 @@ class PaginatorView(discord.ui.View):
 
         await interaction.response.defer()
 
-        if self.index < len(self.data) - 1:
-            self.index += 1
+        if self.index < len(self.data) - self.increment:
+            self.index += self.increment
 
         embed = await self.make_embed(interaction.user)
         await interaction.followup.edit_message(interaction.message.id, embed=embed)
@@ -47,6 +48,7 @@ class PaginatorView(discord.ui.View):
 
         embed = await self.change_embed(
             req=self.req, member=member, search=self.search, 
-            example=self.data[self.index], offset=self.index+1, lentries=len(self.data)
+            example=self.data[self.index], offset=self.index+1, 
+            lentries=len(self.data), entries=self.data
         )
         return embed

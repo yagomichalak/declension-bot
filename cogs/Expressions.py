@@ -7,7 +7,7 @@ import json
 import aiohttp
 import os
 
-from typing import Any, Union
+from typing import Any, Union, Dict
 from others.views import PaginatorView
 from others import utils
 
@@ -66,7 +66,8 @@ class Expressions(commands.Cog):
 			embed = await view.make_embed(interaction.author)
 			await interaction.respond(embed=embed, view=view)
 
-	async def make_french_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
+	async def make_french_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, 
+		offset: int, lentries: int, entries: Dict[str, Any]) -> discord.Embed:
 		""" Makes an embed for the current search example.
 		:param req: The request URL link.
 		:param member: The member who triggered the command.

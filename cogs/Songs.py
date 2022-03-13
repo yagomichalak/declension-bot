@@ -20,7 +20,7 @@ class Songs(commands.Cog):
 		self.session = aiohttp.ClientSession(loop=client.loop)
 		self.lyrics = "https://www.lyrics.com"
 
-	_find_by = SlashCommandGroup('find_by', "Searches a song", guild_ids=TEST_GUILDS)
+	_find_by = SlashCommandGroup('find_by', "Searches a song")#, guild_ids=TEST_GUILDS)
 
 	@commands.Cog.listener()
 	async def on_ready(self) -> None:

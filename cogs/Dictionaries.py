@@ -23,7 +23,7 @@ class Dictionaries(commands.Cog):
 		self.client = client
 		self.session = aiohttp.ClientSession(loop=client.loop)
 
-	_dictionary = SlashCommandGroup("dictionary", "Searches something in the Cambridge dictionary", guild_ids=TEST_GUILDS)
+	_dictionary = SlashCommandGroup("dictionary", "Searches something in the Cambridge dictionary")#, guild_ids=TEST_GUILDS)
 
 	@commands.Cog.listener()
 	async def on_ready(self) -> None:

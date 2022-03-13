@@ -24,20 +24,20 @@ class Conjugation(commands.Cog):
 		self.client = client
 		self.session = aiohttp.ClientSession(loop=client.loop)
 
-	_conjugate = SlashCommandGroup("conjugate", "Conjugates a verb in a given language.", guild_ids=TEST_GUILDS)
-	_germanic = _conjugate.create_subgroup("germanic", "Conjugates a verb in a germanic language.", guild_ids=TEST_GUILDS)
-	_slavic = _conjugate.create_subgroup("slavic", "Conjugates a verb in a slavic language.", guild_ids=TEST_GUILDS)
-	_asian = _conjugate.create_subgroup("asian", "Conjugates a verb in an asian language.", guild_ids=TEST_GUILDS)
-	_romance = _conjugate.create_subgroup("romance", "Conjugates a verb in a romance language.", guild_ids=TEST_GUILDS)
-	_turkic = _conjugate.create_subgroup("turkic", "Conjugates a verb in a turkic language.", guild_ids=TEST_GUILDS)
-	_uralic = _conjugate.create_subgroup("uralic", "Conjugates a verb in a uralic language.", guild_ids=TEST_GUILDS)
-	_other = _conjugate.create_subgroup("other", "Conjugates a verb in another language.", guild_ids=TEST_GUILDS)
+	_conjugate = SlashCommandGroup("conjugate", "Conjugates a verb in a given language.")#, guild_ids=TEST_GUILDS)
+	_germanic = _conjugate.create_subgroup("germanic", "Conjugates a verb in a germanic language.")#, guild_ids=TEST_GUILDS)
+	_slavic = _conjugate.create_subgroup("slavic", "Conjugates a verb in a slavic language.")#, guild_ids=TEST_GUILDS)
+	_asian = _conjugate.create_subgroup("asian", "Conjugates a verb in an asian language.")#, guild_ids=TEST_GUILDS)
+	_romance = _conjugate.create_subgroup("romance", "Conjugates a verb in a romance language.")#, guild_ids=TEST_GUILDS)
+	_turkic = _conjugate.create_subgroup("turkic", "Conjugates a verb in a turkic language.")#, guild_ids=TEST_GUILDS)
+	_uralic = _conjugate.create_subgroup("uralic", "Conjugates a verb in a uralic language.")#, guild_ids=TEST_GUILDS)
+	_other = _conjugate.create_subgroup("other", "Conjugates a verb in another language.")#, guild_ids=TEST_GUILDS)
 
 	@commands.Cog.listener()
 	async def on_ready(self):
 		print('Conjugations cog is online!')
 
-	@_germanic.command(name="dutch", guild_ids=TEST_GUILDS)
+	@_germanic.command(name="dutch")#, guild_ids=TEST_GUILDS)
 	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def _conjugate_germanic_dutch(self, interaction, 
 		verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:

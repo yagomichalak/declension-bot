@@ -31,7 +31,7 @@ class Declension(commands.Cog):
     self.session = aiohttp.ClientSession(loop=client.loop)
     self.pdf_token = getenv('PDF_API_TOKEN')
 
-  _decline = SlashCommandGroup("decline", "Declines a word in a given language", guild_ids=TEST_GUILDS)
+  _decline = SlashCommandGroup("decline", "Declines a word in a given language")#, guild_ids=TEST_GUILDS)
 
   @commands.Cog.listener()
   async def on_ready(self):
@@ -367,11 +367,6 @@ class Declension(commands.Cog):
       color=member.color,
       timestamp=current_time,
       url=req)
-
-    # print("Template: ")
-    # pprint(template)
-    # print()
-    # pprint(entries)
 
     for gender_dict in template[1]:
       for key, values in gender_dict.items():

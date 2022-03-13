@@ -22,7 +22,7 @@ class ReversoContext(commands.Cog):
     self.client = client
     self.session = aiohttp.ClientSession(loop=client.loop)
 
-  _context = SlashCommandGroup('context', 'Searches and shows a word in context in a given language', guild_ids=TEST_GUILDS)
+  _context = SlashCommandGroup('context', 'Searches and shows a word in context in a given language')#, guild_ids=TEST_GUILDS)
 
   @commands.Cog.listener()
   async def on_ready(self) -> None:

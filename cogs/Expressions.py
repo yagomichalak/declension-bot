@@ -23,7 +23,7 @@ class Expressions(commands.Cog):
 		self.client = client
 		self.session = aiohttp.ClientSession(loop=client.loop)
 
-	_expression = SlashCommandGroup("expression", "Searches for an expression in a given language.", guild_ids=TEST_GUILDS)
+	_expression = SlashCommandGroup("expression", "Searches for an expression in a given language.")#, guild_ids=TEST_GUILDS)
 
 	@commands.Cog.listener()
 	async def on_ready(self) -> None:

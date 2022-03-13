@@ -135,14 +135,14 @@ async def on_guild_remove(guild):
 	if guild_log:
 		await guild_log.send(embed=embed)
 
-@client.slash_command(name="ping", guild_ids=TEST_GUILDS)
+@client.slash_command(name="ping")#, guild_ids=TEST_GUILDS)
 async def ping(ctx):
 	""" Shows the bot's latency. """
 
 	await ctx.respond(f"**Ping: __{round(client.latency * 1000)}__ ms**", ephemeral=True)
 
 
-@client.slash_command(name="info", guild_ids=TEST_GUILDS)
+@client.slash_command(name="info")#, guild_ids=TEST_GUILDS)
 @commands.cooldown(1, 10, type=commands.BucketType.guild)
 async def info(ctx):
 	"""  "Shows some information about the bot itself. """
@@ -170,7 +170,7 @@ async def info(ctx):
 								icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720289112040669284/DNK_icon.png')
 	await ctx.respond(embed=embed, ephemeral=True)
 
-@client.slash_command(name="invite", guild_ids=TEST_GUILDS)
+@client.slash_command(name="invite")#, guild_ids=TEST_GUILDS)
 async def invite(ctx):
 	""" Sends the bot's invite. """
 
@@ -178,7 +178,7 @@ async def invite(ctx):
 	await ctx.respond(f"Here's my invite:\n{invite}", ephemeral=True)
 
 
-@client.slash_command(name="servers", guild_ids=TEST_GUILDS)
+@client.slash_command(name="servers")#, guild_ids=TEST_GUILDS)
 async def servers(ctx):
 	""" Shows how many servers the bot is in. """
 
@@ -258,7 +258,7 @@ async def reload_all(ctx):
 			pass
 	await ctx.send(f"**Cogs reloaded!**")
 
-@client.slash_command(name="patreon", guild_ids=TEST_GUILDS)
+@client.slash_command(name="patreon")#, guild_ids=TEST_GUILDS)
 async def patreon(ctx):
 	""" Support the creator on Patreon. """
 
@@ -275,7 +275,7 @@ async def patreon(ctx):
 	)
 	await ctx.respond(embed=embed, ephemeral=True)
 
-@client.slash_command(name="support", guild_ids=TEST_GUILDS)
+@client.slash_command(name="support")#, guild_ids=TEST_GUILDS)
 async def support(ctx):
 	""" Support for the bot and its commands. """
 
@@ -292,7 +292,7 @@ async def support(ctx):
 	)
 	await ctx.respond(embed=embed, ephemeral=True)
 
-@client.slash_command(name="vote", guild_ids=TEST_GUILDS)
+@client.slash_command(name="vote")#, guild_ids=TEST_GUILDS)
 @commands.cooldown(1, 15, commands.BucketType.user)
 async def vote(ctx):
 	""" Vote for me on TopGG """

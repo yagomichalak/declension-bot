@@ -5,18 +5,19 @@ from discord import slash_command, option, Option, OptionChoice, SlashCommandGro
 import aiohttp
 import os
 from os import getenv
-import asyncio
-import json
 from datetime import datetime
-import re
-import requests
+
 import convertapi
 from PIL import Image
 import time
 from bs4 import BeautifulSoup
 import copy
 from itertools import zip_longest
+
 from others import utils
+from others.views import PaginatorView
+from typing import Dict, Union, Any
+from pprint import pprint
 
 TEST_GUILDS = [777886754761605140]
 
@@ -274,30 +275,19 @@ class Declension(commands.Cog):
         print(e)
         return await ctx.respond("**I couldn't do this request, make sure to type things correctly!**", ephemeral=True)
 
-  # @cog_ext.cog_subcommand(
-  #   base='decline', name='german',
-  #   description="Declines a German word; showing a table with its full declension forms", options=[
-  #     create_option(name='word', description='The word to decline', option_type=3, required=True)
-  #   ]
-  # )
-  # @commands.cooldown(1, 10, commands.BucketType.user)
-  async def german(self, ctx, word: str):
+  @_decline.command(name='german')
+  @commands.cooldown(1, 10, commands.BucketType.user)
+  async def german(self, interaction, 
+    word: Option(str, name='word', description='The word to decline', required=True)) -> None:
+    """ Declines a German word. """
 
-    await ctx.defer(ephemeral=True)
+    await interaction.defer(ephemeral=True)
 
     root = 'https://www.verbformen.com/declension/nouns'
     req = f"{root}/?w={word}"
     async with self.session.get(req) as response:
       if response.status != 200:
-        return await ctx.respond("**Something went wrong with that search!**", ephemeral=True)
-
-      embed_table = discord.Embed(
-        title=f"__Declension Table__",
-        description=f'''
-        **Word:** {word.title()}''',
-        color=ctx.author.color,
-        url = req
-      )
+        return await interaction.respond("**Something went wrong with that search!**", ephemeral=True)
 
       html = BeautifulSoup(await response.read(), 'html.parser')
       div = html.select_one('.rAbschnitt')
@@ -306,6 +296,7 @@ class Declension(commands.Cog):
         try:
           decl_type_list.append(decl_type.select_one('header h2').text)
         except:
+          decl_type_list.append('...')
           pass     
       master_dict = {}
       for dt in decl_type_list:
@@ -316,14 +307,20 @@ class Declension(commands.Cog):
         # Gets the declination tables
         for i, table in enumerate(section.select('.rAufZu')):
           # Gets the gender blocks of each table
+          # print(table.select('.vTbl'))
           for case in table.select('.vTbl'):
-            category_name = case.select_one('h3').text
-            index = 0
+            category_name = '...'
+
+            if cat := case.select_one('h2'):
+              category_name = cat.text
+            elif cat := case.select_one('h3'):
+              category_name = cat.text
+              
             case_dict = {}
             decl_name = list(master_dict)[i-1]
             #category_name = f"{category_name}
             case_dict[category_name] = []
-          
+        
             # Gets each row of each table block
             for row in case.select('tr'):
               case_name = row.select_one('th').text
@@ -331,73 +328,68 @@ class Declension(commands.Cog):
               case_decl.insert(0, case_name)
               case_dict[category_name].append(case_decl.copy())
               case_decl.clear()
-              
-            for key, values in case_dict.items():
-              row_text = ''
-              for row_list in values:
-                row_text += f"{' '.join(row_list)}\n"
-
-              embed_table.add_field(
-                name=key,
-                value=f"```apache\n{row_text}```",
-                inline=True
-              )
             master_dict[decl_name].append(copy.deepcopy(case_dict))
 
 
     master_list = [[k, v] for k, v in master_dict.items()]
-    user_index = 0
-    lenmaster = len(master_list)
+    # Additional data:
+    additional = {
+      'req': req,
+      'search': word,
+      'change_embed': self.make_german_embed
+    }
+    view = PaginatorView(master_list, **additional)
+    embed = await view.make_embed(interaction.author)
+    await interaction.respond(embed=embed, view=view)
 
-    button_ctx = None
-
-    paginator_view: discord.ui.View = discord.ui.View(timeout=None)
-    paginator_view.add_item(discord.ui.Button(style=discord.ButtonStyle.blurple, label="Left", custom_id="left_btn"))
-    paginator_view.add_item(discord.ui.Button(style=discord.ButtonStyle.blurple, label="Right", custom_id="right_btn"))
+  async def make_german_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, 
+    offset: int, lentries: int, entries: Dict[str, Any], title: str = None, result: str = None) -> discord.Embed:
+    """ Makes an embed for the current search example.
+    :param req: The request URL link.
+    :param member: The member who triggered the command.
+    :param search: The search that was performed.
+    :param example: The current search example.
+    :param offset: The current page of the total entries.
+    :param lentries: The length of entries for the given search.
+    :param entries: The entries of the search.
+    :param title: The title of the search.
+    :param result: The result of the search. """
 
     current_time = await utils.get_time_now()
-    while True:
-      template = master_list[user_index]
-      title = template[0]
-      new_embed = discord.Embed(
-        title=f"Declension table - ({title})",
-        description=f"**Word:** {word}",
-        color=ctx.author.color,
-        timestamp=current_time,
-        url=req)
 
-      for gender_dict in template[1]:
-        for key, values in gender_dict.items():
-          text = ''
-          for row in values:
-            text += f"{' '.join(row)}\n"
-          
-          new_embed.add_field(
-            name=key,
-            value=f"```apache\n{text}```",
-            inline=True
-          )
-      if button_ctx is None:
-        await ctx.respond(embed=new_embed, view=paginator_view, ephemeral=True)
-        # Wait for someone to click on them
-        button_ctx = await wait_for_component(self.client, view=paginator_view)
-      else:
-        await button_ctx.edit_origin(embed=new_embed, view=paginator_view)
-        # Wait for someone to click on them
-        button_ctx = await wait_for_component(self.client, view=paginator_view, messages=button_ctx.origin_message_id)
+    # print(example)
 
-      await button_ctx.defer(edit_origin=True)
+    template = example
+    title = template[0]
+    embed = discord.Embed(
+      title=f"Declension table - ({title})",
+      description=f"**Word:** {search}",
+      color=member.color,
+      timestamp=current_time,
+      url=req)
 
-      if button_ctx.custom_id == 'left_btn':
-        if user_index > 0:
-          user_index -= 1
-        continue
+    # print("Template: ")
+    # pprint(template)
+    # print()
+    # pprint(entries)
 
-      elif button_ctx.custom_id == 'right_btn':
-        if user_index < lenmaster -1:
-          user_index += 1
-        continue
+    for gender_dict in template[1]:
+      for key, values in gender_dict.items():
+        text = ''
+        for row in values:
+          text += f"{' '.join(row)}\n"
+        
+        embed.add_field(
+          name=key,
+          value=f"```apache\n{text}```",
+          inline=True
+        )
+    # Sets the author of the search
+    embed.set_author(name=member, icon_url=member.display_avatar)
+    # Makes a footer with the a current page and total page counter
+    embed.set_footer(text=f"{offset}/{lentries}", icon_url=member.guild.icon.url)
 
+    return embed
         
       
 

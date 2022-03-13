@@ -24,7 +24,6 @@ class Conjugation(commands.Cog):
 		self.client = client
 		self.session = aiohttp.ClientSession(loop=client.loop)
 
-
 	_conjugate = SlashCommandGroup("conjugate", "Conjugates a verb in a given language.", guild_ids=TEST_GUILDS)
 	_germanic = _conjugate.create_subgroup("germanic", "Conjugates a verb in a germanic language.", guild_ids=TEST_GUILDS)
 	_slavic = _conjugate.create_subgroup("slavic", "Conjugates a verb in a slavic language.", guild_ids=TEST_GUILDS)

@@ -90,22 +90,19 @@ class FlashCard(commands.Cog):
 
     await confirm_view.wait()
 
-    if confirm_view.value is None:
-      await utils.disable_buttons(confirm_view)
-      await msg.edit(view=confirm_view)
-
-    elif confirm_view.value:
+    if confirm_view.value:
       the_time = await utils.get_timestamp()
       inserted = await self._insert_card(interaction.guild_id, member.id, front, back, the_time)
-      if not inserted:
-        return await confirm_view.interaction.respond.send_message("**Values confirmed! But this server is not whitelisted...**", ephemeral=True)
+      if inserted:
+        await confirm_view.interaction.followup.send("**Values confirmed! Added them into the DB...**", ephemeral=True)
+      else:
+        await confirm_view.interaction.followup.send("**Values confirmed! But this server is not whitelisted...**", ephemeral=True)
+    elif confirm_view.value is False:
+      await confirm_view.interaction.followup.send("**Values not confirmed! Not adding them into the DB...**", ephemeral=True)
 
-      return await confirm_view.interaction.respond.send_message("**Values confirmed! Added them into the DB...**", ephemeral=True)
+    await utils.disable_buttons(confirm_view)
+    await msg.edit(view=confirm_view)
 
-    else:
-      return await confirm_view.interaction.respond.send_message("**Values not confirmed! Not adding them into the DB...**", ephemeral=True)
-
-	
   @_card.command(name="delete")
   @commands.cooldown(1, 5, commands.BucketType.user)
   async def _card_delete(self, interaction, 
@@ -201,7 +198,7 @@ class FlashCard(commands.Cog):
       creation = datetime.fromtimestamp(card[4])
       
       embed.add_field(
-        name=f"`@ Card - {offset}` | `ID: {card[0]}`",
+        name=f"`@ Card - {offset+i}` | `ID: {card[0]}`",
         value=f"```apache\nFront: {card[2]}\nBack: {card[3]}\n\n```**Created on: {creation}**",
         inline=False
       )

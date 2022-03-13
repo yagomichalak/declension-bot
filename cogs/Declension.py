@@ -40,14 +40,14 @@ class Declension(commands.Cog):
       Option(str, name='word', description='The word to decline', required=True)
     ]
   )
-  @commands.cooldown(1, 10, commands.BucketType.user)
+  @commands.cooldown(1, 15, commands.BucketType.user)
   async def _decline_polish(self, ctx, word: str = None):
 
-    await ctx.response.defer(ephemeral=True)
+    await ctx.defer(ephemeral=True)
 
     me = ctx.author
     if not word:
-      return await ctx.response.send(f"**Please {me.mention}, inform a word to search!**", ephemeral=True)
+      return await ctx.respond(f"**Please {me.mention}, inform a word to search!**", ephemeral=True)
 
     root = 'http://online-polish-dictionary.com/word'
 
@@ -73,8 +73,6 @@ class Declension(commands.Cog):
       except Exception:
         return await ctx.response("**I couldn't find anything for that word!**", ephemeral=True)
     
-
-  
     convertapi.api_secret = self.pdf_token
     convertapi.convert('png', {
     'File': f'./files/{me.id}.pdf',  
@@ -102,7 +100,7 @@ class Declension(commands.Cog):
     file = discord.File(f'files/{me.id}.png', filename='polish.png')
     await ctx.respond(file=file)
     os.remove(f"files/{me.id}.pdf")
-    os.remove(f"files/{me.id}.png")    
+    os.remove(f"files/{me.id}.png")
   
   @_decline.command(name='russian', options=[
       Option(str, name='word', description='The word to decline', required=True)

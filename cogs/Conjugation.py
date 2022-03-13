@@ -81,14 +81,16 @@ class Conjugation(commands.Cog):
 			await interaction.respond(embed=embed, view=view)
 
 	async def make_specific_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, 
-		offset: int, lentries: int, entries: Dict[str, Any]) -> discord.Embed:
+		offset: int, lentries: int, entries: Dict[str, Any], title: str = None, result: str = None) -> discord.Embed:
 		""" Makes an embed for the current search example.
 		:param req: The request URL link.
 		:param member: The member who triggered the command.
 		:param search: The search that was performed.
 		:param example: The current search example.
 		:param offset: The current page of the total entries.
-		:param lentries: The length of entries for the given search. """
+		:param lentries: The length of entries for the given search.
+		:param title: The title of the search.
+		:param result: The result of the search. """
 
 		current_time = await utils.get_time_now()
 

@@ -424,7 +424,7 @@ class Conjugation(commands.Cog):
 	@_germanic.command(name="german")
 	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def german(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
-		""" "Conjugates a verb in German" """
+		""" Conjugates a verb in German """
 
 		await interaction.defer(ephemeral=True)
 		
@@ -532,7 +532,7 @@ class Conjugation(commands.Cog):
 	@_slavic.command(name="polish")
 	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def polish(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
-		""" "Conjugates a verb in Polish" """
+		""" Conjugates a verb in Polish """
 
 		await interaction.defer(ephemeral=True)
 		
@@ -549,7 +549,7 @@ class Conjugation(commands.Cog):
 	@_slavic.command(name="russian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def russian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
-		""" "Conjugates a verb in Russian" """
+		""" Conjugates a verb in Russian """
 
 		await interaction.defer(ephemeral=True)
 
@@ -569,7 +569,7 @@ class Conjugation(commands.Cog):
 	@_romance.command(name="esperanto")
 	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def esperanto(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
-		""" "Conjugates a verb in Esperanto" """
+		""" Conjugates a verb in Esperanto """
 
 		await interaction.defer(ephemeral=True)
 
@@ -588,7 +588,7 @@ class Conjugation(commands.Cog):
 	@_uralic.command(name="estonian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def estonian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
-		""" "Conjugates a verb in Estonian" """
+		""" Conjugates a verb in Estonian """
 
 		await interaction.defer(ephemeral=True)
 
@@ -607,7 +607,7 @@ class Conjugation(commands.Cog):
 	@_turkic.command(name="turkish")
 	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def turkish(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
-		""" "Conjugates a verb in Turkish" """
+		""" Conjugates a verb in Turkish """
 
 		await interaction.defer(ephemeral=True)
 		
@@ -663,7 +663,7 @@ class Conjugation(commands.Cog):
 	@_germanic.command(name="norwegian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def norwegian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
-		""" "Conjugates a verb in Norwegian" """
+		""" Conjugates a verb in Norwegian """
 
 		await interaction.defer(ephemeral=True)
 		
@@ -700,7 +700,7 @@ class Conjugation(commands.Cog):
 	@_germanic.command(name="icelandic")
 	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def icelandic(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
-		""" "Conjugates a verb in Icelandic" """
+		""" Conjugates a verb in Icelandic """
 
 		await interaction.defer(ephemeral=True)
 		
@@ -718,7 +718,7 @@ class Conjugation(commands.Cog):
 	@_uralic.command(name="finnish")
 	@commands.cooldown(1, 10, commands.BucketType.user)
 	async def finnish(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
-		""" "Conjugates a verb in Finnish" """
+		""" Conjugates a verb in Finnish """
 
 		await interaction.defer(ephemeral=True)
 		

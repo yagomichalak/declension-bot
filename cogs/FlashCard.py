@@ -1,30 +1,31 @@
 import discord
 from discord.ext import commands
-from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option, create_permission
-from discord_slash.utils.manage_components import create_button, create_actionrow, wait_for_component
-from discord_slash.model import ButtonStyle, SlashCommandPermissionType
-import aiomysql
+from discord import Option, SlashCommandGroup, ApplicationContext, slash_command, CommandPermission
+
 import os
-from typing import Any, List, Dict, Union, Callable
 import asyncio
-from functools import reduce
+import aiomysql
 from datetime import datetime
-from others.customerrors import NotInWhitelist
+from typing import Any, List, Dict, Union, Callable
+
 from others import utils
+from others.views import PaginatorView
+from others.prompt.menu import ConfirmButton
+from others.customerrors import NotInWhitelist
 
 TEST_GUILDS = [777886754761605140]
 
-class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
-  """ A category for creating, editing, deleting and showing 'FlashCard'. """
+class FlashCard(commands.Cog):
+  """ A category for creating, editing, deleting and showing 'FlashCards'. """
 
   def __init__(self, client) -> None:
-    """Class initializing method."""
+    """ Class initializing method."""
 
     self.client = client
     self.loop = asyncio.get_event_loop()
     self.whitelist: List[int] = []
 
+  _card = SlashCommandGroup('card', 'FlashCard manager', guild_ids=TEST_GUILDS)
   
   @commands.Cog.listener()
   async def on_ready(self) -> None:
@@ -45,34 +46,32 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     return commands.check(real_check)
 
 
-  @cog_ext.cog_subcommand(
-		base="card", name="add",
-		description="Adds a card into the database.", options=[
-			create_option(name="front", description="The value for the front part of the card.", option_type=3, required=True),
-			create_option(name="back", description="The value for the back part of the card.", option_type=3, required=True),
-		]#, guild_ids=TEST_GUILDS
-	)
+  @_card.command(name="add")
   @commands.cooldown(1, 15, commands.BucketType.user)
-  async def add_card(self, interaction, front: str, back: str) -> None:
+  async def _card_add(self, interaction, 
+    front: Option(str, name="front", description="The value for the front part of the card.", required=True), 
+    back: Option(str, name="back", description="The value for the back part of the card.", required=True)) -> None:
+    """ Adds a card into the database. """
 
-    await interaction.defer(hidden=True)
+    await interaction.defer(ephemeral=True)
 
     if not interaction.guild_id or interaction.guild.id not in self.whitelist:
-      return await interaction.send("**This server is not whitelisted!**", hidden=True)
+      return await interaction.respond("**This server is not whitelisted!**", ephemeral=True)
 
     member = interaction.author
 
     if len(front) > 300:
-      return await interaction.send(f"**Length of the `front` parameter can't surpass 300 characters!**", hidden=True)
+      return await interaction.respond(f"**Length of the `front` parameter can't surpass 300 characters!**", ephemeral=True)
 
     if len(back) > 300:
-      return await interaction.send(f"**Length of the `back` parameter can't surpass 300 characters!**", hidden=True)
+      return await interaction.respond(f"**Length of the `back` parameter can't surpass 300 characters!**", ephemeral=True)
 
+    current_time = await utils.get_time_now()
     # Makes initial embed
     embed = discord.Embed(
       title="Do you want to confirm the values below?",
       color=member.color,
-      timestamp=interaction.created_at
+      timestamp=current_time
     )
     embed.set_footer(text="60 seconds to answer...")
 
@@ -84,161 +83,140 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     embed.add_field(name="__Back__", value=f"```{back}```", inline=False)
 
     # Asks user for confirmation of informed values
-    action_row = create_actionrow(
-        create_button(style=ButtonStyle.green, label="Confirm", custom_id="confirm_btn", emoji='✅'),
-        create_button(style=ButtonStyle.red, label="Cancel", custom_id="cancel_btn", emoji='❌')
-    )
+    
+    confirm_view: discord.ui.View = ConfirmButton(member, timeout=120)
 
-    await interaction.send(embed=embed, components=[action_row], hidden=True)
-    button_ctx = await wait_for_component(self.client, components=action_row)
+    msg = await interaction.respond(embed=embed, view=confirm_view, ephemeral=True)
 
-    await button_ctx.defer(edit_origin=True)
+    await confirm_view.wait()
 
+    if confirm_view.value is None:
+      await utils.disable_buttons(confirm_view)
+      await msg.edit(view=confirm_view)
 
-    if button_ctx.custom_id == 'confirm_btn':
+    elif confirm_view.value:
       the_time = await utils.get_timestamp()
       inserted = await self._insert_card(interaction.guild_id, member.id, front, back, the_time)
-      if inserted:
-        return await button_ctx.send("**Values confirmed! Added them into the DB...**", hidden=True)
-      else:
-        return await button_ctx.send("**Values confirmed! But this server is not whitelisted...**", hidden=True)
-    elif button_ctx.custom_id == 'cancel_btn':
-      return await button_ctx.send("**Values not confirmed! Not adding them into the DB...**", hidden=True)
-	
-  @cog_ext.cog_subcommand(
-		base="card", name="delete",
-		description="Deletes a card from the user's deck.", options=[
-			create_option(name="card_id", description="The ID of the card that is gonna be deleted", option_type=4, required=True),
-		]#, guild_ids=TEST_GUILDS
-	)
-  @commands.cooldown(1, 5, commands.BucketType.user)
-  async def delete_card(self, interaction, card_id: int) -> None:
+      if not inserted:
+        return await confirm_view.interaction.respond.send_message("**Values confirmed! But this server is not whitelisted...**", ephemeral=True)
 
-    await interaction.defer(hidden=True)
+      return await confirm_view.interaction.respond.send_message("**Values confirmed! Added them into the DB...**", ephemeral=True)
+
+    else:
+      return await confirm_view.interaction.respond.send_message("**Values not confirmed! Not adding them into the DB...**", ephemeral=True)
+
+	
+  @_card.command(name="delete")
+  @commands.cooldown(1, 5, commands.BucketType.user)
+  async def _card_delete(self, interaction, 
+    card_id: Option(int, name="card_id", description="The ID of the card that is gonna be deleted", required=True)) -> None:
+    """ Deletes a card from the user's deck. """
+
+    await interaction.defer(ephemeral=True)
 
     if not interaction.guild_id or interaction.guild_id not in self.whitelist:
-      return await interaction.send("**This server is not whitelisted!**", hidden=True)
+      return await interaction.respond("**This server is not whitelisted!**", ephemeral=True)
 
     member = interaction.author
 
     if not await self.card_exists(member.id, card_id):
-      return await interaction.send(f"**You don't have a card with that ID, {member.mention}!**", hidden=True)
+      return await interaction.respond(f"**You don't have a card with that ID, {member.mention}!**", ephemeral=True)
 
     await self._delete_card(member.id, card_id)
-    await interaction.send(f"**Card with ID `{card_id}` was successfully deleted from your deck, {member.mention}!**", hidden=True)
+    await interaction.respond(f"**Card with ID `{card_id}` was successfully deleted from your deck, {member.mention}!**", ephemeral=True)
 
-  @cog_ext.cog_subcommand(
-		base="card", name="list",
-		description="Deletes a card from the user's deck."#, guild_ids=TEST_GUILDS
-	)
+  @_card.command(name="list")
   @commands.cooldown(1, 15, commands.BucketType.user)
-  async def cards(self, interaction):
+  async def _card_list(self, interaction):
     """ Shows all cards of a particular user. """
 
+    await interaction.defer(ephemeral=True)
+
     if not interaction.guild_id or interaction.guild_id not in self.whitelist:
-      return await interaction.send("**This server is not whitelisted!**", hidden=True)
+      return await interaction.respond("**This server is not whitelisted!**", ephemeral=True)
 
     member = interaction.author
     cards = await self.get_user_cards(member.id)
-    return await self.pagination_looping(interaction, member, cards)
+    if not cards:
+      return await interaction.respond("**No cards to show!**", ephemeral=True)
 
-  @cog_ext.cog_subcommand(
-		base="card", name="search",
-		description="Searches for cards in the user's deck with the given search values.", options=[
-			create_option(name="values", description="What is gonna be searched in the DB.", option_type=3, required=True),
-		]#, guild_ids=TEST_GUILDS
-	)
+    await self.pagination_looping(interaction, member, cards)
+
+  @_card.command(name="search")
   @commands.cooldown(1, 15, commands.BucketType.user)
-  async def search_cards(self, interaction, values: str) -> None:
+  async def _card_search(self, interaction, 
+    values: Option(str, name="values", description="What is gonna be searched in the DB.", required=True)) -> None:
+    """ Searches for cards in the user's deck with the given search values. """
+
+    await interaction.defer(ephemeral=True)
 
     if not interaction.guild_id or interaction.guild_id not in self.whitelist:
-      return await interaction.send("**This server is not whitelisted!**", hidden=True)
+      return await interaction.respond("**This server is not whitelisted!**", ephemeral=True)
 
     member = interaction.author
 
     if len(values) > 300:
-      return await interaction.send(f"Your search values have to be within 300 characters maximum, {member.mention}!**", hidden=True)
+      return await interaction.respond(f"Your search values have to be within 300 characters maximum, {member.mention}!**", ephemeral=True)
 
     if values := await self.fetch_values(member.id, values):
       return await self.pagination_looping(interaction, member, values)
     else:
-      await interaction.send(f"**Nothing found with the given values, {member.mention}!**", hidden=True)
+      await interaction.respond(f"**Nothing found with the given values, {member.mention}!**", ephemeral=True)
 
 
-  async def pagination_looping(self, interaction: SlashContext, member: discord.Member, the_list: List[List[Any]]) -> None:
+  async def pagination_looping(self, interaction: ApplicationContext, member: discord.Member, the_list: List[List[Any]]) -> None:
     """ Makes an infinite loop for paginating embedded messages. """
 
+    # Additional data:
+    additional = {
+      'client': self.client,
+      'change_embed': self.make_flashcard_embed
+    }
+    view = PaginatorView(the_list, increment=2, **additional)
+    embed = await view.make_embed(interaction.author)
+    await interaction.respond(embed=embed, view=view)
+
+  async def make_flashcard_embed(self, 
+      member: Union[discord.Member, discord.User], example: Any, offset: int, lentries: int, 
+      entries: Dict[str, Any], req: str = None, search: str = None, title: str = None, result: str = None
+    ) -> discord.Embed:
+
+    current_time = await utils.get_time_now()
+
     embed = discord.Embed(
-      description=f"**Total of cards:** {len(the_list)}",
+      title=f"__{member}'s Cards__",
+      description=f"**Total of cards:** {lentries}",
       color=member.color,
-      timestamp=interaction.created_at
+      timestamp=current_time
     )
 
-    index = 0
-    button_ctx = None
+    embed.set_footer(text=f"{offset}-{offset+1} of {lentries}")
 
-    action_row = create_actionrow(
-					create_button(
-							style=ButtonStyle.blurple, label="Previous", custom_id="left_btn", emoji='⬅️'
-					),
-					create_button(
-							style=ButtonStyle.blurple, label="Next", custom_id="right_btn", emoji='➡️'
-					)
-			)
+    # Adds two fields to the embed
+    for i in range(2):
+      if lentries <= offset - 1 + i:
+        break
 
-    await interaction.defer(hidden=True)
+      card = entries[offset-1+i]
+      creation = datetime.fromtimestamp(card[4])
+      
+      embed.add_field(
+        name=f"`@ Card - {offset}` | `ID: {card[0]}`",
+        value=f"```apache\nFront: {card[2]}\nBack: {card[3]}\n\n```**Created on: {creation}**",
+        inline=False
+      )
 
-    while True:
-      # Clear current embed fields
-      embed.clear_fields()
-      embed.title=f"__{member}'s Cards__"
-      embed.set_footer(text=f"{index+1}-{index+2} of {len(the_list)}")
-
-      # Adds two fields to the embed
-      for i in range(2):
-        if len(the_list) <= index + i:
-          break
-
-        card = the_list[index + i]
-        creation = datetime.utcfromtimestamp(card[4])
-        
-        embed.add_field(
-          name=f"`@ Card - {index+i+1}` | `ID: {card[0]}`",
-          value=f"```apache\nFront: {card[2]}\nBack: {card[3]}\n\n```**Created on: {creation}**",
-          inline=False
-        )
-
-      if button_ctx is None:
-          await interaction.send(embed=embed, components=[action_row], hidden=True)
-          # Wait for someone to click on them
-          button_ctx = await wait_for_component(self.client, components=action_row)
-      else:
-        await button_ctx.edit_origin(embed=embed, components=[action_row])
-        # Wait for someone to click on them
-        button_ctx = await wait_for_component(self.client, components=action_row, messages=button_ctx.origin_message_id)
-
-      await button_ctx.defer(edit_origin=True)
-
-
-      if button_ctx.custom_id == "right_btn":
-        if index < (len(the_list) - 2):
-          index += 2
-        continue
-      elif button_ctx.custom_id == "left_btn":
-        if index > 0:
-          index -= 2
-        continue
-
+    return embed
 
   # Database methods
 
   @commands.is_owner()
-  @commands.command(hidden=True)
+  @commands.command(ephemeral=True)
   async def create_table(self, interaction) -> None:
     """ Creates the Cards table. """
 
     if await self.table_exists():
-      return await interaction.send("**The __Cards__ table already exists!**", hidden=True)
+      return await interaction.respond("**The __Cards__ table already exists!**", ephemeral=True)
 
     mycursor, db = await self.the_database()
     await mycursor.execute("""CREATE TABLE Cards (
@@ -251,35 +229,35 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     ) DEFAULT CHARSET=utf8mb4""")
     await db.commit()
     await mycursor.close()
-    await interaction.send("**Table __Cards__ created!**", hidden=True)
+    await interaction.respond("**Table __Cards__ created!**", ephemeral=True)
 
-  @commands.command(hidden=True)
+  @commands.command(ephemeral=True)
   @commands.is_owner()
   async def drop_table(self, interaction) -> None:
     """ Drops the Cards table. """
 
     if not await self.table_exists():
-      return await interaction.send("**The __Cards__ table doesn't exist!**", hidden=True)
+      return await interaction.respond("**The __Cards__ table doesn't exist!**", ephemeral=True)
 
     mycursor, db = await self.the_database()
     await mycursor.execute("DROP TABLE Cards")
     await db.commit()
     await mycursor.close()
-    await interaction.send("**Table __Cards__ dropped!**", hidden=True)
+    await interaction.respond("**Table __Cards__ dropped!**", ephemeral=True)
 
-  @commands.command(hidden=True)
+  @commands.command(ephemeral=True)
   @commands.is_owner()
   async def reset_table(self, interaction) -> None:
     """ Resets the Cards table. """
 
     if not await self.table_exists():
-      return await interaction.send("**The __Cards__ table doesn't exist yet!**", hidden=True)
+      return await interaction.respond("**The __Cards__ table doesn't exist yet!**", ephemeral=True)
 
     mycursor, db = await self.the_database()
     await mycursor.execute("DELETE FROM Cards")
     await db.commit()
     await mycursor.close()
-    await interaction.send("**Table __Cards__ reset!**", hidden=True)
+    await interaction.respond("**Table __Cards__ reset!**", ephemeral=True)
 
   async def table_exists(self) -> bool:
     """ Gets all existing tables from the database. """
@@ -302,16 +280,16 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     :param timestamp: The creation timestamp.
     """
 
-    if server_id in self.whitelist:
-      mycursor, db = await self.the_database()
-      await mycursor.execute("""INSERT INTO Cards (
-        user_id, front_value, back_value, timestamp) 
-        VALUES (%s, %s, %s, %s)""", (user_id, front, back, timestamp))
-      await db.commit()
-      await mycursor.close()
-      return True
-    else:
+    if server_id not in self.whitelist:
       return False
+
+    mycursor, db = await self.the_database()
+    await mycursor.execute("""INSERT INTO Cards (
+      user_id, front_value, back_value, timestamp) 
+      VALUES (%s, %s, %s, %s)""", (user_id, front, back, timestamp))
+    await db.commit()
+    await mycursor.close()
+    return True
 
   async def _delete_card(self, user_id: int, card_id: int) -> None:
     """ Deletes a user card by ID. 
@@ -327,7 +305,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     """ Gets all cards of a particular user.
     :param user_id: The ID of the user of which to get the cards. """
 
-    mycursor, db = await self.the_database()
+    mycursor, _ = await self.the_database()
     await mycursor.execute("SELECT * FROM Cards WHERE user_id = %s", (user_id,))
     cards = await mycursor.fetchall()
     await mycursor.close()
@@ -338,7 +316,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     :param user_id: The ID of the user from which the values are gonna be searched.
     :param values: The values for which are gonna be searched. """
 
-    mycursor, db = await self.the_database()
+    mycursor, _ = await self.the_database()
     sql = "SELECT * FROM Cards WHERE user_id = " + str(user_id) + " AND front_value like '%" + \
     values + "%' OR back_value like '%" + values + "%'"
     await mycursor.execute(sql)
@@ -352,7 +330,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     :param card_id: The ID of the card which it is gonna check.
     """
 
-    mycursor, db = await self.the_database()
+    mycursor, _ = await self.the_database()
     await mycursor.execute("SELECT card_id FROM Cards WHERE user_id = %s and card_id = %s", (user_id, card_id))
     card_exists = await mycursor.fetchone()
     await mycursor.close()
@@ -362,41 +340,34 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
       return False
 
   # Whitelist
-  @cog_ext.cog_slash(
-    name="addserver", description="Adds a server into the whitelist.", options=[
-			create_option(name="server_id", description="The ID of the server to whitelist.", option_type=3, required=True),
-		]#, guild_ids=TEST_GUILDS
-    , default_permission=False, permissions={
-      TEST_GUILDS[0]: [create_permission(647452832852869120, SlashCommandPermissionType.USER, True)]})
-  async def insert_server(self, interaction, server_id: str) -> None:
-
+  @slash_command(name="addserver", permissions=[CommandPermission("owner", 2, True)], guild_ids=TEST_GUILDS)
+  async def insert_server(self, interaction, 
+    server_id: Option(str, name="server_id", description="The ID of the server to whitelist.", required=True)) -> None:
+    """ Adds a server into the whitelist. """
 
     member = interaction.author
     if not server_id.isdigit():
-      return await interaction.send(f"**Please, inform a server ID, {member.mention}!**", hidden=True)
+      return await interaction.respond(f"**Please, inform a server ID, {member.mention}!**", ephemeral=True)
 
     server_id = int(server_id)
 
     try:
       await self._insert_server(server_id)
-      await interaction.send(f"**The informed server is now whitelisted, {member.mention}!**", hidden=True)
+      await interaction.respond(f"**The informed server is now whitelisted, {member.mention}!**", ephemeral=True)
       self.whitelist.append(server_id)
     except Exception as e:
       print(e)
-      await interaction.send(f"**It looks like this server was already whitelisted!**", hidden=True)
+      await interaction.respond(f"**It looks like this server was already whitelisted!**", ephemeral=True)
 
 
-  @cog_ext.cog_slash(
-    name="removeserver", description="Adds a server into the whitelist.", options=[
-			create_option(name="server_id", description="The ID of the server to whitelist.", option_type=3, required=True),
-		]#, guild_ids=TEST_GUILDS
-    , default_permission=False, permissions={
-      TEST_GUILDS[0]: [create_permission(647452832852869120, SlashCommandPermissionType.USER, True)]})
-  async def delete_server(self, interaction, server_id: str) -> None:
+  @slash_command(name="removeserver", permissions=[CommandPermission("owner", 2, True)], guild_ids=TEST_GUILDS)
+  async def delete_server(self, interaction, 
+    server_id: Option(str, name="server_id", description="The ID of the server to whitelist.", required=True)) -> None:
+    """ Adds a server into the whitelist. """
 
     member = interaction.author
     if not server_id.isdigit():
-      return await interaction.send(f"**Please, inform a server ID, {member.mention}!**", hidden=True)
+      return await interaction.respond(f"**Please, inform a server ID, {member.mention}!**", ephemeral=True)
 
     server_id = int(server_id)
 
@@ -405,15 +376,15 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
       self.whitelist.remove(server_id)
     except:
       pass
-    await interaction.send(f"**The informed server was removed from the whitelist, {member.mention}!**", hidden=True)
+    await interaction.respond(f"**The informed server was removed from the whitelist, {member.mention}!**", ephemeral=True)
 
-  @commands.command(hidden=True)
+  @commands.command()
   @commands.is_owner()
-  async def create_table_whitelist(self, interaction) -> None:
+  async def create_table_whitelist(self, ctx) -> None:
     """ Creates the Whitelist table. """
 
     if await self.table_whitelist_exists():
-      return await interaction.send("**The __Whitelist__ table already exists!**", hidden=True)
+      return await ctx.send("**The __Whitelist__ table already exists!**")
 
     mycursor, db = await self.the_database()
     await mycursor.execute("""CREATE TABLE Whitelist (
@@ -422,44 +393,44 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     ) DEFAULT CHARSET=utf8mb4""")
     await db.commit()
     await mycursor.close()
-    await interaction.send("**Table __Whitelist__ created!**", hidden=True)
+    await ctx.send("**Table __Whitelist__ created!**")
 
-  @commands.command(hidden=True)
+  @commands.command()
   @commands.is_owner()
-  async def drop_table_whitelist(self, interaction) -> None:
+  async def drop_table_whitelist(self, ctx) -> None:
     """ Drops the Whitelist table. """
 
     if not await self.table_whitelist_exists():
-      return await interaction.send("**The __Whitelist__ table doesn't exist!**", hidden=True)
+      return await ctx.send("**The __Whitelist__ table doesn't exist!**")
 
     mycursor, db = await self.the_database()
     await mycursor.execute("DROP TABLE Whitelist")
     await db.commit()
     await mycursor.close()
-    await interaction.send("**Table __Whitelist__ dropped!**", hidden=True)
+    await ctx.send("**Table __Whitelist__ dropped!**")
 
-  @commands.command(hidden=True)
+  @commands.command()
   @commands.is_owner()
-  async def reset_table_whitelist(self, interaction) -> None:
+  async def reset_table_whitelist(self, ctx) -> None:
     """ Resets the Cards table. """
 
     if not await self.table_whitelist_exists():
-      return await interaction.send("**The __Whitelist__ table doesn't exist yet!**", hidden=True)
+      return await ctx.send("**The __Whitelist__ table doesn't exist yet!**")
 
     mycursor, db = await self.the_database()
     await mycursor.execute("DELETE FROM Whitelist")
     await db.commit()
     await mycursor.close()
-    await interaction.send("**Table __Whitelist__ reset!**", hidden=True)
+    await ctx.send("**Table __Whitelist__ reset!**")
 
   async def table_whitelist_exists(self) -> bool:
     """ Checks whether the table Whitelist exists. """
 
-    mycursor, db = await self.the_database()
+    mycursor, _ = await self.the_database()
     await mycursor.execute("SHOW TABLE STATUS LIKE 'Whitelist'")
-    table = await mycursor.fetchone()
+    exists = await mycursor.fetchone()
     await mycursor.close()
-    if table:
+    if exists:
       return True
     else:
       return False
@@ -486,7 +457,7 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
   async def get_whitelist(self) -> List[int]:
     """ Gets all existing servers that are in the whitelist. """
 
-    mycursor, db = await self.the_database()
+    mycursor, _ = await self.the_database()
     await mycursor.execute("SELECT server_id FROM Whitelist")
     whitelist = [s[0] for s in await mycursor.fetchall()]
     await mycursor.close()
@@ -506,6 +477,17 @@ class FlashCard(commands.Cog, command_attrs=dict(hidden=False)):
     db = await con.acquire()
     mycursor = await db.cursor()
     return mycursor, db
+
+"""
+CREATE TABLE `cards` (
+  `card_id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) NOT NULL,
+  `front_value` varchar(300) NOT NULL,
+  `back_value` varchar(300) NOT NULL,
+  `timestamp` bigint(20) NOT NULL,
+  PRIMARY KEY (`card_id`)
+) ENGINE=InnoDB AUTO_INCREMENT=16488 DEFAULT CHARSET=utf8mb4
+"""
 
 def setup(client) -> None:
   """ Cog's setup function. """

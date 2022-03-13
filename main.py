@@ -318,8 +318,7 @@ async def vote(ctx):
 
 for file_name in os.listdir('./cogs'):
 	
-	if file_name in [
-		'FlashCard.py']: continue
+	if file_name in []: continue
 	if str(file_name).endswith(".py"):
 		print(file_name)
 		client.load_extension(f"cogs.{file_name[:-3]}")

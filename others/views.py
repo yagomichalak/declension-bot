@@ -13,8 +13,8 @@ class PaginatorView(discord.ui.View):
         super().__init__(timeout=timeout)
         self.data = data
         self.client = kwargs.get('client')
-        self.req = kwargs.get('req')
-        self.search = kwargs.get('search')
+        self.req = kwargs.get('req', None)
+        self.search = kwargs.get('search', None)
         self.result = kwargs.get('result', None)
         self.title = kwargs.get('title', None)
         self.change_embed = kwargs.get('change_embed')
@@ -52,7 +52,8 @@ class PaginatorView(discord.ui.View):
         embed = await self.change_embed(
             req=self.req, member=member, search=self.search, 
             example=self.data[self.index], offset=self.index+1, 
-            lentries=len(self.data), entries=self.data, title=self.title, result=self.result
+            lentries=len(self.data), entries=self.data, title=self.title, 
+            result=self.result
         )
         return embed
 

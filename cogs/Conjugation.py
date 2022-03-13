@@ -209,6 +209,8 @@ class Conjugation(commands.Cog):
 	async def french(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in French. """ 
 
+		await interaction.defer(ephemeral=True)
+
 		if not verb:
 			return await interaction.respond("**Please, type a word**", ephemeral=True)
 
@@ -445,8 +447,6 @@ class Conjugation(commands.Cog):
 		:param language_title: The language that is being conjugated.
 		:param space: If you want a space separator into a specific section. 
 		:param aligned: If the fields will be inline."""
-
-		current_time = await utils.get_time_now()
 
 		# Performs the GET request to the endpoint
 		async with self.session.get(root) as response:

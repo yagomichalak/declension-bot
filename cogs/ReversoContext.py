@@ -191,7 +191,7 @@ class ReversoContext(commands.Cog):
 
       return embed
         
-  async def _add_card(self, interaction: ApplicationContext, member: discord.Member, front: str, back: str) -> None:
+  async def _add_card(self, interaction: discord.Interaction, member: discord.Member, front: str, back: str) -> None:
     """" Adds a card from the context list into the DB. 
     :param interaction: The context.
     :param member: The member to whom the card is gonna be added.
@@ -200,15 +200,15 @@ class ReversoContext(commands.Cog):
 
     try:
       the_time = await utils.get_timestamp()
-      flashcard = self.client.get_cog('FlashCard')
-      inserted = await flashcard._insert_card(interaction.guild_id, member.id, front, back, the_time)
+      FlashCard = self.client.get_cog('FlashCard')
+      inserted = await FlashCard._insert_card(interaction.guild.id, member.id, front, back, the_time)
 
       if inserted:
-        await interaction.reply(f"**Added card into the DB, {member.mention}!**", ephemeral=True)
+        await interaction.followup.send(f"**Added card into the DB, {member.mention}!**", ephemeral=True)
       else: 
-        await interaction.reply("**This server is not whitelisted!**", ephemeral=True)
+        await interaction.followup.send("**This server is not whitelisted!**", ephemeral=True)
     except Exception as e:
-      await interaction.reply(f"**For some reason I couldn't add it into the DB, {member.mention}!**", ephemeral=True)
+      await interaction.followup.send(f"**For some reason I couldn't add it into the DB, {member.mention}!**", ephemeral=True)
 
 def setup(client) -> None:
   """ Cog's setup function."""

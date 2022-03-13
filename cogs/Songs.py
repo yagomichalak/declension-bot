@@ -1,14 +1,16 @@
 import discord
 from discord.ext import commands
+from discord import Option, slash_command, SlashCommandGroup, ApplicationContext
+
 import aiohttp
 import asyncio
-from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option
-from others.menu import SwitchPages
 from bs4 import BeautifulSoup
-from typing import Any
 
-TEST_GUILDS = [459195345419763713]
+from others import utils
+from others.views import PaginatorView
+from typing import Any, Union, Dict
+
+TEST_GUILDS = [777886754761605140]
 
 class Songs(commands.Cog):
 	""" A category for commands related to finding songs. """
@@ -18,35 +20,32 @@ class Songs(commands.Cog):
 		self.session = aiohttp.ClientSession(loop=client.loop)
 		self.lyrics = "https://www.lyrics.com"
 
+	_find_by = SlashCommandGroup('find_by', "Searches a song")#, guild_ids=TEST_GUILDS)
 
 	@commands.Cog.listener()
 	async def on_ready(self) -> None:
 		print('Songs cog is online!')
 
-	@cog_ext.cog_subcommand(
-		base="find_by", name="lyrics",
-		description="Searches a song by a given lyrics", options=[
-			create_option(name="value", description=" The lyrics value.", option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_find_by.command(name="lyrics")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def _lyrics(self, interaction, value: str) -> None:
+	async def _find_by_lyrics(self, interaction, value: Option(str, name="value", description=" The lyrics value.", required=True)) -> None:
+		""" Searches a song by a given lyrics. """
 
 		member = interaction.author
-
+		await interaction.defer(ephemeral=True)
 
 		query = await self.clean_url(value)
 		req = f"{self.lyrics}/lyrics/{query}"
 		async with self.session.get(req) as response:
 
 			if response.status != 200:
-				return await interaction.send(f"**Something went wrong with that search, {member.mention}!**", hidden=True)
+				return await interaction.respond(f"**Something went wrong with that search, {member.mention}!**", ephemeral=True)
 
 			html = BeautifulSoup(await response.read(), 'html.parser')
 
 			songs = html.select('.sec-lyric.clearfix')
 			if not songs:
-				return await interaction.send(f"**Nothing found for that search, {member.mention}!**", hidden=True)
+				return await interaction.respond(f"**Nothing found for that search, {member.mention}!**", ephemeral=True)
 
 			# Additional data:
 			additional = {
@@ -55,28 +54,33 @@ class Songs(commands.Cog):
 				'search': value,
 				'change_embed': self.make_embed
 			}
-			pages = SwitchPages(songs, **additional)
-			await pages.start(interaction)
+			view = PaginatorView(songs, **additional)
+			embed = await view.make_embed(interaction.author)
+			await interaction.respond(embed=embed, view=view)
 
-
-	async def make_embed(self, req: str, interaction: SlashContext, search: str, example: Any, offset: int, lentries: int) -> discord.Embed:
+	async def make_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, 
+		offset: int, lentries: int, entries: Dict[str, Any], title: str = None, result: str = None) -> discord.Embed:
 		""" Makes an embed for the current search example.
 		:param req: The request URL link.
-		:param interaction: The Discord context of the command.
+		:param member: The member who triggered the command.
 		:param search: The search that was performed.
 		:param example: The current search example.
 		:param offset: The current page of the total entries.
-		:param lentries: The length of entries for the given search. """
+		:param lentries: The length of entries for the given search.
+		:param entries: The entries of the search.
+		:param title: The title of the search.
+		:param result: The result of the search. """
+
+		current_time = await utils.get_time_now()
 
 		# Makes the embed's header
 		embed = discord.Embed(
 			title=f"Search for __{search}__",
 			description="",
-			color=interaction.author.color,
-			timestamp=interaction.created_at,
+			color=member.color,
+			timestamp=current_time,
 			url=req
 			)
-
 
 		title = example.select_one('.lyric-meta.within-lyrics')
 		href = h if (h := example.select_one('.lyric-meta-title a')['href']) else None
@@ -90,16 +94,15 @@ class Songs(commands.Cog):
 			embed.set_thumbnail(url=image)
 	
 		# Sets the author of the search
-		embed.set_author(name=interaction.author, icon_url=interaction.author.avatar_url)
+		embed.set_author(name=member, icon_url=member.display_avatar)
 		# Makes a footer with the a current page and total page counter
-		embed.set_footer(text=f"{offset}/{lentries}", icon_url=interaction.guild.icon_url)
+		embed.set_footer(text=f"{offset}/{lentries}", icon_url=member.guild.icon.url)
 
 		return embed
 
 	async def clean_url(self, url: str) -> str:
 		""" Cleans the url link by replacing special characters with an url equivalent characters. 
 		:param url: The url to clean. """
-
 
 		url = url.replace(' ', '%20'
 			).replace(',', '%2C'

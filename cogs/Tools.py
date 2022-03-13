@@ -1,13 +1,15 @@
 import discord
 from discord.ext import commands
-from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option
-from googletrans import Translator
+from discord import Option, slash_command, SlashCommandGroup, ApplicationContext
+
 import os
 import aiohttp
 import json
 
-TEST_GUILDS = [459195345419763713]
+from googletrans import Translator
+from others import utils
+
+TEST_GUILDS = [777886754761605140]
 
 class Tools(commands.Cog):
 	""" A command for tool commands. """
@@ -18,47 +20,46 @@ class Tools(commands.Cog):
 		self.client = client
 		self.session = aiohttp.ClientSession(loop=client.loop)
 
+	_synonym = SlashCommandGroup('synonym', 'Finds synonyms for a given word in a given language.')#, guild_ids=TEST_GUILDS)
+	_antonym = SlashCommandGroup('antonym', 'Finds antonyms for a given word in a given language.')#, guild_ids=TEST_GUILDS)
+
 	@commands.Cog.listener()
 	async def on_ready(self) -> None:
 		""" Tells when the cog is ready to use. """
 
 		print('Tools cog is online!')
 
-
-	@cog_ext.cog_slash(
-		name="translate", 
-		description="Translates a message into another language.", options=[
-			create_option(name="language", description="The language to translate the message to..", option_type=3, required=True),
-			create_option(name="message", description="The message to translate.", option_type=3, required=True),
-		]#, guild_ids=TEST_GUILDS
-		)
+	@slash_command(name="translate")#, guild_ids=TEST_GUILDS)
 	@commands.cooldown(1, 5, commands.BucketType.user)
-	async def translate(self, interaction, language: str = None, *, message: str = None):
-		await interaction.defer(hidden=True)
+	async def _translate(self, interaction: ApplicationContext, 
+		language: Option(str, name="language", description="The language to translate the message to..", required=True), 
+		message: Option(str, name="message", description="The message to translate.", required=True)
+	) -> None:
+		""" Translates a message into another language. """
+
+		await interaction.defer(ephemeral=True)
+		current_time = await utils.get_time_now()
 
 		trans = Translator(service_urls=['translate.googleapis.com'])
 		try:
 			translation = trans.translate(f'{message}', dest=f'{language}')
 		except ValueError:
-			return await interaction.send("**Invalid parameter for 'language'!**", hidden=True)
+			return await interaction.respond("**Invalid parameter for 'language'!**", ephemeral=True)
 
 		embed = discord.Embed(title="__Translator__",
 			description=f"**Translated from `{translation.src}` to `{translation.dest}`**\n\n{translation.text}",
-			color=interaction.author.color, timestamp=interaction.created_at)
-		embed.set_author(name=interaction.author, icon_url=interaction.author.avatar_url)
-		await interaction.send(embed=embed, hidden=True)
+			color=interaction.author.color, timestamp=current_time)
+		embed.set_author(name=interaction.author, icon_url=interaction.author.display_avatar)
+		await interaction.respond(embed=embed, ephemeral=True)
 
-	@cog_ext.cog_subcommand(
-		base="synonym", name="french",
-		description="Searches synonyms of a French word.", options=[
-			create_option(name="search", description="The word you are looking for.", option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_synonym.command(name="french")
 	@commands.cooldown(1, 15, commands.BucketType.user)
-	async def synonym_french(self, interaction, search: str) -> None:
+	async def _synonym_french(self, interaction, search: Option(str, name="search", description="The word you are looking for.", required=True)) -> None:
+		""" Searches synonyms of a French word. """
 
-		await interaction.defer(hidden=True)
+		await interaction.defer(ephemeral=True)
 		member = interaction.author
+		current_time = await utils.get_time_now()
 
 		url = f"https://dicolink.p.rapidapi.com/mot/{search.strip().replace(' ', '%20')}/synonymes"
 		querystring = {"limite":"10"}
@@ -70,7 +71,7 @@ class Tools(commands.Cog):
 
 		async with self.session.get(url=url, headers=headers, params=querystring) as response:
 			if response.status != 200:
-				return await interaction.send(f"**Nothing found, {member.mention}!**", hidden=True)
+				return await interaction.respond(f"**Nothing found, {member.mention}!**", ephemeral=True)
 
 			data = json.loads(await response.read())
 
@@ -79,7 +80,7 @@ class Tools(commands.Cog):
 				title="__French Synonyms__",
 				description=f"Showing results for: {search}",
 				color=member.color,
-				timestamp=interaction.created_at,
+				timestamp=current_time
 			)
 
 			words = ', '.join(list(map(lambda w: f"**{w['mot']}**", data)))
@@ -88,21 +89,17 @@ class Tools(commands.Cog):
 			embed.add_field(name=f"__Words__", value=words, inline=False)
 
 			# Sets the author of the search
-			embed.set_author(name=member, icon_url=member.avatar_url)
-			await interaction.send(embed=embed, hidden=True)
+			embed.set_author(name=member, icon_url=member.display_avatar)
+			await interaction.respond(embed=embed, ephemeral=True)
 
-
-	@cog_ext.cog_subcommand(
-		base="antonym", name="french",
-		description="Searches antonyms of a French word", options=[
-			create_option(name="search", description="The word you are looking for.", option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_antonym.command(name="french")
 	@commands.cooldown(1, 15, commands.BucketType.user)
-	async def antonym_french(self, interaction, search: str) -> None:
+	async def _antonym_french(self, interaction, search: Option(str, name="search", description="The word you are looking for.", required=True)) -> None:
+		""" Searches antonyms of a French word. """
 
-		await interaction.defer(hidden=True)
+		await interaction.defer(ephemeral=True)
 		member = interaction.author
+		current_time = await utils.get_time_now()
 
 		url = f"https://dicolink.p.rapidapi.com/mot/{search.strip().replace(' ', '%20')}/antonymes"
 		querystring = {"limite":"10"}
@@ -114,7 +111,7 @@ class Tools(commands.Cog):
 
 		async with self.session.get(url=url, headers=headers, params=querystring) as response:
 			if response.status != 200:
-				return await interaction.send(f"**Nothing found, {member.mention}!**", hidden=True)
+				return await interaction.respond(f"**Nothing found, {member.mention}!**", ephemeral=True)
 
 			data = json.loads(await response.read())
 
@@ -123,7 +120,7 @@ class Tools(commands.Cog):
 				title="__French Antonyms__",
 				description=f"Showing results for: {search}",
 				color=member.color,
-				timestamp=interaction.created_at,
+				timestamp=current_time
 			)
 
 			words = ', '.join(list(map(lambda w: f"**{w['mot']}**", data)))
@@ -132,10 +129,8 @@ class Tools(commands.Cog):
 			embed.add_field(name=f"__Words__", value=words, inline=False)
 
 			# Sets the author of the search
-			embed.set_author(name=member, icon_url=member.avatar_url)
-			await interaction.send(embed=embed, hidden=True)
-
-
+			embed.set_author(name=member, icon_url=member.display_avatar)
+			await interaction.respond(embed=embed, ephemeral=True)
 
 def setup(client) -> None:
 	""" Cog's setup function. """

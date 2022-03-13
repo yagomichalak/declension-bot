@@ -1,10 +1,10 @@
 requests==2.24.0
-discord-py-slash-command==2.4.1
+git+https://github.com/Pycord-Development/pycord
 aiohttp==3.7.4
 convertapi==1.4.0
 aiomysql==0.0.21
 googletrans==3.1.0a0
 beautifulsoup4==4.9.3
 Pillow==8.1.0
-python-dotenv==0.15.0
+python-dotenv==0.19.0
 pytz==2021.1

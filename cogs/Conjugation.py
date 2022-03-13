@@ -1,11 +1,6 @@
-import re
 import discord
-from discord import message
 from discord.ext import commands
-from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option
-from discord_slash.utils.manage_components import create_button, create_actionrow, wait_for_component
-from discord_slash.model import ButtonStyle
+from discord import SlashCommandGroup, Option, ApplicationContext
 
 import asyncio
 import aiohttp
@@ -13,7 +8,12 @@ import json
 from bs4 import BeautifulSoup
 from itertools import zip_longest, cycle
 
-TEST_GUILDS = [459195345419763713]
+from others.views import PaginatorView
+from others import utils
+from typing import Union, Any, Dict
+from pprint import pprint
+
+TEST_GUILDS = [777886754761605140]
 
 
 class Conjugation(commands.Cog):
@@ -24,35 +24,39 @@ class Conjugation(commands.Cog):
 		self.client = client
 		self.session = aiohttp.ClientSession(loop=client.loop)
 
+	_conjugate = SlashCommandGroup("conjugate", "Conjugates a verb in a given language.")#, guild_ids=TEST_GUILDS)
+	_germanic = _conjugate.create_subgroup("germanic", "Conjugates a verb in a germanic language.")#, guild_ids=TEST_GUILDS)
+	_slavic = _conjugate.create_subgroup("slavic", "Conjugates a verb in a slavic language.")#, guild_ids=TEST_GUILDS)
+	_asian = _conjugate.create_subgroup("asian", "Conjugates a verb in an asian language.")#, guild_ids=TEST_GUILDS)
+	_romance = _conjugate.create_subgroup("romance", "Conjugates a verb in a romance language.")#, guild_ids=TEST_GUILDS)
+	_turkic = _conjugate.create_subgroup("turkic", "Conjugates a verb in a turkic language.")#, guild_ids=TEST_GUILDS)
+	_uralic = _conjugate.create_subgroup("uralic", "Conjugates a verb in a uralic language.")#, guild_ids=TEST_GUILDS)
+	_other = _conjugate.create_subgroup("other", "Conjugates a verb in another language.")#, guild_ids=TEST_GUILDS)
 
 	@commands.Cog.listener()
 	async def on_ready(self):
 		print('Conjugations cog is online!')
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="germanic",
-		name="dutch",
-		description="Conjugates a verb in Dutch",
-		options=[
-			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_germanic.command(name="dutch")#, guild_ids=TEST_GUILDS)
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def dutch(self, interaction, *, verb: str = None) -> None:
+	async def _conjugate_germanic_dutch(self, interaction, 
+		verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Dutch. """
 		
+		await interaction.defer(ephemeral=True)
+
 		if not verb:
-			return await interaction.send("**Please, type a word**")
+			return await interaction.respond("**Please, type a word**", ephemeral=True)
 
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value,I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 
 		root = f'https://www.mijnwoordenboek.nl/werkwoord/{temp_verb.lower()}'
 		async with self.session.get(root) as response:
 			if response.status != 200:
-				return await interaction.send("**Something went wrong with that search!**")
+				return await interaction.respond("**Something went wrong with that search!**", ephemeral=True)
 
 		
 			# Gets the html, the conjugation table div and table
@@ -61,89 +65,79 @@ class Conjugation(commands.Cog):
 			table_rows = [row for row in content_box.select('table tr')[1:]]
 			lenro = len(table_rows)
 			if lenro == 0:
-				return await interaction.send("**Nothing found for the informed value!**")
+				return await interaction.respond("**Nothing found for the informed value!**", ephemeral=True)
 
-			# Creates the initial embed
-			embed = discord.Embed(
-				color=interaction.author.color,
-				timestamp=interaction.created_at,
-				url=root
+			# Additional data:
+			additional = {
+				'client': self.client,
+				'req': root,
+				'search': verb,
+				'result': verb,
+				'title': 'Dutch',
+				'change_embed': self.make_specific_embed
+			}
+			view = PaginatorView(table_rows, increment=12, **additional)
+			embed = await view.make_embed(interaction.author)
+			await interaction.respond(embed=embed, view=view)
+
+	async def make_specific_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, 
+		offset: int, lentries: int, entries: Dict[str, Any], title: str = None, result: str = None) -> discord.Embed:
+		""" Makes an embed for the current search example.
+		:param req: The request URL link.
+		:param member: The member who triggered the command.
+		:param search: The search that was performed.
+		:param example: The current search example.
+		:param offset: The current page of the total entries.
+		:param lentries: The length of entries for the given search.
+		:param title: The title of the search.
+		:param result: The result of the search. """
+
+		current_time = await utils.get_time_now()
+
+		# Makes the embed's header
+		embed = discord.Embed(
+			title=f"Search for __{search}__",
+			description=f"Dutch Conjugation",
+			color=member.color,
+			timestamp=current_time,
+			url=req
 			)
-			
-			index = 0
 
-			action_row = create_actionrow(
-					create_button(
-							style=ButtonStyle.blurple, label="Previous", custom_id="left_button", emoji='⬅️'
-					),
-					create_button(
-							style=ButtonStyle.blurple, label="Next", custom_id="right_button", emoji='➡️'
-					)
+		embed.clear_fields()
+		for i in range(0, 12, 2):
+			if offset + i + 1< lentries:
+				tense_name = entries[offset+i].get_text().strip()
+				conjugation = entries[offset+i+1].get_text().strip().split('  ')
+				conjugation = '\n'.join(conjugation)
+			else:
+				break
+
+			# Adds a field for each table
+			embed.add_field(
+				name=tense_name,
+				value=f"```apache\n{conjugation}```",
+				inline=True
 			)
 
-			button_ctx = None
-
-			# Loops through each row of the conjugation tables
-			while True:
-				embed.title = f"Dutch Conjugation ({round(lenro/(lenro-index))}/{round(lenro/11)})"
-				embed.clear_fields()
-				for i in range(0, 12, 2):
-					if index + i + 1< len(table_rows):
-						tense_name = table_rows[index+i].get_text().strip()
-						conjugation = table_rows[index+i+1].get_text().strip().split('  ')
-						conjugation = '\n'.join(conjugation)
-					else:
-						break
-
-					# Adds a field for each table
-					embed.add_field(
-						name=tense_name,
-						value=f"```apache\n{conjugation}```",
-						inline=True
-					)
-
-
-				if button_ctx is None:
-					await interaction.send(embed=embed, components=[action_row], hidden=True)
-					# Wait for someone to click on them
-					button_ctx = await wait_for_component(self.client, components=action_row)
-				else:
-					await button_ctx.edit_origin(embed=embed, components=[action_row])
-					# Wait for someone to click on them
-					button_ctx = await wait_for_component(self.client, components=action_row, messages=button_ctx.origin_message_id)
-
-				await button_ctx.defer(edit_origin=True)
-					
-				# Send what you received
-
-				if button_ctx.custom_id == 'right_button':
-
-					if index + 11 <= len(table_rows) / 2:
-							index += 12
-					continue
-				elif button_ctx.custom_id == 'left_button':
-					if index > 0:
-							index -= 12
-					continue
+		# Sets the author of the search
+		embed.set_author(name=member, icon_url=member.display_avatar)
+		# Makes a footer with the a current page and total page counter
+		embed.set_footer(text=f"{offset}/{lentries}", icon_url=member.guild.icon.url)
+		return embed
 	
 	# Conjugators based on Reverso's website
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="asian",
-		name="japanese",
-		description="Conjugates a verb in Japanese",
-		options=[
-			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_asian.command(name="japanese")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def japanese(self, interaction, *, verb: str = None) -> None:
+	async def japanese(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Japanese. """
+
+		await interaction.defer(ephemeral=True)
 
 		if not verb:
-			return await interaction.send("**Please, type a word**")
+			return await interaction.respond("**Please, type a word**", ephemeral=True)
 
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value,I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 
@@ -152,23 +146,17 @@ class Conjugation(commands.Cog):
 		return await self.__conjugate(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Japanese', space=True, aligned=False)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="other",
-		name="arabic",
-		description="Conjugates a verb in Arabic",
-		options=[
-			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_other.command(name="arabic")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def arabic(self, interaction, *, verb: str = None) -> None:
-
+	async def arabic(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Arabic. """ 
+		await interaction.defer(ephemeral=True)
+		
 		if not verb:
-			return await interaction.send("**Please, type a word**")
+			return await interaction.respond("**Please, type a word**", ephemeral=True)
 
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value,I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 
@@ -177,23 +165,18 @@ class Conjugation(commands.Cog):
 		return await self.__conjugate(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Arabic', space=True, aligned=False)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="romance",
-		name="portuguese",
-		description="Conjugates a verb in Portuguese",
-		options=[
-			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_romance.command(name="portuguese")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def portuguese(self, interaction, *, verb: str = None) -> None:
+	async def portuguese(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Portuguese. """
 
+		await interaction.defer(ephemeral=True)
+		
 		if not verb:
-			return await interaction.send("**Please, type a word**")
+			return await interaction.respond("**Please, type a word**", ephemeral=True)
 
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value,I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 
@@ -203,23 +186,18 @@ class Conjugation(commands.Cog):
 		return await self.__conjugate(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title=language_title, space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="romance",
-		name="italian",
-		description="Conjugates a verb in Italian",
-		options=[
-			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_romance.command(name="italian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def italian(self, interaction, *, verb: str = None) -> None:
+	async def italian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Italian. """
 
+		await interaction.defer(ephemeral=True)
+		
 		if not verb:
-			return await interaction.send("**Please, type a word**")
+			return await interaction.respond("**Please, type a word**", ephemeral=True)
 
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value,I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 
@@ -228,23 +206,18 @@ class Conjugation(commands.Cog):
 		return await self.__conjugate(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Italian')
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="romance",
-		name="french",
-		description="Conjugates a verb in French",
-		options=[
-			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_romance.command(name="french")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def french(self, interaction, *, verb: str = None) -> None:
+	async def french(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in French. """ 
+
+		await interaction.defer(ephemeral=True)
 
 		if not verb:
-			return await interaction.send("**Please, type a word**")
+			return await interaction.respond("**Please, type a word**", ephemeral=True)
 
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value,I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 
@@ -253,23 +226,18 @@ class Conjugation(commands.Cog):
 		return await self.__conjugate(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='French')
 	
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="romance",
-		name="spanish",
-		description="Conjugates a verb in Spanish",
-		options=[
-			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_romance.command(name="spanish")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def spanish(self, interaction, *, verb: str = None) -> None:
+	async def spanish(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Spanish. """
+
+		await interaction.defer(ephemeral=True)
 
 		if not verb:
-			return await interaction.send("**Please, type a word**")
+			return await interaction.respond("**Please, type a word**", ephemeral=True)
 
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value,I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 
@@ -279,20 +247,15 @@ class Conjugation(commands.Cog):
 		return await self.__conjugate(interaction=interaction, root=root, 
 	verb=verb, emoji_title=emoji_title, language_title='Spanish')
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="germanic",
-		name="english",
-		description="Conjugates a verb in English",
-		options=[
-			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_germanic.command(name="english")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def english(self, interaction, verb: str) -> None:
+	async def english(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in English. """
 
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**", hidden=True)
+			return await interaction.respond("**Wow, you informed a very long value,I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 
@@ -304,157 +267,172 @@ class Conjugation(commands.Cog):
 	async def __conjugate(self, interaction, root: str, verb: str, emoji_title: str, language_title: str, space: bool = False, aligned: bool = True) -> None:
 		""" Conjugates a verb.
 		:param root: The language endpoint from which to do the HTTP request.
-		:param verb: The verb that is being conjugated.
-		"""
+		:param verb: The verb that is being conjugated. """
 
-		await interaction.defer(hidden=True)
-
+		current_time = await utils.get_time_now()
 		async with self.session.get(root) as response:
 			if response.status != 200:
-				return await interaction.send("**Something went wrong with that search!**", hidden=True)
+				return await interaction.respond("**Something went wrong with that search!**", ephemeral=True)
 
 		
 			# Gets the html and the table div
 			html = BeautifulSoup(await response.read(), 'html.parser')
 			subhead = html.select_one('.subHead.subHead-res.clearfix')
 			if not subhead:
-				return await interaction.send("**Invalid request!**", hidden=True)
+				return await interaction.respond("**Invalid request!**", ephemeral=True)
 
-			# Translation options
-			#-> Word translation
-			tr_div = subhead.select_one('.word-transl-options')
-			found_verb = tr_div.select_one('.targetted-word-wrap').get_text().strip()
+		# Translation options
+		#-> Word translation
+		tr_div = subhead.select_one('.word-transl-options')
+		found_verb = tr_div.select_one('.targetted-word-wrap').get_text().strip()
+		# Conjugation table divs
+		verb_div = html.select_one('.word-wrap')
+		word_wraps = verb_div.select_one('.result-block-api')
+		word_wrap_rows = word_wraps.select('.word-wrap-row')
 
-			embed = discord.Embed(
-				title=f"{emoji_title} Conjugation",
-				description=f"""**Searched:** {verb}
-				**Found:** {found_verb}""",
-				color=interaction.author.color,
-				timestamp=interaction.created_at,
-				url=root
-			)
-			embed.set_footer(
-				text=f"Requested by {interaction.author}",
-				icon_url=interaction.author.avatar_url)
+		
+		verbal_mode = ''
 
+		conjugations = {}
+		for i, current_row in enumerate(word_wrap_rows):
+			conjugations[f'page{i}'] = []
+			# Loops through the rows
+			for table in current_row.select('.wrap-three-col'):
+				# Specifies the verbal tense if there is one
+				if temp_tense_name := table.select_one('p'):
+					tense_name = temp_tense_name.get_text()
 
-			# Conjugation table divs
-			verb_div = html.select_one('.word-wrap')
-			word_wraps = verb_div.select_one('.result-block-api')
-			word_wrap_rows = word_wraps.select('.word-wrap-row')
-
-			
-			verbal_mode = ''
-
-			conjugations = {}
-			for i, current_row in enumerate(word_wrap_rows):
-				conjugations[f'page{i}'] = []
-
-				# Loops through the rows
-				for table in current_row.select('.wrap-three-col'):
-					# Specifies the verbal tense if there is one
-					if temp_tense_name := table.select_one('p'):
-						tense_name = temp_tense_name.get_text()
-
-						# Changes verbal mode if it's time to change it
-						if (temp_title := table.select_one('.word-wrap-title')):
-							title = temp_title.get_text().strip()
-							verbal_mode = title
-						elif (temp_title := current_row.select_one('.word-wrap-title')):
-							title = temp_title.get_text().strip()
-							verbal_mode = title
-
+					# Changes verbal mode if it's time to change it
+					if (temp_title := table.select_one('.word-wrap-title')):
+						title = temp_title.get_text().strip()
+						verbal_mode = title
+					elif (temp_title := current_row.select_one('.word-wrap-title')):
+						title = temp_title.get_text().strip()
 						verbal_mode = title
 
-					# If there isn't, it shows '...' instead
+					verbal_mode = title
+
+				# If there isn't, it shows '...' instead
+				else:
+					tense_name = '...'
+					verbal_mode = table.select_one('.word-wrap-title').get_text().strip()
+
+				temp_text = ""
+
+				# Loops through each tense row
+				for li in table.select('.wrap-verbs-listing li'):
+					# Makes a temp text with all conjugations
+					if space:
+						temp_text += f"{li.get_text(separator=' ')}\n"
 					else:
-						tense_name = '...'
-						verbal_mode = table.select_one('.word-wrap-title').get_text().strip()
+						temp_text += f"{li.get_text()}\n"
+				# Specifies the verbal mode
+				temp_text += f"""\nmode="{verbal_mode}"\n"""
+				temp_text = f"```apache\n{temp_text}```"
+				conjugations[f'page{i}'].append({'tense': [temp_text, tense_name, aligned]})
 
-					temp_text = ""
+		# Additional data:
+		additional = {
+			'client': self.client,
+			'req': root,
+			'search': verb,
+			'result': found_verb,
+			'title': language_title,
+			'change_embed': self.make_embed
+		}
+		view = PaginatorView(list(conjugations.items()), **additional)
+		embed = await view.make_embed(interaction.author)
+		await interaction.respond(embed=embed, view=view)
+		return embed
 
-					# Loops through each tense row
-					for li in table.select('.wrap-verbs-listing li'):
-						# Makes a temp text with all conjugations
-						if space:
-							temp_text += f"{li.get_text(separator=' ')}\n"
-						else:
-							temp_text += f"{li.get_text()}\n"
-					# Specifies the verbal mode
-					temp_text += f"""\nmode="{verbal_mode}"\n"""
-					temp_text = f"```apache\n{temp_text}```"
-					conjugations[f'page{i}'].append({'tense': [temp_text, tense_name, aligned]})
+	async def make_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, 
+		offset: int, lentries: int, entries: Dict[str, Any], title: str = None, result: str = None) -> discord.Embed:
+		""" Makes an embed for the current search example.
+		:param req: The request URL link.
+		:param member: The member who triggered the command.
+		:param search: The search that was performed.
+		:param example: The current search example.
+		:param offset: The current page of the total entries.
+		:param lentries: The length of entries for the given search. """
 
-			index = 0
-			# Creates the Pagination buttons
+		current_time = await utils.get_time_now()
 
-			action_row = create_actionrow(
-					create_button(
-							style=ButtonStyle.blurple, label="Previous", custom_id="left_button", emoji='⬅️'
-					),
-					create_button(
-							style=ButtonStyle.blurple, label="Next", custom_id="right_button", emoji='➡️'
-					)
+		# Makes the embed's header
+		embed = discord.Embed(
+			title=f"{title} Conjugation ({offset}/{lentries})",
+			description=f"""**Searched:** {search}
+			**Found:** {result}""",
+			color=member.color,
+			timestamp=current_time,
+			url=req
+		)
+
+		entries = dict(entries)
+
+		the_key = list(entries.keys())[offset-1]
+		for a_dict in entries[the_key]:
+			for page, values in dict(a_dict).items():
+				embed.add_field(
+					name=values[1],
+					value=values[0],
+					inline=values[2])
+
+		# Sets the author of the search
+		embed.set_author(name=member, icon_url=member.display_avatar)
+		# Makes a footer with the a current page and total page counter
+		embed.set_footer(text=f"Requested by {member}", icon_url=member.display_avatar)
+
+		return embed
+
+	async def make_cooljugator_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, 
+		offset: int, lentries: int, entries: Dict[str, Any], title: str = None, result: str = None) -> discord.Embed:
+		""" Makes an embed for the current search example.
+		:param req: The request URL link.
+		:param member: The member who triggered the command.
+		:param search: The search that was performed.
+		:param example: The current search example.
+		:param offset: The current page of the total entries.
+		:param lentries: The length of entries for the given search. """
+
+		current_time = await utils.get_time_now()
+
+		# Makes the embed's header
+		embed = discord.Embed(
+			title=f"{title} Conjugation ({offset}/{lentries})",
+			color=member.color,
+			timestamp=current_time,
+			url=req
+		)
+
+		current = entries[offset-1]
+		# Adds a field for each conjugation table of the current tense
+		for conj in current:
+			temp_text = '\n'.join(conj[1])
+			embed.add_field(
+				name=conj[0],
+				value=f"```apache\n{temp_text}```\n",
+				inline=True
 			)
 
-			# Sends initial embed and adds the arrow emojis to it 
+		# Sets the author of the search
+		embed.set_author(name=member, icon_url=member.display_avatar)
+		# Makes a footer with the a current page and total page counter
+		embed.set_footer(text=f"Requested by {member}", icon_url=member.display_avatar)
 
-			button_ctx = None
+		return embed
 
-			while True:
-				embed.title = f"{language_title} Conjugation ({index+1}/{len(conjugations)})"
-				embed.clear_fields()
-				the_key = list(conjugations.keys())[index]
-				for a_dict in conjugations[the_key]:
-					for page, values in dict(a_dict).items():
-						embed.add_field(
-							name=values[1],
-							value=values[0],
-							inline=values[2]
-						)
-
-				# Sends to Discord the current state of the embed
-
-
-				if button_ctx is None:
-					await interaction.send(embed=embed, components=[action_row], hidden=True)
-					# Wait for someone to click on them
-					button_ctx = await wait_for_component(self.client, components=action_row)
-				else:
-					await button_ctx.edit_origin(embed=embed, components=[action_row])
-					# Wait for someone to click on them
-					button_ctx = await wait_for_component(self.client, components=action_row, messages=button_ctx.origin_message_id)
-
-				await button_ctx.defer(edit_origin=True)
-				
-				# Send what you received
-
-				if button_ctx.custom_id == 'left_button':
-					if index > 0:
-						index -= 1
-					continue
-				elif button_ctx.custom_id == 'right_button':
-					if index < len(conjugations) - 1:
-						index += 1
-					continue
-
-	@cog_ext.cog_subcommand(
-	  base="conjugate",
-	  subcommand_group="germanic",
-	  name="german",
-	  description="Conjugates a verb in German",
-	  options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-	  ]#, guild_ids=TEST_GUILDS
-	)
+	@_germanic.command(name="german")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def german(self, interaction, *, verb: str = None) -> None:
+	async def german(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in German """
 
+		await interaction.defer(ephemeral=True)
+		
 		if not verb:
-			return await interaction.send("**Please, type a word**")
+			return await interaction.respond("**Please, type a word**", ephemeral=True)
 
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value,I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 
@@ -475,25 +453,19 @@ class Conjugation(commands.Cog):
 		# Performs the GET request to the endpoint
 		async with self.session.get(root) as response:
 			if response.status != 200:
-				return await interaction.send("**Something went wrong with that search!**", hidden=True)
+				return await interaction.respond("**Something went wrong with that search!**", ephemeral=True)
 
 			# Gets the html and the container div
 			html = BeautifulSoup(await response.read(), 'html.parser')
 			container = html.select_one('#conjugationDivs.fourteen.wide.column')
 			if not container:
-				return await interaction.send("**Couldn't find anything for it!**", hidden=True)
+				return await interaction.respond("**Couldn't find anything for it!**", ephemeral=True)
 
 			title = html.select_one('#conjugation-data.ui.segment > .centered > h1').get_text().strip()
 
 			conjugations = []
 			conj_divs = container.select('.conjugation-table.collapsable')
-			# Makes initial embed
-			embed = discord.Embed(
-				description=title,
-				color=interaction.author.color,
-				timestamp=interaction.created_at,
-				url=root
-			)
+
 			# Gets all useful information
 			for i, conj_div in enumerate(conj_divs):
 				# Gets all pronouns
@@ -542,74 +514,30 @@ class Conjugation(commands.Cog):
 				pairs = list(zip_longest(tenses, rows, fillvalue='_'))
 				conjugations.append(pairs)
 
-		action_row = create_actionrow(
-			create_button(
-				style=ButtonStyle.blurple, label="Previous", custom_id="left_button", emoji='⬅️'
-			),
-			create_button(
-				style=ButtonStyle.blurple, label="Next", custom_id="right_button", emoji='➡️'
-			)
-		)
 
-		# Initial index and btn ctx
-		index = 0
-		button_ctx = None
+		# Additional data:
+		additional = {
+			'client': self.client,
+			'req': root,
+			'search': verb,
+			'result': verb,
+			'title': language_title,
+			'change_embed': self.make_cooljugator_embed
+		}
+		view = PaginatorView(conjugations, **additional)
+		embed = await view.make_embed(interaction.author)
+		await interaction.respond(embed=embed, view=view)
+		return embed
 
-		await interaction.defer(hidden=True)
-
-		# Main loop for switching pages
-		while True:
-			current = conjugations[index]
-			embed.clear_fields()
-			embed.title = f"{language_title} conjugation ({index+1}/{len(conjugations)})"
-			# Adds a field for each conjugation table of the current tense
-			for conj in current:
-				temp_text = '\n'.join(conj[1])
-				embed.add_field(
-					name=conj[0],
-					value=f"```apache\n{temp_text}```\n",
-					inline=True
-				)
-			
-
-			# Sends a message with buttons
-			if button_ctx is None:
-				await interaction.send(embed=embed, components=[action_row], hidden=True)
-				# Wait for someone to click on them
-				button_ctx = await wait_for_component(self.client, components=action_row)
-			else:
-				await button_ctx.edit_origin(embed=embed, components=[action_row])
-				# Wait for someone to click on them
-				button_ctx = await wait_for_component(self.client, components=action_row, messages=button_ctx.origin_message_id)
-
-			await button_ctx.defer(edit_origin=True)
-
-			if button_ctx.custom_id == 'right_button':
-				if index < len(conjugations) - 1:
-					index += 1
-				continue
-			elif button_ctx.custom_id == 'left_button':
-				if index > 0:
-					index -= 1
-				continue
-
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="slavic",
-		name="polish",
-		description="Conjugates a verb in Polish",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_slavic.command(name="polish")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def polish(self, interaction, *, verb: str = None) -> None:
+	async def polish(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Polish """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value,I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 
@@ -618,23 +546,18 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 			verb=verb, emoji_title=emoji_title, language_title='Polish', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="slavic",
-		name="russian",
-		description="Conjugates a verb in Russian",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_slavic.command(name="russian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def russian(self, interaction, *, verb: str = None) -> None:
+	async def russian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Russian """
+
+		await interaction.defer(ephemeral=True)
 
 		if not verb:
-			return await interaction.send("**Please, type a word**")
+			return await interaction.respond("**Please, type a word**", ephemeral=True)
 
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value,I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 
@@ -643,23 +566,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Russian', space=True)
 
-
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="romance",
-		name="esperanto",
-		description="Conjugates a verb in Esperanto",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_romance.command(name="esperanto")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def esperanto(self, interaction, *, verb: str = None) -> None:
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
+	async def esperanto(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Esperanto """
+
+		await interaction.defer(ephemeral=True)
 
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value,I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 
@@ -670,23 +585,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Esperanto', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="uralic",
-		name="estonian",
-		description="Conjugates a verb in Estonian",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_uralic.command(name="estonian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def estonian(self, interaction, *, verb: str = None) -> None:
+	async def estonian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Estonian """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
+		await interaction.defer(ephemeral=True)
 
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value,I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 
@@ -697,24 +604,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Estonian', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="turkic",
-		name="turkish",
-		description="Conjugates a verb in Turkish",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_turkic.command(name="turkish")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def turkish(self, interaction, verb: str = None) -> None:
+	async def turkish(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Turkish """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value,I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value,I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 
@@ -726,24 +624,15 @@ class Conjugation(commands.Cog):
 		verb=verb, emoji_title=emoji_title, language_title='Turkish', space=True)
 
 	# North Germanic languages - Scandinavian languages
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="germanic",
-		name="danish",
-		description="Conjugates a verb in Danish",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_germanic.command(name="danish")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def danish(self, interaction, verb: str = None) -> None:
+	async def danish(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Danish" """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 
@@ -753,24 +642,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Danish', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="germanic",
-		name="swedish",
-		description="Conjugates a verb in Swedish",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_germanic.command(name="swedish")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def swedish(self, interaction, verb: str = None) -> None:
+	async def swedish(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Swedish" """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -780,24 +660,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Swedish', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="germanic",
-		name="norwegian",
-		description="Conjugates a verb in Norwegian",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_germanic.command(name="norwegian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def norwegian(self, interaction, verb: str = None) -> None:
+	async def norwegian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Norwegian """
+
+		await interaction.defer(ephemeral=True)
 		
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -808,24 +679,15 @@ class Conjugation(commands.Cog):
 		verb=verb, emoji_title=emoji_title, language_title='Norwegian', space=True)
 
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="germanic",
-		name="faroese",
-		description="Conjugates a verb in Faroese",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_germanic.command(name="faroese")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def faroese(self, interaction, verb: str = None) -> None:
+	async def faroese(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Faroese" """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -835,24 +697,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Faroese', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="germanic",
-		name="icelandic",
-		description="Conjugates a verb in Icelandic",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_germanic.command(name="icelandic")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def icelandic(self, interaction, verb: str = None) -> None:
+	async def icelandic(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Icelandic """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -862,24 +715,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Icelandic', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="uralic",
-		name="finnish",
-		description="Conjugates a verb in Finnish",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_uralic.command(name="finnish")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def finnish(self, interaction, *, verb: str = None) -> None:
+	async def finnish(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Finnish """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -889,26 +733,16 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Finnish', space=True)
 
-
 	# Asian languages
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="asian",
-		name="indonesian",
-		description="Conjugates a verb in Indonesian",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_asian.command(name="indonesian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def indonesian(self, interaction, *, verb: str = None) -> None:
+	async def indonesian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Indonesian. """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -918,24 +752,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Indonesian', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="asian",
-		name="maltese",
-		description="Conjugates a verb in Maltese",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_asian.command(name="maltese")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def maltese(self, interaction, *, verb: str = None) -> None:
+	async def maltese(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Maltese. """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -945,24 +770,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Maltese', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="asian",
-		name="thai",
-		description="Conjugates a verb in Thai",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_asian.command(name="thai")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def thai(self, interaction, *, verb: str = None) -> None:
+	async def thai(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Thai. """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -972,24 +788,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Thai', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="asian",
-		name="vietnamese",
-		description="Conjugates a verb in Vietnamese",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_asian.command(name="vietnamese")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def vietnamese(self, interaction, *, verb: str = None) -> None:
+	async def vietnamese(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Vietnamese. """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
+		await interaction.defer(ephemeral=True)
 
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -999,24 +806,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Vietnamese', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="asian",
-		name="malay",
-		description="Conjugates a verb in Malay",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_asian.command(name="malay")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def malay(self, interaction, *, verb: str = None) -> None:
+	async def malay(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Malay. """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
+		await interaction.defer(ephemeral=True)
 
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -1026,24 +824,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Malay', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="romance",
-		name="catalan",
-		description="Conjugates a verb in Catalan",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_romance.command(name="catalan")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def catalan(self, interaction, *, verb: str = None) -> None:
+	async def catalan(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Catalan. """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -1053,24 +842,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Catalan', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="romance",
-		name="romanian",
-		description="Conjugates a verb in Romanian",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_romance.command(name="romanian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def romanian(self, interaction, *, verb: str = None) -> None:
+	async def romanian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Romanian. """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -1080,24 +860,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Romanian', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="other",
-		name="greek",
-		description="Conjugates a verb in Greek",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_other.command(name="greek")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def greek(self, interaction, *, verb: str = None) -> None:
+	async def greek(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Greek. """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -1107,24 +878,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Greek', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="germanic",
-		name="afrikaans",
-		description="Conjugates a verb in Afrikaans",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_germanic.command(name="afrikaans")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def afrikaans(self, interaction, *, verb: str = None) -> None:
+	async def afrikaans(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Afrikaans. """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -1134,24 +896,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Afrikaans', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="uralic",
-		name="lithuanian",
-		description="Conjugates a verb in Lithuanian",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_uralic.command(name="lithuanian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def lithuanian(self, interaction, *, verb: str = None) -> None:
+	async def lithuanian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Lithuanian. """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -1161,24 +914,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Lithuanian', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="uralic",
-		name="latvian",
-		description="Conjugates a verb in Latvian",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_uralic.command(name="latvian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def latvian(self, interaction, *, verb: str = None) -> None:
+	async def latvian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Latvian. """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -1188,24 +932,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Latvian', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="slavic",
-		name="macedonian",
-		description="Conjugates a verb in Macedonian",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_slavic.command(name="macedonian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def macedonian(self, interaction, *, verb: str = None) -> None:
+	async def macedonian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Macedonian. """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -1215,21 +950,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Macedonian', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="other",
-		name="persian",
-		description="Conjugates a verb in Persian",
-		options=[
-			create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_other.command(name="persian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def persian(self, interaction, verb: str) -> None:
+	async def persian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Persian. """
 
+		await interaction.defer(ephemeral=True)
 
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**", hidden=True)
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		
@@ -1239,24 +968,15 @@ class Conjugation(commands.Cog):
 		return await self.__cooljugator(interaction=interaction, root=root, 
 		verb=verb, emoji_title=emoji_title, language_title='Persian', space=True)
 
-	@cog_ext.cog_subcommand(
-		base="conjugate",
-		subcommand_group="other",
-		name="hebrew",
-		description="Conjugates a verb in Hebrew",
-		options=[
-		create_option(name='verb', description='The word to conjugate', option_type=3, required=True)
-		]#, guild_ids=TEST_GUILDS
-	)
+	@_other.command(name="hebrew")
 	@commands.cooldown(1, 10, commands.BucketType.user)
-	async def hebrew(self, interaction, *, verb: str = None) -> None:
+	async def hebrew(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
+		""" Conjugates a verb in Hebrew. """
 
-		if not verb:
-			return await interaction.send("**Please, type a verb**")
-
-
+		await interaction.defer(ephemeral=True)
+		
 		if len(verb) > 50:
-			return await interaction.send("**Wow, you informed a very long value, I'm not using it!**")
+			return await interaction.respond("**Wow, you informed a very long value, I'm not using it!**", ephemeral=True)
 
 		temp_verb = '%20'.join(verb.split())
 		

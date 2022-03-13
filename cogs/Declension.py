@@ -1,27 +1,25 @@
 import discord
 from discord.ext import commands
-from discord_slash import cog_ext, SlashContext
-from discord_slash.utils.manage_commands import create_option, create_choice
-from discord_slash.utils.manage_components import create_button, create_actionrow, wait_for_component
-from discord_slash.model import ButtonStyle
+from discord import slash_command, option, Option, OptionChoice, SlashCommandGroup
 
 import aiohttp
 import os
 from os import getenv
-import asyncio
-import json
 from datetime import datetime
-import re
-import requests
+
 import convertapi
 from PIL import Image
 import time
 from bs4 import BeautifulSoup
 import copy
 from itertools import zip_longest
-from others import utils
 
-TEST_GUILDS = [459195345419763713]
+from others import utils
+from others.views import PaginatorView
+from typing import Dict, Union, Any
+from pprint import pprint
+
+TEST_GUILDS = [777886754761605140]
 
 class Declension(commands.Cog):
   '''
@@ -33,54 +31,49 @@ class Declension(commands.Cog):
     self.session = aiohttp.ClientSession(loop=client.loop)
     self.pdf_token = getenv('PDF_API_TOKEN')
 
+  _decline = SlashCommandGroup("decline", "Declines a word in a given language")#, guild_ids=TEST_GUILDS)
+
   @commands.Cog.listener()
   async def on_ready(self):
     print('Declension cog is online!')
 
-  @cog_ext.cog_subcommand(
-    base='decline', name='polish',
-    description="Declines a Polish word; showing a table with its full declension forms.",
-    options=[
-      create_option(name='word', description='The word to decline', option_type=3, required=True)
-    ]#, guild_ids=TEST_GUILDS
+  @_decline.command(name='polish', choices=[
+      Option(str, name='word', description='The word to decline', required=True)
+    ]
   )
-  @commands.cooldown(1, 10, commands.BucketType.user)
-  async def polish(self, interaction, word: str = None):
+  @commands.cooldown(1, 15, commands.BucketType.user)
+  async def _decline_polish(self, ctx, word: str = None):
 
-    await interaction.defer()
+    await ctx.defer(ephemeral=True)
 
-    me = interaction.author
+    me = ctx.author
     if not word:
-      return await interaction.send(f"**Please {me.mention}, inform a word to search!**", hidden=True)
+      return await ctx.respond(f"**Please {me.mention}, inform a word to search!**", ephemeral=True)
 
     root = 'http://online-polish-dictionary.com/word'
 
     async with self.session.get(f"{root}/{word}") as response:
-      if response.status == 200:
-        data = await response.text()
+      if response.status != 200:
+        return await ctx.respond("**For some reason I couldn't process it!**", ephemeral=True)
 
-        start = 'https://e-polish.eu/dictionary/en/'
-        end = '.pdf'
-        s = data.find(start)
-        e = data.find(end)
-        url = data[s:e+4]
+      data = await response.text()
 
-      else:
-        return await interaction.send("**For some reason I couldn't process it!**", hidden=True)
+      start = 'https://e-polish.eu/dictionary/en/'
+      end = '.pdf'
+      s = data.find(start)
+      e = data.find(end)
+      url = data[s:e+4]
+
     async with self.session.get(url) as response:
-      #response = requests.get(url)
-      if response.status == 200:
-        try:
-          with open(f'files/{me.id}.pdf', 'wb') as f:
-            f.write(await response.read())
-        except Exception:
-          return await interaction.send("**I couldn't find anything for that word!**", hidden=True)
-      else:
-        # print(error)
-        return await interaction.reply("**For some reason I couldn't process it!**", hidden=True)
-    
+      if response.status != 200:
+        return await ctx.response("**For some reason I couldn't process it!**", ephemeral=True)
 
-  
+      try:
+        with open(f'files/{me.id}.pdf', 'wb') as f:
+          f.write(await response.read())
+      except Exception:
+        return await ctx.response("**I couldn't find anything for that word!**", ephemeral=True)
+    
     convertapi.api_secret = self.pdf_token
     convertapi.convert('png', {
     'File': f'./files/{me.id}.pdf',  
@@ -106,37 +99,36 @@ class Declension(commands.Cog):
     im1.save(f'files/{me.id}.png')
 
     file = discord.File(f'files/{me.id}.png', filename='polish.png')
-    await interaction.send(file=file)
+    await ctx.respond(file=file)
     os.remove(f"files/{me.id}.pdf")
-    os.remove(f"files/{me.id}.png")    
+    os.remove(f"files/{me.id}.png")
   
-  @cog_ext.cog_subcommand(
-    base='decline', name='russian',
-    description="Declines a Russian word; showing a table with its full declension forms.",
-    options=[
-      create_option(name='word', description='The word to decline', option_type=3, required=True)
-    ]#, guild_ids=TEST_GUILDS
+  @_decline.command(name='russian', options=[
+      Option(str, name='word', description='The word to decline', required=True)
+    ]
   )
   @commands.cooldown(1, 10, commands.BucketType.user)
-  async def russian(self, interaction, word: str = None):
+  async def _decline_russian(self, ctx, word: str = None):
+    """ Declines a Russian word; showing a table with its full declension forms. """
+    await ctx.defer()
 
     if not word:
-      return await interaction.send("**Please, type a word**", hidden=True)
+      return await ctx.send("**Please, type a word**", ephemeral=True)
 
+    current_time = await utils.get_time_now()
     root = 'https://en.openrussian.org/ru'
 
     req = f"{root}/{word.lower()}"
     async with self.session.get(req) as response:
       if response.status != 200:
-        return await interaction.send("**Something went wrong with that search!**", hidden=True)
-
+        return await ctx.respond("**Something went wrong with that search!**", ephemeral=True)
     
       # Gets the html and the table div
       html = BeautifulSoup(await response.read(), 'html.parser')
       div = html.select_one('.table-container')
 
       if not div:
-        return await interaction.send("**I couldn't find anything for this!**", hidden=True)
+        return await ctx.respond("**I couldn't find anything for this!**", ephemeral=True)
 
       # Gets the word modes (singular, plura, m., f., etc)
       word_modes = []
@@ -151,30 +143,30 @@ class Declension(commands.Cog):
             word_modes.append(mode.text.strip())
 
       if not word_modes:
-        return await interaction.send("**I can't decline this word, maybe this is a verb!**", hidden=True)
+        return await ctx.respond("**I can't decline this word, maybe this is a verb!**", ephemeral=True)
       # Gets all case names
       case_names = [case.text.strip() for case in div.select('tbody tr th .short') if case.text]
+      if not case_names:
+        return await ctx.respond("**No cases found for this word, maybe this is a verb!**", ephemeral=True)
+
       # Gets all values
       case_values = []
       for case in div.select('tbody tr'):
         row_values = []
         for row in case.select('td'):
-          print(row.get_text("", strip=True))
           if value := row.get_text(" | ", strip=True):
             row_values.append(value.strip())
 
         case_values.append(row_values)
 
-
       tds = [td for td in div.select('tbody tr')]
-      word_type = html.select_one('.info').get_text(", ", strip=True)
       # Makes the embedded message
       embed = discord.Embed(
         title="Russian Declension",
-        description=f"**Word:** {word.lower()}\n**Description:** {word_type}",
-        color=interaction.author.color,
+        description=f"**Word:** {word.lower()}",
+        color=ctx.author.color,
         url=req,
-        timestamp=interaction.created_at
+        timestamp=current_time
       )
       # Loops through the word modes and get equivalent cases and values
       for i, word_mode in enumerate(word_modes):
@@ -187,36 +179,34 @@ class Declension(commands.Cog):
           name=word_mode,
           value=f"```apache\n{temp_text}```",
           inline=True)
-      await interaction.send(embed=embed, hidden=True)
+      await ctx.respond(embed=embed, ephemeral=True)
 
-#   # @decline.command(aliases=['fi', 'fin', 'suomi'])
-#   # @commands.cooldown(1, 5, commands.BucketType.user)
-  @cog_ext.cog_subcommand(
-    base='decline', name='finnish',
-    description="Declines a Finnish word; showing a table with its full declension forms.",
-    options=[
-      create_option(name='word', description='The word to decline', option_type=3, required=True),
-      create_option(name='word_type', description='The word type', option_type=3, required=True,
+  @_decline.command(name='finnish', options=[
+      Option(str, name='word', description='The word to decline', required=True),
+      Option(str, name='word_type', description='The word type', required=True,
         choices=[
-            create_choice(name="Adjective", value="adjetctive"), create_choice(name="Noun", value="noun"),
+            OptionChoice(name="Adjective", value="adjetctive"), OptionChoice(name="Noun", value="noun"),
         ])
-    ]#, guild_ids=TEST_GUILDS
+    ]
   )
   @commands.cooldown(1, 10, commands.BucketType.user)
-  async def finnish(self, interaction, word: str = None, word_type: str = None):
+  async def _decline_finnish(self, ctx, word: str = None, word_type: str = None):
+    """ Declines a Finnish word; showing a table with its full declension forms. """
 
-    me = interaction.author
+    await ctx.defer(ephemeral=True)
+
+    me = ctx.author
     if not word:
-      return await interaction.send(f"**Please {me.mention}, inform a word to search!**", hidden=True)
+      return await ctx.respond(f"**Please {me.mention}, inform a word to search!**", ephemeral=True)
     if not word_type:
-      return await interaction.send("**Inform the word type!**", hidden=True)
+      return await ctx.respond("**Inform the word type!**", ephemeral=True)
 
     if word_type == 'noun':
       root = 'https://cooljugator.com/fin'
     elif word_type == 'adjective':
       root = 'https://cooljugator.com/fia'
     else:
-      return await interaction.send("**Invalid word type!**", hidden=True)
+      return await ctx.respond("**Invalid word type!**", ephemeral=True)
 
     # Request part
     req = f"{root}/{word.lower()}"
@@ -254,15 +244,16 @@ class Declension(commands.Cog):
                   pass
 
         except AttributeError:
-          return await interaction.send("**Nothing found! Make sure to type correct parameters!**", hidden=True)
+          return await ctx.respond("**Nothing found! Make sure to type correct parameters!**", ephemeral=True)
 
       try:
+        current_time = await utils.get_time_now()
         # Embed part
         embed = discord.Embed(
           title=f"Finnish Declension",
           description=f"**Word:** {word}\n**Type:** {word_type}",
-          color=interaction.author.color,
-          timestamp=interaction.created_at,
+          color=ctx.author.color,
+          timestamp=current_time,
           url=req
         )
         count = 0
@@ -279,35 +270,24 @@ class Declension(commands.Cog):
             inline=True
           )
           count += 1
-        await interaction.send(embed=embed, hidden=True)
+        await ctx.respond(embed=embed, ephemeral=True)
       except Exception as e:
         print(e)
-        return await interaction.send("**I couldn't do this request, make sure to type things correctly!**", hidden=True)
+        return await ctx.respond("**I couldn't do this request, make sure to type things correctly!**", ephemeral=True)
 
-#   # @decline.command(aliases=['deutsch', 'ger', 'de'])
-#   # @commands.cooldown(1, 5, commands.BucketType.user)
-  # @cog_ext.cog_subcommand(
-  #   base='decline', name='german',
-  #   description="Declines a German word; showing a table with its full declension forms", options=[
-  #     create_option(name='word', description='The word to decline', option_type=3, required=True)
-  #   ]#, guild_ids=TEST_GUILDS
-  # )
-  # @commands.cooldown(1, 10, commands.BucketType.user)
-  async def german(self, interaction, word: str):
+  @_decline.command(name='german')
+  @commands.cooldown(1, 10, commands.BucketType.user)
+  async def german(self, interaction, 
+    word: Option(str, name='word', description='The word to decline', required=True)) -> None:
+    """ Declines a German word. """
+
+    await interaction.defer(ephemeral=True)
 
     root = 'https://www.verbformen.com/declension/nouns'
     req = f"{root}/?w={word}"
     async with self.session.get(req) as response:
-      if not response.status == 200:
-        return await interaction.send("**Something went wrong with that search!**", hidden=True)
-
-      embed_table = discord.Embed(
-        title=f"__Declension Table__",
-        description=f'''
-        **Word:** {word.title()}''',
-        color=interaction.author.color,
-        url = req
-      )
+      if response.status != 200:
+        return await interaction.respond("**Something went wrong with that search!**", ephemeral=True)
 
       html = BeautifulSoup(await response.read(), 'html.parser')
       div = html.select_one('.rAbschnitt')
@@ -316,26 +296,31 @@ class Declension(commands.Cog):
         try:
           decl_type_list.append(decl_type.select_one('header h2').text)
         except:
+          decl_type_list.append('...')
           pass     
       master_dict = {}
       for dt in decl_type_list:
         master_dict[dt] = []
-
-      #print(master_dict)
 
       # Gets the main section of the page
       for section in html.select('.rAbschnitt '):
         # Gets the declination tables
         for i, table in enumerate(section.select('.rAufZu')):
           # Gets the gender blocks of each table
+          # print(table.select('.vTbl'))
           for case in table.select('.vTbl'):
-            category_name = case.select_one('h3').text
-            index = 0
+            category_name = '...'
+
+            if cat := case.select_one('h2'):
+              category_name = cat.text
+            elif cat := case.select_one('h3'):
+              category_name = cat.text
+              
             case_dict = {}
             decl_name = list(master_dict)[i-1]
             #category_name = f"{category_name}
             case_dict[category_name] = []
-          
+        
             # Gets each row of each table block
             for row in case.select('tr'):
               case_name = row.select_one('th').text
@@ -343,74 +328,63 @@ class Declension(commands.Cog):
               case_decl.insert(0, case_name)
               case_dict[category_name].append(case_decl.copy())
               case_decl.clear()
-              
-            for key, values in case_dict.items():
-              row_text = ''
-              for row_list in values:
-                row_text += f"{' '.join(row_list)}\n"
-
-              embed_table.add_field(
-                name=key,
-                value=f"```apache\n{row_text}```",
-                inline=True
-              )
             master_dict[decl_name].append(copy.deepcopy(case_dict))
 
 
     master_list = [[k, v] for k, v in master_dict.items()]
-    user_index = 0
-    lenmaster = len(master_list)
-    await interaction.defer(hidden=True)
+    # Additional data:
+    additional = {
+      'req': req,
+      'search': word,
+      'change_embed': self.make_german_embed
+    }
+    view = PaginatorView(master_list, **additional)
+    embed = await view.make_embed(interaction.author)
+    await interaction.respond(embed=embed, view=view)
 
-    button_ctx = None
+  async def make_german_embed(self, req: str, member: Union[discord.Member, discord.User], search: str, example: Any, 
+    offset: int, lentries: int, entries: Dict[str, Any], title: str = None, result: str = None) -> discord.Embed:
+    """ Makes an embed for the current search example.
+    :param req: The request URL link.
+    :param member: The member who triggered the command.
+    :param search: The search that was performed.
+    :param example: The current search example.
+    :param offset: The current page of the total entries.
+    :param lentries: The length of entries for the given search.
+    :param entries: The entries of the search.
+    :param title: The title of the search.
+    :param result: The result of the search. """
 
-    action_row = [
-      create_actionrow(
-        create_button(style=ButtonStyle.blurple, label="Left", custom_id="left_btn"),
-        create_button(style=ButtonStyle.blurple, label="Right", custom_id="right_btn")
-      )]
+    current_time = await utils.get_time_now()
 
-    while True:
-      template = master_list[user_index]
-      title = template[0]
-      new_embed = discord.Embed(
-        title=f"Declension table - ({title})",
-        description=f"**Word:** {word}",
-        color=interaction.author.color,
-        timestamp=interaction.created_at,
-        url=req)
-      for gender_dict in template[1]:
-        for key, values in gender_dict.items():
-          text = ''
-          for row in values:
-            text += f"{' '.join(row)}\n"
-          
-          new_embed.add_field(
-            name=key,
-            value=f"```apache\n{text}```",
-            inline=True
-          )
-      if button_ctx is None:
-        await interaction.send(embed=new_embed, components=[action_row], hidden=True)
-        # Wait for someone to click on them
-        button_ctx = await wait_for_component(self.client, components=action_row)
-      else:
-        await button_ctx.edit_origin(embed=new_embed, components=[action_row])
-        # Wait for someone to click on them
-        button_ctx = await wait_for_component(self.client, components=action_row, messages=button_ctx.origin_message_id)
+    # print(example)
 
-      await button_ctx.defer(edit_origin=True)
+    template = example
+    title = template[0]
+    embed = discord.Embed(
+      title=f"Declension table - ({title})",
+      description=f"**Word:** {search}",
+      color=member.color,
+      timestamp=current_time,
+      url=req)
 
-      if button_ctx.custom_id == 'left_btn':
-        if user_index > 0:
-          user_index -= 1
-        continue
+    for gender_dict in template[1]:
+      for key, values in gender_dict.items():
+        text = ''
+        for row in values:
+          text += f"{' '.join(row)}\n"
+        
+        embed.add_field(
+          name=key,
+          value=f"```apache\n{text}```",
+          inline=True
+        )
+    # Sets the author of the search
+    embed.set_author(name=member, icon_url=member.display_avatar)
+    # Makes a footer with the a current page and total page counter
+    embed.set_footer(text=f"{offset}/{lentries}", icon_url=member.guild.icon.url)
 
-      elif button_ctx.custom_id == 'right_btn':
-        if user_index < lenmaster -1:
-          user_index += 1
-        continue
-
+    return embed
         
       
 

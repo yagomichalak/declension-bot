@@ -9,7 +9,7 @@ import json
 from googletrans import Translator
 from others import utils
 
-TEST_GUILDS = [777886754761605140]
+TEST_GUILDS = [int(os.getenv("SERVER_ID"))]
 
 class Tools(commands.Cog):
 	""" A command for tool commands. """
@@ -32,8 +32,9 @@ class Tools(commands.Cog):
 	@slash_command(name="translate")#, guild_ids=TEST_GUILDS)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def _translate(self, interaction: ApplicationContext, 
-		language: Option(str, name="language", description="The language to translate the message to..", required=True), 
-		message: Option(str, name="message", description="The message to translate.", required=True)
+		language: Option(str, name="to_language", description="The language to translate the message to..", required=True), 
+		message: Option(str, name="message", description="The message to translate.", required=True),
+		source_language: Option(str, name="from_language", description="The source language to translate the message from.", required=False)
 	) -> None:
 		""" Translates a message into another language. """
 
@@ -42,7 +43,10 @@ class Tools(commands.Cog):
 
 		trans = Translator(service_urls=['translate.googleapis.com'])
 		try:
-			translation = trans.translate(f'{message}', dest=f'{language}')
+			if source_language:
+				translation = trans.translate(f'{message}', dest=f'{language}')
+			else:
+				translation = trans.translate(f'{message}',  src=source_language, dest=f'{language}')
 		except ValueError:
 			return await interaction.respond("**Invalid parameter for 'language'!**", ephemeral=True)
 

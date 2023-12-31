@@ -1,19 +1,22 @@
+# Imports
 import discord
 from discord.ext import commands
-from discord import Option, SlashCommandGroup, ApplicationContext, slash_command, CommandPermission
+from discord import Option, SlashCommandGroup, ApplicationContext, slash_command
 
 import os
 import asyncio
 import aiomysql
 from datetime import datetime
-from typing import Any, List, Dict, Union, Callable
+from typing import Any, List, Dict, Union
 
 from others import utils
 from others.views import PaginatorView
 from others.prompt.menu import ConfirmButton
 from others.customerrors import NotInWhitelist
 
+# Environment variables
 TEST_GUILDS = [777886754761605140]
+
 
 class FlashCard(commands.Cog):
   """ A category for creating, editing, deleting and showing 'FlashCards'. """
@@ -44,7 +47,6 @@ class FlashCard(commands.Cog):
           return True
       raise NotInWhitelist("This server is not whitelisted!")
     return commands.check(real_check)
-
 
   @_card.command(name="add")
   @commands.cooldown(1, 15, commands.BucketType.user)
@@ -159,7 +161,6 @@ class FlashCard(commands.Cog):
       return await self.pagination_looping(interaction, member, values)
     else:
       await interaction.respond(f"**Nothing found with the given values, {member.mention}!**", ephemeral=True)
-
 
   async def pagination_looping(self, interaction: ApplicationContext, member: discord.Member, the_list: List[List[Any]]) -> None:
     """ Makes an infinite loop for paginating embedded messages. """
@@ -337,7 +338,8 @@ class FlashCard(commands.Cog):
       return False
 
   # Whitelist
-  @slash_command(name="addserver", permissions=[CommandPermission("owner", 2, True)])#, guild_ids=TEST_GUILDS)
+  @slash_command(name="addserver")#, guild_ids=TEST_GUILDS)
+  @commands.is_owner()
   async def insert_server(self, interaction, 
     server_id: Option(str, name="server_id", description="The ID of the server to whitelist.", required=True)) -> None:
     """ Adds a server into the whitelist. """
@@ -357,7 +359,8 @@ class FlashCard(commands.Cog):
       await interaction.respond(f"**It looks like this server was already whitelisted!**", ephemeral=True)
 
 
-  @slash_command(name="removeserver", permissions=[CommandPermission("owner", 2, True)])#, guild_ids=TEST_GUILDS)
+  @slash_command(name="removeserver")#, guild_ids=TEST_GUILDS)
+  @commands.is_owner()
   async def delete_server(self, interaction, 
     server_id: Option(str, name="server_id", description="The ID of the server to whitelist.", required=True)) -> None:
     """ Adds a server into the whitelist. """

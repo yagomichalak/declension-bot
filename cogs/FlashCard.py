@@ -15,7 +15,8 @@ from others.prompt.menu import ConfirmButton
 from others.customerrors import NotInWhitelist
 
 # Environment variables
-TEST_GUILDS = [777886754761605140]
+IS_LOCAL = utils.is_local()
+TEST_GUILDS = [os.getenv("TEST_GUILD_ID")] if IS_LOCAL else None
 
 
 class FlashCard(commands.Cog):
@@ -28,7 +29,7 @@ class FlashCard(commands.Cog):
     self.loop = asyncio.get_event_loop()
     self.whitelist: List[int] = []
 
-  _card = SlashCommandGroup('card', 'FlashCard manager')#, guild_ids=TEST_GUILDS)
+  _card = SlashCommandGroup('card', 'FlashCard manager', guild_ids=TEST_GUILDS)
   
   @commands.Cog.listener()
   async def on_ready(self) -> None:
@@ -338,7 +339,7 @@ class FlashCard(commands.Cog):
       return False
 
   # Whitelist
-  @slash_command(name="addserver")#, guild_ids=TEST_GUILDS)
+  @slash_command(name="addserver", guild_ids=TEST_GUILDS)
   @commands.is_owner()
   async def insert_server(self, interaction, 
     server_id: Option(str, name="server_id", description="The ID of the server to whitelist.", required=True)) -> None:
@@ -359,7 +360,7 @@ class FlashCard(commands.Cog):
       await interaction.respond(f"**It looks like this server was already whitelisted!**", ephemeral=True)
 
 
-  @slash_command(name="removeserver")#, guild_ids=TEST_GUILDS)
+  @slash_command(name="removeserver", guild_ids=TEST_GUILDS)
   @commands.is_owner()
   async def delete_server(self, interaction, 
     server_id: Option(str, name="server_id", description="The ID of the server to whitelist.", required=True)) -> None:

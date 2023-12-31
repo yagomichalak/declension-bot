@@ -11,7 +11,9 @@ from others import utils
 from others.views import ReversoContextView
 from typing import Union, Any, List, Dict
 
-TEST_GUILDS = [777886754761605140]
+IS_LOCAL = utils.is_local()
+TEST_GUILDS = [os.getenv("TEST_GUILD_ID")] if IS_LOCAL else None
+
 
 class ReversoContext(commands.Cog):
   """ A category regarding the acquisition of words in context for different languages. """
@@ -22,7 +24,7 @@ class ReversoContext(commands.Cog):
     self.client = client
     self.session = aiohttp.ClientSession(loop=client.loop)
 
-  _context = SlashCommandGroup('context', 'Searches and shows a word in context in a given language')#, guild_ids=TEST_GUILDS)
+  _context = SlashCommandGroup('context', 'Searches and shows a word in context in a given language', guild_ids=TEST_GUILDS)
 
   @commands.Cog.listener()
   async def on_ready(self) -> None:

@@ -11,7 +11,9 @@ from typing import Any, Union, Dict
 from others.views import PaginatorView
 from others import utils
 
-TEST_GUILDS = [777886754761605140]
+IS_LOCAL = utils.is_local()
+TEST_GUILDS = [os.getenv("TEST_GUILD_ID")] if IS_LOCAL else None
+
 
 class Expressions(commands.Cog):
 	""" A category for commands related to language 
@@ -23,7 +25,7 @@ class Expressions(commands.Cog):
 		self.client = client
 		self.session = aiohttp.ClientSession(loop=client.loop)
 
-	_expression = SlashCommandGroup("expression", "Searches for an expression in a given language.")#, guild_ids=TEST_GUILDS)
+	_expression = SlashCommandGroup("expression", "Searches for an expression in a given language.", guild_ids=TEST_GUILDS)
 
 	@commands.Cog.listener()
 	async def on_ready(self) -> None:

@@ -12,7 +12,9 @@ from typing import Any, List, Dict, Union
 from others import utils
 from others.views import PaginatorView
 
-TEST_GUILDS = [777886754761605140]
+IS_LOCAL = utils.is_local()
+TEST_GUILDS = [os.getenv("TEST_GUILD_ID")] if IS_LOCAL else None
+
 
 class Dictionaries(commands.Cog):
 	""" A category for word dictionaries. """
@@ -23,7 +25,7 @@ class Dictionaries(commands.Cog):
 		self.client = client
 		self.session = aiohttp.ClientSession(loop=client.loop)
 
-	_dictionary = SlashCommandGroup("dictionary", "Searches something in the Cambridge dictionary")#, guild_ids=TEST_GUILDS)
+	_dictionary = SlashCommandGroup("dictionary", "Searches something in the Cambridge dictionary", guild_ids=TEST_GUILDS)
 
 	@commands.Cog.listener()
 	async def on_ready(self) -> None:

@@ -9,7 +9,9 @@ import json
 from googletrans import Translator
 from others import utils
 
-TEST_GUILDS = [int(os.getenv("SERVER_ID"))]
+IS_LOCAL = utils.is_local()
+TEST_GUILDS = [os.getenv("TEST_GUILD_ID")] if IS_LOCAL else None
+
 
 class Tools(commands.Cog):
 	""" A command for tool commands. """
@@ -20,8 +22,8 @@ class Tools(commands.Cog):
 		self.client = client
 		self.session = aiohttp.ClientSession(loop=client.loop)
 
-	_synonym = SlashCommandGroup('synonym', 'Finds synonyms for a given word in a given language.')#, guild_ids=TEST_GUILDS)
-	_antonym = SlashCommandGroup('antonym', 'Finds antonyms for a given word in a given language.')#, guild_ids=TEST_GUILDS)
+	_synonym = SlashCommandGroup('synonym', 'Finds synonyms for a given word in a given language.', guild_ids=TEST_GUILDS)
+	_antonym = SlashCommandGroup('antonym', 'Finds antonyms for a given word in a given language.', guild_ids=TEST_GUILDS)
 
 	@commands.Cog.listener()
 	async def on_ready(self) -> None:
@@ -29,7 +31,7 @@ class Tools(commands.Cog):
 
 		print('Tools cog is online!')
 
-	@slash_command(name="translate")#, guild_ids=TEST_GUILDS)
+	@slash_command(name="translate", guild_ids=TEST_GUILDS)
 	@commands.cooldown(1, 5, commands.BucketType.user)
 	async def _translate(self, interaction: ApplicationContext, 
 		language: Option(str, name="to_language", description="The language to translate the message to..", required=True), 

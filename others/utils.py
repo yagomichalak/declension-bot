@@ -4,6 +4,16 @@ from pytz import timezone
 from discord.ext import commands
 from typing import List, Dict
 import discord
+import os
+
+
+def is_local() -> bool:
+    """ Checks whether the bot is running
+    locally or not. """
+
+    is_local: str = os.getenv("IS_LOCAL", "false").lower().strip()
+    return is_local == "true"
+
 
 async def get_timestamp(tz: str = 'Etc/GMT') -> int:
     """ Gets the current timestamp.

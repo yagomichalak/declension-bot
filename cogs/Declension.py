@@ -19,7 +19,9 @@ from others.views import PaginatorView
 from typing import Dict, Union, Any
 from pprint import pprint
 
-TEST_GUILDS = [777886754761605140]
+IS_LOCAL = utils.is_local()
+TEST_GUILDS = [os.getenv("TEST_GUILD_ID")] if IS_LOCAL else None
+
 
 class Declension(commands.Cog):
   '''
@@ -31,7 +33,7 @@ class Declension(commands.Cog):
     self.session = aiohttp.ClientSession(loop=client.loop)
     self.pdf_token = getenv('PDF_API_TOKEN')
 
-  _decline = SlashCommandGroup("decline", "Declines a word in a given language")#, guild_ids=TEST_GUILDS)
+  _decline = SlashCommandGroup("decline", "Declines a word in a given language", guild_ids=TEST_GUILDS)
 
   @commands.Cog.listener()
   async def on_ready(self):

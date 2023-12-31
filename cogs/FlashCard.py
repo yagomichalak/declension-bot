@@ -209,8 +209,8 @@ class FlashCard(commands.Cog):
 
   # Database methods
 
+  @slash_command(guild_ids=TEST_GUILDS)
   @commands.is_owner()
-  @commands.command(ephemeral=True)
   async def create_table(self, interaction) -> None:
     """ Creates the Cards table. """
 
@@ -230,7 +230,7 @@ class FlashCard(commands.Cog):
     await mycursor.close()
     await interaction.respond("**Table __Cards__ created!**", ephemeral=True)
 
-  @commands.command(ephemeral=True)
+  @slash_command(guild_ids=TEST_GUILDS)
   @commands.is_owner()
   async def drop_table(self, interaction) -> None:
     """ Drops the Cards table. """
@@ -244,7 +244,7 @@ class FlashCard(commands.Cog):
     await mycursor.close()
     await interaction.respond("**Table __Cards__ dropped!**", ephemeral=True)
 
-  @commands.command(ephemeral=True)
+  @slash_command(guild_ids=TEST_GUILDS)
   @commands.is_owner()
   async def reset_table(self, interaction) -> None:
     """ Resets the Cards table. """
@@ -379,13 +379,13 @@ class FlashCard(commands.Cog):
       pass
     await interaction.respond(f"**The informed server was removed from the whitelist, {member.mention}!**", ephemeral=True)
 
-  @commands.command()
+  @slash_command(guild_ids=TEST_GUILDS)
   @commands.is_owner()
-  async def create_table_whitelist(self, ctx) -> None:
+  async def create_table_whitelist(self, interaction) -> None:
     """ Creates the Whitelist table. """
 
     if await self.table_whitelist_exists():
-      return await ctx.send("**The __Whitelist__ table already exists!**")
+      return await interaction.respond("**The __Whitelist__ table already exists!**", ephemeral=True)
 
     mycursor, db = await self.the_database()
     await mycursor.execute("""CREATE TABLE Whitelist (
@@ -394,35 +394,35 @@ class FlashCard(commands.Cog):
     ) DEFAULT CHARSET=utf8mb4""")
     await db.commit()
     await mycursor.close()
-    await ctx.send("**Table __Whitelist__ created!**")
+    await interaction.respond("**Table __Whitelist__ created!**", ephemeral=True)
 
-  @commands.command()
+  @slash_command(guild_ids=TEST_GUILDS)
   @commands.is_owner()
-  async def drop_table_whitelist(self, ctx) -> None:
+  async def drop_table_whitelist(self, interaction) -> None:
     """ Drops the Whitelist table. """
 
     if not await self.table_whitelist_exists():
-      return await ctx.send("**The __Whitelist__ table doesn't exist!**")
+      return await interaction.respond("**The __Whitelist__ table doesn't exist!**")
 
     mycursor, db = await self.the_database()
     await mycursor.execute("DROP TABLE Whitelist")
     await db.commit()
     await mycursor.close()
-    await ctx.send("**Table __Whitelist__ dropped!**")
+    await interaction.respond("**Table __Whitelist__ dropped!**", ephemeral=True)
 
-  @commands.command()
+  @slash_command(guild_ids=TEST_GUILDS)
   @commands.is_owner()
-  async def reset_table_whitelist(self, ctx) -> None:
+  async def reset_table_whitelist(self, interaction) -> None:
     """ Resets the Cards table. """
 
     if not await self.table_whitelist_exists():
-      return await ctx.send("**The __Whitelist__ table doesn't exist yet!**")
+      return await interaction.respond("**The __Whitelist__ table doesn't exist yet!**")
 
     mycursor, db = await self.the_database()
     await mycursor.execute("DELETE FROM Whitelist")
     await db.commit()
     await mycursor.close()
-    await ctx.send("**Table __Whitelist__ reset!**")
+    await interaction.respond("**Table __Whitelist__ reset!**", ephemeral=True)
 
   async def table_whitelist_exists(self) -> bool:
     """ Checks whether the table Whitelist exists. """

@@ -150,26 +150,31 @@ async def info(ctx):
 
 	current_time = await utils.get_time_now()
 	embed = discord.Embed(
-		title='Declinator Bot', description=" __**WHAT IS IT?:**__```Hello, the Declinator bot is an open source bot based on word declensions, verb conjugations and words in context.\nPS: declensions are all forms of a word in a language that contains a grammatical case system.```", 
-		colour=ctx.author.color, url="https://thelanguagesloth.com/", timestamp=current_time)
-	embed.add_field(name="📚 __**Language declinators**__",
-								value="So far, there are `4` different languages to decline, `34` to conjugate and `4` to get context.",
+		title='Declinator Bot', description=" **WHAT IS IT?**```Hello, the Declinator bot is an open source bot for word declension, verb conjugation and words in context.\nPS: Declension is the changing of the form of a word in function of its grammatical case.```", 
+		colour=ctx.author.color, url="https://languagesloth.com/bots/", timestamp=current_time)
+	embed.add_field(name="📚 **Language declinators**",
+								value="So far, there are `4` different languages to decline, `34` to conjugate and `4` to get word-in-context.",
 								inline=True)
-	embed.add_field(name="💻 __**Programmed in**__",
+	embed.add_field(name="💻 **Programmed in**",
 								value="The Declinator bot was built in Python, and you can find its GitHub repository [here](https://github.com/yagomichalak/declension-bot).",
 								inline=True)
-	embed.add_field(name='❓ __**How do you do It?**__',
-								value="The bot either web scrapes or uses an API to fetch information from websites, after that, the bot does its magic to nicely show the information in an embedded message.",
+	embed.add_field(name='❓ **How do you do It?**',
+								value="The bot either web scrapes or uses an API to fetch data from websites, and after that, the bot does its magic to show that data nicely in an embedded message.",
 								inline=True)
-	embed.add_field(name="🌎 __**More languages**__ ", 
+	embed.add_field(name="🌎 **More languages** ", 
 								value="More languages will be added as I'm requested and have some time to implement them.", inline=True)
 	embed.set_footer(text=ctx.guild.name,
 								icon_url='https://cdn.discordapp.com/icons/459195345419763713/a_dff4456b872c84146a78be8422e33cc2.gif?size=1024')
 	embed.set_thumbnail(
 		url=client.user.display_avatar)
-	embed.set_author(name='DNK#6725', url='https://discord.gg/languages',
-								icon_url='https://cdn.discordapp.com/attachments/719020754858934294/720289112040669284/DNK_icon.png')
-	await ctx.respond(embed=embed, ephemeral=True)
+	embed.set_author(name='dnkofficial', url='https://discord.gg/languages',
+								icon_url='https://languagesloth.com/static/assets/images/misc/dnk-pfp.png')
+	
+	view: discord.ui.View = discord.ui.View()
+	view.add_item(discord.ui.Button(style=discord.ButtonStyle.link, label="Terms of Service", emoji='🤝', url="https://languagesloth.com/bots/declinator/terms-of-service"))
+	view.add_item(discord.ui.Button(style=discord.ButtonStyle.link, label="Privacy & Policy", emoji='🕵️', url="https://languagesloth.com/bots/declinator/privacy-policy"))
+
+	await ctx.respond(embed=embed, view=view, ephemeral=True)
 
 @client.slash_command(name="invite", guild_ids=TEST_GUILDS)
 async def invite(ctx):

@@ -272,7 +272,7 @@ class Conjugation(commands.Cog):
 		:param verb: The verb that is being conjugated. """
 
 		current_time = await utils.get_time_now()
-		async with self.session.get(root) as response:
+		async with self.session.get(root, headers={'User-Agent': 'Mozilla/5.0'}) as response:
 			if response.status != 200:
 				return await interaction.respond("**Something went wrong with that search!**", ephemeral=True)
 

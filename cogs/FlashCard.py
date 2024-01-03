@@ -209,8 +209,8 @@ class FlashCard(commands.Cog):
 
   # Database methods
 
-  @slash_command(guild_ids=TEST_GUILDS)
-  @commands.is_owner()
+  # @slash_command(guild_ids=TEST_GUILDS)
+  # @commands.is_owner()
   async def create_table(self, interaction) -> None:
     """ Creates the Cards table. """
 
@@ -230,8 +230,8 @@ class FlashCard(commands.Cog):
     await mycursor.close()
     await interaction.respond("**Table __Cards__ created!**", ephemeral=True)
 
-  @slash_command(guild_ids=TEST_GUILDS)
-  @commands.is_owner()
+  # @slash_command(guild_ids=TEST_GUILDS)
+  # @commands.is_owner()
   async def drop_table(self, interaction) -> None:
     """ Drops the Cards table. """
 
@@ -244,8 +244,8 @@ class FlashCard(commands.Cog):
     await mycursor.close()
     await interaction.respond("**Table __Cards__ dropped!**", ephemeral=True)
 
-  @slash_command(guild_ids=TEST_GUILDS)
-  @commands.is_owner()
+  # @slash_command(guild_ids=TEST_GUILDS)
+  # @commands.is_owner()
   async def reset_table(self, interaction) -> None:
     """ Resets the Cards table. """
 
@@ -379,8 +379,8 @@ class FlashCard(commands.Cog):
       pass
     await interaction.respond(f"**The informed server was removed from the whitelist, {member.mention}!**", ephemeral=True)
 
-  @slash_command(guild_ids=TEST_GUILDS)
-  @commands.is_owner()
+  # @slash_command(guild_ids=TEST_GUILDS)
+  # @commands.is_owner()
   async def create_table_whitelist(self, interaction) -> None:
     """ Creates the Whitelist table. """
 
@@ -396,8 +396,8 @@ class FlashCard(commands.Cog):
     await mycursor.close()
     await interaction.respond("**Table __Whitelist__ created!**", ephemeral=True)
 
-  @slash_command(guild_ids=TEST_GUILDS)
-  @commands.is_owner()
+  # @slash_command(guild_ids=TEST_GUILDS)
+  # @commands.is_owner()
   async def drop_table_whitelist(self, interaction) -> None:
     """ Drops the Whitelist table. """
 
@@ -410,8 +410,8 @@ class FlashCard(commands.Cog):
     await mycursor.close()
     await interaction.respond("**Table __Whitelist__ dropped!**", ephemeral=True)
 
-  @slash_command(guild_ids=TEST_GUILDS)
-  @commands.is_owner()
+  # @slash_command(guild_ids=TEST_GUILDS)
+  # @commands.is_owner()
   async def reset_table_whitelist(self, interaction) -> None:
     """ Resets the Cards table. """
 

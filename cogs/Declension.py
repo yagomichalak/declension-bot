@@ -39,12 +39,67 @@ class Declension(commands.Cog):
   async def on_ready(self):
     print('Declension cog is online!')
 
-  @_decline.command(name='polish', choices=[
-      Option(str, name='word', description='The word to decline', required=True)
-    ]
-  )
+  @_decline.command(name='polish')
   @commands.cooldown(1, 15, commands.BucketType.user)
-  async def _decline_polish(self, ctx, word: str = None):
+  async def _decline_polish(self, ctx, word: Option(str, name='word', description='The word to decline', required=True)):
+
+    await ctx.defer(ephemeral=True)
+    word = word.replace(" ", "")
+    current_time = await utils.get_time_now()
+
+    root = "https://www.api.declinator.com/api/v2/declinator"
+    req = f"{root}/pl?unit={word}"
+    headers = {"Authorization": os.getenv("DECLINATOR_API_TOKEN")}
+
+    async with self.session.get(req, headers=headers) as response:
+      if response.status != 200:
+        return await ctx.respond("**For some reason I couldn't process it!**", ephemeral=True)
+
+      data = (await response.json())[0]
+
+      gender_text = "" if not (gender := data.get("gender", "")) else f"| **Gender:** {gender}"
+
+      # Creates the embed
+      embed = discord.Embed(
+        title="Polish Declension",
+        description=f"**Search:** {word.lower()} | **Word**: {data['singular']['n'].lower()} {gender_text}".strip(),
+        color=ctx.author.color,
+        url=req,
+        timestamp=current_time
+      )
+
+      # Removes the gender key from the data
+      if "gender" in data:
+        del data["gender"]
+
+      case_names_mapping = {
+        "n": "nominative",
+        "g": "genitive",
+        "d": "dative",
+        "a": "accusative",
+        "i": "instrumental",
+        "l": "locative",
+        "v": "vocative"
+      }
+
+      # Loops through the word modes and get equivalent cases and values
+      for grammatical_number, cases in data.items():
+        temp_text = ""
+        for case, declension in cases.items():
+          case_name = case_names_mapping.get(case.lower(), case)
+          line = f"{case_name.title():<12}| {declension.title()}\n"
+          temp_text += line
+
+        # Appends a field for each grammatical number, containing also the cases and their respective declined words
+        embed.add_field(
+          name=grammatical_number.title(),
+          value=f"```apache\n{temp_text}```",
+          inline=True)
+
+      await ctx.respond(embed=embed, ephemeral=True)
+
+
+  async def _outdated_decline_polish(self, ctx, word: str = None):
 
     await ctx.defer(ephemeral=True)
 

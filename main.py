@@ -13,12 +13,15 @@ IS_LOCAL = utils.is_local()
 TEST_GUILDS = [os.getenv("TEST_GUILD_ID")] if IS_LOCAL else None
 
 status = cycle([
-    "Russian declensions", "German declensions", "Finnish declensions", "Polish declensions",
+    "Premium subscription available!",
+    "Russian declensions", "German declensions",
+    "Finnish declensions", "Polish declensions",
     "English conjugations", "Spanish conjugations",
     "French conjugations", "Italian conjugations",
     "Portuguese conjugations", "Arabic conjugations",
     "Japanese conjugations", "Dutch conjugations",
     "Polish conjugations", "German conjugations",
+    "Wanna support the dev? Subscribe!",
     "Esperanto conjugations", "Estonian conjugations",
     "Turkish conjugations", "Danish conjugations",
     "Swedish conjugations", "Norwegian conjugations",
@@ -26,6 +29,7 @@ status = cycle([
     "Indonesian conjugations", "Thai conjugations",
     "Maltese conjugations", "Malay conjugations",
     "Vietnamese conjugations", "Finnish conjugations",
+    "Declinator bot is being improved!",
     "Russian conjugations", "Romanian conjugations",
     "Catalan conjugations", "Greek conjugations",
     "Afrikaans conjugations", "Lithuanian conjugations",

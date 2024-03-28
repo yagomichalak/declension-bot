@@ -5,6 +5,7 @@ from discord.ext import commands
 from typing import List, Dict
 import discord
 import os
+from .customerrors import DailyCommandsLimit
 
 
 def is_local() -> bool:
@@ -162,3 +163,33 @@ async def disable_buttons(view: discord.ui.View) -> None:
 
     for child in view.children:
         child.disabled = True
+
+
+def check_command_limit(limit: int = 10) -> bool:
+    """ Checks whether the user is poisoned and disorients the command. """
+
+    async def real_check(ctx):
+        """ Perfoms the real check. """
+
+        client = ctx.command.cog.client
+        current_timestamp = int(await get_timestamp())
+        user_entitlement = discord.utils.get(await client.fetch_entitlements(), user_id=ctx.author.id)
+        if user_entitlement:
+            return True
+
+        user_limit = client.commands_limit.get(ctx.author.id)
+        if user_limit is None:
+            client.commands_limit[ctx.author.id] = {"timestamp": current_timestamp, "limit": 1}
+            return True
+
+        if user_limit["limit"] < limit:
+            client.commands_limit[ctx.author.id]["limit"] += 1
+            return True
+
+        if current_timestamp - user_limit["timestamp"] >= 86400:
+            client.commands_limit[ctx.author.id] = {"timestamp": current_timestamp, "limit": 1}
+            return True
+
+        raise DailyCommandsLimit(limit=limit)
+
+    return commands.check(real_check)

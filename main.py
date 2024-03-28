@@ -5,7 +5,7 @@ from random import randint
 from re import match
 from itertools import cycle
 from others import utils
-from others.customerrors import NotInWhitelist
+from others.customerrors import NotInWhitelist, DailyCommandsLimit
 from dotenv import load_dotenv
 load_dotenv()
 
@@ -40,6 +40,7 @@ status = cycle([
 ])
 
 client = commands.Bot(command_prefix='dec!', intents=discord.Intents.default(), help_command=None)
+client.commands_limit = {}
 on_guild_log_id = os.getenv('ON_GUILD_LOG_ID')
 
 
@@ -90,10 +91,17 @@ async def on_command_error(ctx, error):
 async def on_application_command_error(ctx, error) -> None:
 
     if isinstance(error, commands.CommandOnCooldown):
+        if client.commands_limit.get(ctx.author.id):
+            client.commands_limit[ctx.author.id]["limit"] -= 1
         secs = int(float(error.retry_after))
         await ctx.respond(content=f"You are on cooldown! Try again in {secs} seconds!", ephemeral=True)
 
+    elif isinstance(error, DailyCommandsLimit):
+        await ctx.respond(content=f"You reached the {error.limit} daily commands limit. To have limitless commands per day, click on the bot's profile and subscribe to **Premium**!", ephemeral=True)
+
     else:
+        if client.commands_limit.get(ctx.author.id):
+            client.commands_limit[ctx.author.id]["limit"] -= 1
         print(error)
 
 

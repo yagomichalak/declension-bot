@@ -41,6 +41,7 @@ class Declension(commands.Cog):
 
   @_decline.command(name='polish')
   @commands.cooldown(1, 15, commands.BucketType.user)
+  @utils.check_command_limit()
   async def _decline_polish(self, ctx, word: Option(str, name='word', description='The word to decline', required=True)):
 
     await ctx.defer(ephemeral=True)
@@ -165,6 +166,7 @@ class Declension(commands.Cog):
     ]
   )
   @commands.cooldown(1, 10, commands.BucketType.user)
+  @utils.check_command_limit()
   async def _decline_russian(self, ctx, word: str = None):
     """ Declines a Russian word; showing a table with its full declension forms. """
     await ctx.defer()
@@ -247,6 +249,7 @@ class Declension(commands.Cog):
     ]
   )
   @commands.cooldown(1, 10, commands.BucketType.user)
+  @utils.check_command_limit()
   async def _decline_finnish(self, ctx, word: str = None, word_type: str = None):
     """ Declines a Finnish word; showing a table with its full declension forms. """
 
@@ -334,6 +337,7 @@ class Declension(commands.Cog):
 
   @_decline.command(name='german')
   @commands.cooldown(1, 10, commands.BucketType.user)
+  @utils.check_command_limit()
   async def german(self, interaction, 
     word: Option(str, name='word', description='The word to decline', required=True)) -> None:
     """ Declines a German word. """

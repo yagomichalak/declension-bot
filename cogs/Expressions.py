@@ -35,6 +35,7 @@ class Expressions(commands.Cog):
 
 	@_expression.command(name="french")
 	@commands.cooldown(1, 15, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def _expression_french(self, interaction, search: Option(str, name="search", description="The word you wanna look for.", required=True)) -> None:
 		""" Searches for an expression with the given word. """
 

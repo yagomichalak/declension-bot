@@ -35,6 +35,7 @@ class Dictionaries(commands.Cog):
 
 	@_dictionary.command(name="english")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def _dictionary_english(self, interaction, search: Option(str, name="search", description="What you want to search there.", required=True)) -> None:
 		""" Searches something in the Cambridge dictionary. """
 
@@ -184,6 +185,7 @@ class Dictionaries(commands.Cog):
 
 	@_dictionary.command(name="french")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def _dictionary_french(self, interaction, search: Option(str, name="search", description="The word you are looking for.", required=True)) -> None:
 		""" Searches a word in a French dictionary. """
 

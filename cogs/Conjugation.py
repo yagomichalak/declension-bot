@@ -41,6 +41,7 @@ class Conjugation(commands.Cog):
 
 	@_germanic.command(name="dutch", guild_ids=TEST_GUILDS)
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def _conjugate_germanic_dutch(self, interaction, 
 		verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Dutch. """
@@ -130,6 +131,7 @@ class Conjugation(commands.Cog):
 	# Conjugators based on Reverso's website
 	@_asian.command(name="japanese")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def japanese(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Japanese. """
 
@@ -150,6 +152,7 @@ class Conjugation(commands.Cog):
 
 	@_other.command(name="arabic")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def arabic(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Arabic. """ 
 		await interaction.defer(ephemeral=True)
@@ -169,6 +172,7 @@ class Conjugation(commands.Cog):
 
 	@_romance.command(name="portuguese")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def portuguese(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Portuguese. """
 
@@ -190,6 +194,7 @@ class Conjugation(commands.Cog):
 
 	@_romance.command(name="italian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def italian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Italian. """
 
@@ -210,6 +215,7 @@ class Conjugation(commands.Cog):
 
 	@_romance.command(name="french")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def french(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in French. """ 
 
@@ -230,6 +236,7 @@ class Conjugation(commands.Cog):
 	
 	@_romance.command(name="spanish")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def spanish(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Spanish. """
 
@@ -251,6 +258,7 @@ class Conjugation(commands.Cog):
 
 	@_germanic.command(name="english")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def english(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in English. """
 
@@ -425,6 +433,7 @@ class Conjugation(commands.Cog):
 
 	@_germanic.command(name="german")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def german(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in German """
 
@@ -533,6 +542,7 @@ class Conjugation(commands.Cog):
 
 	@_slavic.command(name="polish")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def polish(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Polish """
 
@@ -550,6 +560,7 @@ class Conjugation(commands.Cog):
 
 	@_slavic.command(name="russian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def russian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Russian """
 
@@ -570,6 +581,7 @@ class Conjugation(commands.Cog):
 
 	@_romance.command(name="esperanto")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def esperanto(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Esperanto """
 
@@ -589,6 +601,7 @@ class Conjugation(commands.Cog):
 
 	@_uralic.command(name="estonian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def estonian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Estonian """
 
@@ -608,6 +621,7 @@ class Conjugation(commands.Cog):
 
 	@_turkic.command(name="turkish")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def turkish(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Turkish """
 
@@ -628,6 +642,7 @@ class Conjugation(commands.Cog):
 	# North Germanic languages - Scandinavian languages
 	@_germanic.command(name="danish")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def danish(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Danish" """
 
@@ -646,6 +661,7 @@ class Conjugation(commands.Cog):
 
 	@_germanic.command(name="swedish")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def swedish(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Swedish" """
 
@@ -664,6 +680,7 @@ class Conjugation(commands.Cog):
 
 	@_germanic.command(name="norwegian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def norwegian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Norwegian """
 
@@ -683,6 +700,7 @@ class Conjugation(commands.Cog):
 
 	@_germanic.command(name="faroese")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def faroese(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Faroese" """
 
@@ -701,6 +719,7 @@ class Conjugation(commands.Cog):
 
 	@_germanic.command(name="icelandic")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def icelandic(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Icelandic """
 
@@ -719,6 +738,7 @@ class Conjugation(commands.Cog):
 
 	@_uralic.command(name="finnish")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def finnish(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Finnish """
 
@@ -738,6 +758,7 @@ class Conjugation(commands.Cog):
 	# Asian languages
 	@_asian.command(name="indonesian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def indonesian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Indonesian. """
 
@@ -756,6 +777,7 @@ class Conjugation(commands.Cog):
 
 	@_asian.command(name="maltese")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def maltese(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Maltese. """
 
@@ -774,6 +796,7 @@ class Conjugation(commands.Cog):
 
 	@_asian.command(name="thai")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def thai(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Thai. """
 
@@ -792,6 +815,7 @@ class Conjugation(commands.Cog):
 
 	@_asian.command(name="vietnamese")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def vietnamese(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Vietnamese. """
 
@@ -810,6 +834,7 @@ class Conjugation(commands.Cog):
 
 	@_asian.command(name="malay")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def malay(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Malay. """
 
@@ -828,6 +853,7 @@ class Conjugation(commands.Cog):
 
 	@_romance.command(name="catalan")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def catalan(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Catalan. """
 
@@ -846,6 +872,7 @@ class Conjugation(commands.Cog):
 
 	@_romance.command(name="romanian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def romanian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Romanian. """
 
@@ -864,6 +891,7 @@ class Conjugation(commands.Cog):
 
 	@_other.command(name="greek")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def greek(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Greek. """
 
@@ -882,6 +910,7 @@ class Conjugation(commands.Cog):
 
 	@_germanic.command(name="afrikaans")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def afrikaans(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Afrikaans. """
 
@@ -900,6 +929,7 @@ class Conjugation(commands.Cog):
 
 	@_uralic.command(name="lithuanian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def lithuanian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Lithuanian. """
 
@@ -918,6 +948,7 @@ class Conjugation(commands.Cog):
 
 	@_uralic.command(name="latvian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def latvian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Latvian. """
 
@@ -936,6 +967,7 @@ class Conjugation(commands.Cog):
 
 	@_slavic.command(name="macedonian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def macedonian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Macedonian. """
 
@@ -954,6 +986,7 @@ class Conjugation(commands.Cog):
 
 	@_other.command(name="persian")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def persian(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Persian. """
 
@@ -972,6 +1005,7 @@ class Conjugation(commands.Cog):
 
 	@_other.command(name="hebrew")
 	@commands.cooldown(1, 10, commands.BucketType.user)
+	@utils.check_command_limit()
 	async def hebrew(self, interaction, verb: Option(str, name='verb', description='The word to conjugate', required=True)) -> None:
 		""" Conjugates a verb in Hebrew. """
 

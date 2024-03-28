@@ -30,6 +30,7 @@ class Songs(commands.Cog):
 
     @_find_by.command(name="lyrics")
     @commands.cooldown(1, 10, commands.BucketType.user)
+    @utils.check_command_limit()
     async def _find_by_lyrics(self, interaction, value: Option(str, name="value", description=" The lyrics value.", required=True)) -> None:
         """ Searches a song by a given lyrics. """
 

@@ -165,7 +165,7 @@ async def disable_buttons(view: discord.ui.View) -> None:
         child.disabled = True
 
 
-def check_command_limit(limit: int = 10) -> bool:
+def check_command_limit(limit: int = 20) -> bool:
     """ Checks whether the user is poisoned and disorients the command. """
 
     async def real_check(ctx):

@@ -60,6 +60,7 @@ class Tools(commands.Cog):
 
     @_synonym.command(name="french")
     @commands.cooldown(1, 15, commands.BucketType.user)
+    @utils.check_command_limit()
     async def _synonym_french(self, interaction, search: Option(str, name="search", description="The word you are looking for.", required=True)) -> None:
         """ Searches synonyms of a French word. """
 
@@ -100,6 +101,7 @@ class Tools(commands.Cog):
 
     @_antonym.command(name="french")
     @commands.cooldown(1, 15, commands.BucketType.user)
+    @utils.check_command_limit()
     async def _antonym_french(self, interaction, search: Option(str, name="search", description="The word you are looking for.", required=True)) -> None:
         """ Searches antonyms of a French word. """
 

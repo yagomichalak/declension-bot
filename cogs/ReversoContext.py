@@ -35,6 +35,7 @@ class ReversoContext(commands.Cog):
 
   @_context.command(name="spanish")
   @commands.cooldown(1, 10, commands.BucketType.user)
+  @utils.check_command_limit()
   async def _context_spanish(self, interaction: ApplicationContext, 
     search: Option(str, name="search", description="What to search.", required=True)) -> None:
     """ Searches and shows examples of X words and sentences in context. """
@@ -49,6 +50,7 @@ class ReversoContext(commands.Cog):
 
   @_context.command(name="italian")
   @commands.cooldown(1, 10, commands.BucketType.user)
+  @utils.check_command_limit()
   async def _context_italian(self, interaction: ApplicationContext, 
     search: Option(str, name="search", description="The word you are looking for.", required=True)) -> None:
     """ Searches and shows examples of X words and sentences in context. """
@@ -63,6 +65,7 @@ class ReversoContext(commands.Cog):
 
   @_context.command(name="french")
   @commands.cooldown(1, 10, commands.BucketType.user)
+  @utils.check_command_limit()
   async def _context_french(self, interaction: ApplicationContext, 
     search: Option(str, name="search", description="The word you are looking for.", required=True)) -> None:
     """ Searches and shows examples of X words and sentences in context. """
@@ -77,6 +80,7 @@ class ReversoContext(commands.Cog):
 
   @_context.command(name="german")
   @commands.cooldown(1, 10, commands.BucketType.user)
+  @utils.check_command_limit()
   async def _context_german(self, interaction: ApplicationContext, 
     search: Option(str, name="search", description="The word you are looking for.", required=True)) -> None:
     """ Searches and shows examples of X words and sentences in context. """
@@ -91,6 +95,7 @@ class ReversoContext(commands.Cog):
 
   @_context.command(name="polish")
   @commands.cooldown(1, 10, commands.BucketType.user)
+  @utils.check_command_limit()
   async def _context_polish(self, interaction: ApplicationContext, 
     search: Option(str, name="search", description="The word you are looking for.", required=True)) -> None:
     """ Searches and shows examples of X words and sentences in context. """

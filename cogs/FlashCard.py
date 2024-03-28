@@ -51,6 +51,7 @@ class FlashCard(commands.Cog):
 
   @_card.command(name="add")
   @commands.cooldown(1, 15, commands.BucketType.user)
+  @utils.check_command_limit()
   async def _card_add(self, interaction, 
     front: Option(str, name="front", description="The value for the front part of the card.", required=True), 
     back: Option(str, name="back", description="The value for the back part of the card.", required=True)) -> None:
@@ -127,6 +128,7 @@ class FlashCard(commands.Cog):
 
   @_card.command(name="list")
   @commands.cooldown(1, 15, commands.BucketType.user)
+  @utils.check_command_limit()
   async def _card_list(self, interaction):
     """ Shows all cards of a particular user. """
 
@@ -144,6 +146,7 @@ class FlashCard(commands.Cog):
 
   @_card.command(name="search")
   @commands.cooldown(1, 15, commands.BucketType.user)
+  @utils.check_command_limit()
   async def _card_search(self, interaction, 
     values: Option(str, name="values", description="What is gonna be searched in the DB.", required=True)) -> None:
     """ Searches for cards in the user's deck with the given search values. """

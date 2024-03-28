@@ -139,6 +139,40 @@ class Tools(commands.Cog):
             await interaction.respond(embed=embed, ephemeral=True)
 
 
+    @slash_command(name="get_subscriptions", guild_ids=TEST_GUILDS)
+    @commands.is_owner()
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def _get_subscriptions(self, interaction: ApplicationContext) -> None:
+        """ Gets the bot's subscriptions. """
+        
+        await interaction.defer(ephemeral=True)
+        subscriptions = await self.client.fetch_entitlements()
+            
+        await interaction.respond(content=subscriptions, ephemeral=True)
+
+    @slash_command(name="get_skus", guild_ids=TEST_GUILDS)
+    @commands.is_owner()
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def _get_skus(self, interaction: ApplicationContext) -> None:
+        """ Gets the bot's subscriptions. """
+        
+        await interaction.defer(ephemeral=True)      
+        skus = await self.client.fetch_skus()        
+        await interaction.respond(content=skus, ephemeral=True)
+
+    @slash_command(name="has_sub", guild_ids=TEST_GUILDS)
+    @commands.is_owner()
+    @commands.cooldown(1, 5, commands.BucketType.user)
+    async def _has_sub(self, interaction: ApplicationContext) -> None:
+        """ Creates a test sku. """
+        
+        await interaction.defer(ephemeral=True)
+        subscriptions = await self.client.fetch_entitlements()
+        has_subscription = discord.utils.get(subscriptions, user_id=interaction.author.id)
+        
+        await interaction.respond(content=f"Do you have it? {has_subscription}", ephemeral=True)
+
+
 def setup(client) -> None:
     """ Cog's setup function. """
 

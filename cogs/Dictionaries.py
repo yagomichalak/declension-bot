@@ -24,6 +24,14 @@ class Dictionaries(commands.Cog):
 
 		self.client = client
 		self.session = aiohttp.ClientSession(loop=client.loop)
+		self.headers = {
+			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+						"AppleWebKit/537.36 (KHTML, like Gecko) "
+						"Chrome/125.0.0.0 Safari/537.36",
+			"Accept-Language": "en-US,en;q=0.9",
+			"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+		}
+
 
 	_dictionary = SlashCommandGroup("dictionary", "Searches something in the Cambridge dictionary", guild_ids=TEST_GUILDS)
 
@@ -43,7 +51,7 @@ class Dictionaries(commands.Cog):
 		await interaction.defer(ephemeral=True)
 
 		req = f"https://dictionary.cambridge.org/us/dictionary/english/{search.strip().replace(' ', '%20')}"
-		async with self.session.get(req, headers={'User-Agent': 'Mozilla/5.0'}) as response:
+		async with self.session.get(req, headers=self.headers) as response:
 			if response.status != 200:
 				return await interaction.respond(f"**{member.mention}, something went wrong with that search!**", ephemeral=True)
 
@@ -198,7 +206,7 @@ class Dictionaries(commands.Cog):
 		headers = {
 			'x-rapidapi-key': os.getenv('RAPID_API_TOKEN'),
 			'x-rapidapi-host': "dicolink.p.rapidapi.com"
-			}
+		}
 
 		async with self.session.get(url=url, headers=headers) as response:
 			if response.status != 200:

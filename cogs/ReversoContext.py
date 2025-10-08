@@ -23,6 +23,14 @@ class ReversoContext(commands.Cog):
 
     self.client = client
     self.session = aiohttp.ClientSession(loop=client.loop)
+    self.headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                      "AppleWebKit/537.36 (KHTML, like Gecko) "
+                      "Chrome/125.0.0.0 Safari/537.36",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+    }
+
 
   _context = SlashCommandGroup('context', 'Searches and shows a word in context in a given language', guild_ids=TEST_GUILDS)
 
@@ -117,7 +125,7 @@ class ReversoContext(commands.Cog):
     await interaction.defer(ephemeral=True)
     req = f"{root}/{search.replace(' ', '%20')}"
 
-    async with self.session.get(req, headers={'User-Agent': 'Mozilla/5.0'}) as response:
+    async with self.session.get(req, headers=self.headers) as response:
       if not response.status == 200:
         return await interaction.send("**Something went wrong with that search!**")
 

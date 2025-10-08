@@ -25,6 +25,14 @@ class Conjugation(commands.Cog):
 		""" Init method of the conjugation class. """
 		self.client = client
 		self.session = aiohttp.ClientSession(loop=client.loop)
+		self.headers = {
+			"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+						"AppleWebKit/537.36 (KHTML, like Gecko) "
+						"Chrome/125.0.0.0 Safari/537.36",
+			"Accept-Language": "en-US,en;q=0.9",
+			"Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+		}
+
 
 	_conjugate = SlashCommandGroup("conjugate", "Conjugates a verb in a given language.", guild_ids=TEST_GUILDS)
 	_germanic = _conjugate.create_subgroup("germanic", "Conjugates a verb in a germanic language.", guild_ids=TEST_GUILDS)
@@ -279,11 +287,9 @@ class Conjugation(commands.Cog):
 		:param root: The language endpoint from which to do the HTTP request.
 		:param verb: The verb that is being conjugated. """
 
-		current_time = await utils.get_time_now()
-		async with self.session.get(root, headers={'User-Agent': 'Mozilla/5.0'}) as response:
+		async with self.session.get(root, headers=self.headers) as response:
 			if response.status != 200:
 				return await interaction.respond("**Something went wrong with that search!**", ephemeral=True)
-
 		
 			# Gets the html and the table div
 			html = BeautifulSoup(await response.read(), 'html.parser')
@@ -299,7 +305,6 @@ class Conjugation(commands.Cog):
 		verb_div = html.select_one('.word-wrap')
 		word_wraps = verb_div.select_one('.result-block-api')
 		word_wrap_rows = word_wraps.select('.word-wrap-row')
-
 		
 		verbal_mode = ''
 
@@ -471,8 +476,6 @@ class Conjugation(commands.Cog):
 			container = html.select_one('#conjugationDivs.fourteen.wide.column')
 			if not container:
 				return await interaction.respond("**Couldn't find anything for it!**", ephemeral=True)
-
-			title = html.select_one('#conjugation-data.ui.segment > .centered > h1').get_text().strip()
 
 			conjugations = []
 			conj_divs = container.select('.conjugation-table.collapsable')
